@@ -2,12 +2,12 @@
 module Chkcfg where
 
 import System.Directory
+import Control.Monad
 
 chkcfg = do
     flp <- fmap (++ "/.pgdl") getHomeDirectory
     fle <- doesFileExist flp
-    if fle then return ()
-           else do
+    unless fle $ do
               writeFile flp defcfg
               error "please config file at ~/.pgdl first!"
 
