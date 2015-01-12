@@ -6,7 +6,6 @@ import Beaut
 import Plain
 import PlayVid
 import Search
-import Prepro
 import Getconfig
 import Chkcfg
 
@@ -24,11 +23,8 @@ import qualified Data.Text.IO as TI
 import Data.IORef
 
 main = do
-    prepro
     chkcfg
     rd <- fetchHtml
-    --withFile "dbg" WriteMode (\h -> TI.hPutStrLn h rd)
-    --error "end."
     vdlst <- fmap (search $ prsVid rd) getArgs
 
     ------define widgets-----------
