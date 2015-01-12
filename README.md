@@ -1,2 +1,3 @@
 # pgdl
-a terminal user interface that downloads video from html and plays immediately.
+a terminal user interface program that downloads video from html and plays immediately.
+
