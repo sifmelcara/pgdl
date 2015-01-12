@@ -24,8 +24,9 @@ import Data.IORef
 
 main = do
     chkcfg
-    rd <- fetchHtml
-    vdlst <- fmap (search $ prsVid rd) getArgs
+
+    rd    <- prsVid <$> fetchHtml
+    vdlst <- search rd <$> getArgs
 
     ------define widgets-----------
     (dlg, dfcg) <- flip newDialog "File Exists!" =<< plainText "redownload it?"
@@ -76,8 +77,8 @@ main = do
             Nothing -> return False
             Just (ind, _) -> if fex!ind then chgdl                >> return False 
                                         else playVid (vdlst!!ind) >> return True
-    dlg `onDialogCancel` (const exitSuccess)
-    dlg `onDialogAccept` (\_ -> do
+    dlg `onDialogCancel` const exitSuccess
+    dlg `onDialogAccept` (\_ ->  do
                              res <- getSelected lst
                              case res of
                                Nothing       -> return ()
