@@ -16,10 +16,12 @@ defcfg = unlines [  "",
                     "# username = jack",
                     "# password = mypassw",
                     "# servpath = \"example.org/videodir/?C=M;O=D\"",
+                    "# localdir = /home/jack/Downloads", 
                     "",
                     "username = ",
                     "password = ",
                     "servpath = ",
+                    "localdir = ",
                     ""
                  ]
 

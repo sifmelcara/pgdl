@@ -33,7 +33,8 @@ main = do
     lst <- newTextList (map beaut vdlst) 3
 
     -----preprocess fileExist-----
-    fex <- listArray (0, length vdlst - 1) <$> mapM (\(n, _, _) -> doesFileExist $ T.unpack n) vdlst
+    locdir <- getLocaldir
+    fex <- listArray (0, length vdlst - 1) <$> mapM (\(n, _, _) -> doesFileExist $ T.unpack $ T.append locdir n) vdlst
     let schg sle = case sle of 
                 SelectionOn id _ _ -> if fex!id then setFocusAttribute lst (black `on` red) 
                                                 else setFocusAttribute lst (black `on` green)

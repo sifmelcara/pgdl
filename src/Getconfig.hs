@@ -6,16 +6,18 @@ import qualified Data.Text as T
 import qualified Data.Configurator as C
 import Data.Maybe
 
-getConfig :: IO (T.Text, T.Text, T.Text)
+getConfig :: IO (T.Text, T.Text, T.Text, T.Text)
 getConfig = do
     config <- C.load [C.Required "$(HOME)/.pgdl"]
     username <- C.lookup config "username"
     password <- C.lookup config "password"
     servpath <- C.lookup config "servpath"
-    return (fj username, fj password, fj servpath)
+    localdir <- C.lookup config "localdir"
+    return (fj username, fj password, fj servpath, fj localdir)
     where fj = fromJust
 
-getUsername = fmap (\(r, _, _) -> r) getConfig
-getPassword = fmap (\(_, r, _) -> r) getConfig
-getServpath = fmap (\(_, _, r) -> r) getConfig
+getUsername = fmap (\(r, _, _, _) -> r) getConfig
+getPassword = fmap (\(_, r, _, _) -> r) getConfig
+getServpath = fmap (\(_, _, r, _) -> r) getConfig
+getLocaldir = fmap (\(_, _, _, r) -> r) getConfig
 
