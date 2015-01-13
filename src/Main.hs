@@ -49,6 +49,8 @@ main = do
     lfg <- newFocusGroup
     lfg  `onKeyPressed` (\_ key _ -> if key == KChar 'q' then exitSuccess else return False)
     dfcg `onKeyPressed` (\_ key _ -> if key == KChar 'q' then exitSuccess else return False)
+    setFocusGroupNextKey dfcg KRight []
+    setFocusGroupPrevKey dfcg KLeft  []
     addToFocusGroup lfg lst
     -------define Collections------
     c <- newCollection
