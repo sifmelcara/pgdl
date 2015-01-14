@@ -46,7 +46,7 @@ main = do
 
     ------generate ui----------
     lui <- centered =<< hFixed 80 lst
-    dui <- centered $ dialogWidget dlg
+    dui <- centered =<< (hFixed 30 $ dialogWidget dlg)
 
     -------define focus group-----
     lfg <- newFocusGroup
