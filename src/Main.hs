@@ -28,6 +28,8 @@ main = do
     rd    <- prsVid <$> fetchHtml
     vdlst <- search rd <$> getArgs
 
+    if length vdlst < 1 then error "empty list!" else return ()
+
     ------define widgets-----------
     (dlg, dfcg) <- flip newDialog "File Exists!" =<< plainText "redownload it?"
     lst <- newTextList (map beaut vdlst) 3
