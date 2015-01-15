@@ -4,6 +4,7 @@ module Getconfig where
 
 import qualified Data.Text as T
 import qualified Data.Configurator as C
+import Control.Monad
 import Data.Maybe
 
 getConfig :: IO (T.Text, T.Text, T.Text, T.Text)
@@ -13,6 +14,7 @@ getConfig = do
     password <- C.lookup config "password"
     servpath <- C.lookup config "servpath"
     localdir <- C.lookup config "localdir"
+    mapM_ (\x -> when (isNothing x) $ error "please edit config file.") [username, password, servpath, localdir]
     return (fj username, fj password, fj servpath, fj localdir)
     where fj = fromJust
 
