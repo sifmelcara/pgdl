@@ -59,6 +59,15 @@ main = do
     c <- newCollection
     chgls <- addToCollection c lui lfg
     chgdl <- addToCollection c dui dfcg
+    
+    ---------create infor screen-----------
+    ifsfg <- newFocusGroup
+    chgif <- forM vdlst (\vid -> do
+                            infw <- plainText $ crtInfPg vid
+                            addToFocusGroup ifsfg infw
+                            addToCollection c infw ifsfg)
+    ifsfg `onKeyPressed` (\_ key _ -> if key == KChar 'q' then exitSuccess else return False)
+    ifsfg `onKeyPressed` (\_ key _ -> if key == KLeft     then chgls >> return True  else return False)
     ------define activate process--------
     
     let chgtx tx = do
@@ -89,10 +98,20 @@ main = do
                                Nothing       -> return ()
                                Just (ind, _) -> playVid (vdlst!!ind) >> exitSuccess
                          )
+    -------------------
+    let showInfor = do
+          now <- getSelected lst
+          case now of
+            Nothing -> return ()
+            Just (ind, _) -> chgif!!ind >> return () -- chgif is a list of IO action chg to inf
+    let retnToLst = chgls
     ---------lst--------
     lst `onKeyPressed` (\_ key _ -> if key == KEnter then lnch >>= (\c -> if c then exitSuccess
                                                                                else return True)
                                                       else return False)
+
+    lst `onKeyPressed` (\_ key _ -> if key == KRight then showInfor >> return True else return False)
+
     lst `onSelectionChange` schg
     deftAttr lst
 
@@ -100,5 +119,14 @@ main = do
     runUi c $ defaultContext {normalAttr = white `on` black, 
                               focusAttr  = black `on` green
                              }
+
+
+crtInfPg :: (T.Text, T.Text, T.Text) -> T.Text
+crtInfPg (name, link, size) = T.unlines ["",
+                                         ("FileName: " `T.append` name),
+                                         ("FileLink: " `T.append` link),
+                                         ("FileSize: " `T.append` size)
+                                        ]
+
 
 
