@@ -28,7 +28,7 @@ main = do
     rd    <- prsVid <$> fetchHtml
     vdlst <- search rd <$> getArgs
 
-    if length vdlst < 1 then error "empty list!" else return ()
+    when (length vdlst < 1) $ error "empty list!"
 
     ------define widgets-----------
     (dlg, dfcg) <- flip newDialog "File Exists!" =<< plainText "redownload it?"
@@ -46,7 +46,7 @@ main = do
 
     ------generate ui----------
     lui <- centered =<< hFixed 80 lst
-    dui <- centered =<< (hFixed 30 $ dialogWidget dlg)
+    dui <- centered =<< hFixed 30 (dialogWidget dlg)
 
     -------define focus group-----
     lfg <- newFocusGroup

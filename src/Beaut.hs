@@ -12,11 +12,11 @@ beaut (str, _, _)
                                            tb 10 `app` nme, 
                                            tb 30 `app` eps
                                           ]
-    where dat = spl $ str
+    where dat = spl str
           (sbt:nme:eps:_) = dat
           tb n = T.replicate n " "
           app s1 s2 = s1 `T.append` s2
-          spl = filter (\t -> T.length t /= 0) . concat . map (T.splitOn "[") . (T.splitOn "]")
+          spl = filter (\t -> T.length t /= 0) . concatMap (T.splitOn "[") . (T.splitOn "]")
 
 
 
