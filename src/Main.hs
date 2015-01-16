@@ -63,8 +63,9 @@ main = do
     ifsfg <- newFocusGroup
     chgif <- forM vdlst (\vid -> do
                             infw <- plainText $ crtInfPg vid
-                            addToFocusGroup ifsfg infw
-                            addToCollection c infw ifsfg)
+                            bnfw <- centered infw
+                            addToFocusGroup ifsfg bnfw
+                            addToCollection c bnfw ifsfg)
     ifsfg `onKeyPressed` (\_ key _ -> if key == KChar 'q' then exitSuccess else return False)
     ifsfg `onKeyPressed` (\_ key _ -> if key == KLeft     then chgls >> return True  else return False)
     ------define activate process--------
@@ -110,7 +111,7 @@ main = do
 
 
 crtInfPg :: (T.Text, T.Text, T.Text) -> T.Text
-crtInfPg (name, link, size) = T.unlines ["",
+crtInfPg (name, link, size) = T.unlines ["", "",
                                          ("FileName: " `T.append` name),
                                          ("FileLink: " `T.append` link),
                                          ("FileSize: " `T.append` size)
