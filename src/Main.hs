@@ -20,7 +20,6 @@ import Control.Monad
 import Control.Applicative
 import System.IO
 import qualified Data.Text.IO as TI
-import Data.IORef
 
 main = do
     chkcfg
@@ -73,17 +72,6 @@ main = do
     let chgtx tx = do
             clearList lst
             forM_ tx $ \n -> addToList lst n =<< plainText n
-
-    --Switch list mode--
-    let ptob = chgtx (map plain vdlst)
-    let btop = chgtx (map beaut vdlst)
-    lstat <- newIORef True
-    let swlst = do
-            s <- readIORef lstat
-            if s then ptob else btop
-            modifyIORef lstat not
-    lfg `onKeyPressed` (\_ key _ -> if key == KChar 's' then swlst >> return True 
-                                                        else return False)
 
     let lnch = do
           res <- getSelected lst
