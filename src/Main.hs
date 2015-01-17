@@ -112,14 +112,12 @@ main = do
 
 crtInfPg :: Video -> T.Text
 crtInfPg vid = T.unlines ["", "",
-                          "File name: " `app` vidName vid,
+                          "File name: " `app` (spl . vidName) vid,
                           "File size: " `app` vidSize vid,
-                          "File link: " `app` (mul . vidLink) vid,
-                          "File date: " `app` vidDate vid
+                          "File date: " `app` vidDate vid,
+                          "File link: " `app` (spl . vidLink) vid
                          ]
                where app = T.append
-                     mul s 
-                       | T.null s   = ""
-                       | otherwise = (\(h, t) -> h `app` "\n" `app` mul t) (T.splitAt 60 s)
+                     spl = T.intercalate "\n" . T.chunksOf 60 
 
 
