@@ -9,9 +9,10 @@ import System.Directory
 import Control.Monad
 import qualified Data.Text as T
 import System.IO
+import Video
 
-playVid :: (T.Text, T.Text, T.Text) -> IO ()
-playVid (tvn, tvu, _) = do
+playVid :: Video -> IO ()
+playVid vid = do
     runCommand $ "rm " ++ addq vn
 
     username <- fmap T.unpack getUsername
@@ -26,8 +27,8 @@ playVid (tvn, tvu, _) = do
     checkFile
     runCommand $ "nohup vlc -f " ++ addq localloc ++ " &>/dev/null &"
     return ()
-  where vn = T.unpack tvn
-        vu = T.unpack tvu
+  where vn = T.unpack . vidName $ vid
+        vu = T.unpack . vidLink $ vid
         addq s = "\"" ++ s ++ "\""
 
 

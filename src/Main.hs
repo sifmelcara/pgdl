@@ -3,11 +3,11 @@
 import FetchHtml
 import PrsVid
 import Beaut
-import Plain
 import PlayVid
 import Search
 import Getconfig
 import Chkcfg
+import Video
 
 import Graphics.Vty.Widgets.All
 import qualified Data.Text as T
@@ -35,7 +35,7 @@ main = do
 
     -----preprocess fileExist-----
     locdir <- getLocaldir
-    fex <- listArray (0, length vdlst - 1) <$> mapM (\(n, _, _) -> doesFileExist $ T.unpack $ T.append locdir n) vdlst
+    fex <- listArray (0, length vdlst - 1) <$> mapM (\vid -> doesFileExist . T.unpack . T.append locdir . vidName $ vid) vdlst
     let schg sle = case sle of 
                 SelectionOn id _ _ -> if fex!id then setFocusAttribute lst (black `on` red) 
                                                 else setFocusAttribute lst (black `on` green)
@@ -110,12 +110,13 @@ main = do
                              }
 
 
-crtInfPg :: (T.Text, T.Text, T.Text) -> T.Text
-crtInfPg (name, link, size) = T.unlines ["", "",
-                                         ("FileName: " `T.append` name),
-                                         ("FileLink: " `T.append` link),
-                                         ("FileSize: " `T.append` size)
-                                        ]
-
+crtInfPg :: Video -> T.Text
+crtInfPg vid = T.unlines ["", "",
+                          "File name: " `app` vidName vid,
+                          "File size: " `app` vidSize vid,
+                          "File link: " `app` vidLink vid,
+                          "File date: " `app` vidDate vid
+                         ]
+               where app = T.append
 
 
