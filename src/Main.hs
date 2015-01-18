@@ -19,7 +19,6 @@ import Data.Array
 import Control.Monad
 import Control.Applicative
 import System.IO
-import qualified Data.Text.IO as TI
 
 main = do
     chkcfg
