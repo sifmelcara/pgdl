@@ -24,11 +24,12 @@ genReq = do
     where tob = encodeUtf8
 
 fetchHtml :: IO T.Text
-fetchHtml = genReq >>=
-              (\rq -> runResourceT $ do
-                mgr <- liftIO $ newManager conduitManagerSettings
-                res <- httpLbs rq mgr
-                conv <- liftIO $ open "utf-8" Nothing
-                liftIO . return . toUnicode conv . LC.toStrict $ responseBody res)
+fetchHtml = do
+    rq <- genReq
+    runResourceT $ do
+        mgr <- liftIO $ newManager conduitManagerSettings
+        res <- httpLbs rq mgr
+        conv <- liftIO $ open "utf-8" Nothing
+        liftIO . return . toUnicode conv . LC.toStrict $ responseBody res
 
 
