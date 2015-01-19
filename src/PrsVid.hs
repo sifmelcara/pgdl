@@ -6,7 +6,6 @@ import Text.HTML.TagSoup
 import Data.List
 import Data.Function
 import qualified Data.Text as T
-import ConstVal
 import Video
 
 prsVid :: T.Text -> [Video]
@@ -34,6 +33,7 @@ prsVid = map (genVidInf . filter (not. T.null) . map getInf) .
             | otherwise = ""
           genVidInf [lnk, nm, dt, sz] = Video {vidLink = lnk, vidName = nm, vidDate = dt, vidSize = sz}  
           getVidInf _ = Video {vidLink = T.empty, vidName = "parse error", vidDate = "", vidSize = ""}
+          vdfmt = [".avi", ".mp4", ".mkv"]
 
 
 
