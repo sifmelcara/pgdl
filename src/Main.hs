@@ -69,10 +69,6 @@ main = do
     ifsfg `onKeyPressed` (\_ key _ -> if key == KLeft     then chgls >> return True  else return False)
     ------define activate process--------
     
-    let chgtx tx = do
-            clearList lst
-            forM_ tx $ \n -> addToList lst n =<< plainText n
-
     let lnch = do
           res <- getSelected lst
           case res of
