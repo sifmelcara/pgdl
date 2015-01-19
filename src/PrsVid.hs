@@ -32,7 +32,8 @@ prsVid = map (genVidInf . filter (not. T.null) . map getInf) .
             | isSizeTag tg = fromTagText tg
             | isDateTag tg = fromTagText tg
             | otherwise = ""
-          genVidInf ss = Video {vidLink = ss!!0, vidName = ss!!1, vidDate = ss!!2, vidSize = ss!!3}  
+          genVidInf [lnk, nm, dt, sz] = Video {vidLink = lnk, vidName = nm, vidDate = dt, vidSize = sz}  
+          getVidInf _ = Video {vidLink = T.empty, vidName = "parse error", vidDate = "", vidSize = ""}
 
 
 
