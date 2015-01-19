@@ -18,7 +18,8 @@ beaut vid
           (sbt:nme:eps:_) = dat
           tb n = T.replicate n " "
           app s1 s2 = s1 `T.append` s2
-          spl = filter (\t -> T.length t /= 0) . concatMap (T.splitOn "[") . (T.splitOn "]")
+          spl = filter (\t -> T.length t /= 0) . getTags ["[", "]"] . return
+          getTags dl s = foldl (\ls d -> concatMap (T.splitOn d) ls) s dl
 
 
 
