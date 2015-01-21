@@ -3,9 +3,10 @@ module Chkcfg where
 
 import System.Directory
 import Control.Monad
+import System.FilePath
 
 chkcfg = do
-    flp <- fmap (++ "/.pgdl") getHomeDirectory
+    flp <- fmap (</> ".pgdl") getHomeDirectory
     fle <- doesFileExist flp
     unless fle $ do
               writeFile flp defcfg
