@@ -22,12 +22,16 @@ import System.IO
 
 main = do
     chkcfg
-
     rd    <- prsVid <$> fetchHtml
     vdlst <- search rd <$> getArgs
-
     when (length vdlst < 1) $ error "empty list!"
+    c <- crtUi vdlst
+    runUi c $ defaultContext {normalAttr = white `on` black, 
+                              focusAttr  = black `on` green
+                             }
 
+crtUi :: [Video] -> IO Collection
+crtUi vdlst = do
     ------define widgets-----------
     (dlg, dfcg) <- flip newDialog "File Exists!" =<< plainText "redownload it?"
     lst <- newTextList (map beaut vdlst) 3
@@ -48,11 +52,10 @@ main = do
 
     -------define focus group-----
     lfg <- newFocusGroup
-    lfg  `onKeyPressed` (\_ key _ -> if key == KChar 'q' then exitSuccess else return False)
-    dfcg `onKeyPressed` (\_ key _ -> if key == KChar 'q' then exitSuccess else return False)
     setFocusGroupNextKey dfcg KRight []
     setFocusGroupPrevKey dfcg KLeft  []
     addToFocusGroup lfg lst
+
     -------define Collections------
     c <- newCollection
     chgls <- addToCollection c lui lfg
@@ -65,8 +68,13 @@ main = do
                             bnfw <- centered infw
                             addToFocusGroup ifsfg bnfw
                             addToCollection c bnfw ifsfg)
-    ifsfg `onKeyPressed` (\_ key _ -> if key == KChar 'q' then exitSuccess else return False)
     ifsfg `onKeyPressed` (\_ key _ -> if key == KLeft     then chgls >> return True  else return False)
+
+    -------exit when q is pressed-------
+    lfg   `onKeyPressed` (\_ key _ -> if key == KChar 'q' then exitSuccess else return False)
+    dfcg  `onKeyPressed` (\_ key _ -> if key == KChar 'q' then exitSuccess else return False)
+    ifsfg `onKeyPressed` (\_ key _ -> if key == KChar 'q' then exitSuccess else return False)
+
     ------define activate process--------
     
     let lnch = do
@@ -99,10 +107,7 @@ main = do
     lst `onSelectionChange` schg
     deftAttr lst
 
-    --------main loop---------
-    runUi c $ defaultContext {normalAttr = white `on` black, 
-                              focusAttr  = black `on` green
-                             }
+    return c
 
 
 crtInfPg :: Video -> T.Text
