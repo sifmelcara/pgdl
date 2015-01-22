@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE LambdaCase #-}
 
 import FetchHtml
 import PrsVid
@@ -11,11 +12,11 @@ import Video
 
 import Graphics.Vty.Widgets.All
 import qualified Data.Text as T
+import System.FilePath
 import System.Exit
 import Graphics.Vty
 import System.Environment
 import System.Directory
-import Data.Array
 import Control.Monad
 import Control.Applicative
 import System.IO
@@ -31,13 +32,14 @@ main = do
 
     -----preprocess fileExist-----
     locdir <- getLocaldir
-    let fex = listArray (0, 9999) $ replicate 10000 False
     let schg sle = case sle of 
-                SelectionOn id _ _ -> if fex!id then setFocusAttribute lst (black `on` red) 
-                                                else setFocusAttribute lst (black `on` green)
+                SelectionOn id _ _ -> fex lst id >>= \case 
+                                        True  -> setFocusAttribute lst (black `on` red) 
+                                        False -> setFocusAttribute lst (black `on` green)
                 _                  -> return ()
-    let deftAttr ls = if fex!0 then setFocusAttribute ls (black `on` red)
-                               else setFocusAttribute ls (black `on` green)
+    let deftAttr ls = fex lst 0 >>= \case 
+                                    True  -> setFocusAttribute ls (black `on` red)
+                                    False -> setFocusAttribute ls (black `on` green)
 
     ------generate ui----------
     lui <- centered =<< hFixed 80 lst
@@ -74,8 +76,9 @@ main = do
           res <- getSelected lst
           case res of
             Nothing -> return False
-            Just (ind, _) -> if fex!ind then chgdl                >> return False 
-                                        else playVid (vdlst!!ind) >> return True
+            Just (ind, _) -> fex lst ind >>= \case
+                                        True  -> chgdl >> return False 
+                                        False -> playVid (vdlst!!ind) >> return True
     dlg `onDialogCancel` const exitSuccess
     dlg `onDialogAccept` (\_ ->  do
                              res <- getSelected lst
@@ -107,14 +110,18 @@ main = do
             newVdlst <- search rd <$> getArgs
             when (length newVdlst < 1) $ error "empty list!"
             clearList lst
-            forM_ (map beaut newVdlst) $ \v -> do
-                addToList lst v =<< plainText v
+            forM_ newVdlst $ \v -> do
+                addToList lst (vidName v) =<< plainText (beaut v)
         return ()
 
     runUi c $ defaultContext {normalAttr = white `on` black, 
                               focusAttr  = black `on` green
                              }
 
+fex lst ind = do
+    Just (str, _) <- getListItem lst ind
+    locd <- fmap T.unpack getLocaldir
+    doesFileExist $ locd </> (T.unpack str)
 
 crtInfPg :: Video -> T.Text
 crtInfPg vid = T.unlines ["", "",
