@@ -23,18 +23,10 @@ import Control.Concurrent
 
 main = do
     chkcfg
-    schedule $ do
-        forkIO $ do
-            rd    <- prsVid <$> fetchHtml
-            vdlst <- search rd <$> getArgs
-            when (length vdlst < 1) $ error "empty list!"
-    c <- crtUi vdlst
-    runUi c $ defaultContext {normalAttr = white `on` black, 
-                              focusAttr  = black `on` green
-                             }
+    rd    <- prsVid <$> fetchHtml
+    vdlst <- search rd <$> getArgs
+    when (length vdlst < 1) $ error "empty list!"
 
-crtUi :: [Video] -> IO Collection
-crtUi vdlst = do
     ------define widgets-----------
     (dlg, dfcg) <- flip newDialog "File Exists!" =<< plainText "redownload it?"
     lst <- newTextList (map beaut vdlst) 3
@@ -110,7 +102,9 @@ crtUi vdlst = do
     lst `onSelectionChange` schg
     deftAttr lst
 
-    return c
+    runUi c $ defaultContext {normalAttr = white `on` black, 
+                              focusAttr  = black `on` green
+                             }
 
 
 crtInfPg :: Video -> T.Text
