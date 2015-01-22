@@ -24,13 +24,14 @@ import Control.Concurrent
 main = do
     chkcfg
 
+    let vdlst = return $ Video {vidName = "ffff", vidLink = "==++--", vidSize="",vidDate="44"}
     ------define widgets-----------
     (dlg, dfcg) <- flip newDialog "File Exists!" =<< plainText "redownload it?"
     lst <- newTextList (map beaut vdlst) 3
 
     -----preprocess fileExist-----
     locdir <- getLocaldir
-    fex <- listArray (0, length vdlst - 1) <$> mapM (\vid -> doesFileExist . T.unpack . T.append locdir . vidName $ vid) vdlst
+    let fex = listArray (0, 9999) $ replicate 10000 False
     let schg sle = case sle of 
                 SelectionOn id _ _ -> if fex!id then setFocusAttribute lst (black `on` red) 
                                                 else setFocusAttribute lst (black `on` green)
@@ -103,8 +104,12 @@ main = do
     schedule $ do
         forkIO $ do
             rd    <- prsVid <$> fetchHtml
-            vdlst <- search rd <$> getArgs
-            when (length vdlst < 1) $ error "empty list!"
+            newVdlst <- search rd <$> getArgs
+            when (length newVdlst < 1) $ error "empty list!"
+            clearList lst
+            forM_ (map beaut newVdlst) $ \v -> do
+                addToList lst v =<< plainText v
+        return ()
 
     runUi c $ defaultContext {normalAttr = white `on` black, 
                               focusAttr  = black `on` green
