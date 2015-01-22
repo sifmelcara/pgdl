@@ -11,6 +11,7 @@ import Control.Monad
 import qualified Data.Text as T
 import System.IO
 import Video
+import System.Exit
 
 playVid :: Video -> IO ()
 playVid vid = do
@@ -29,7 +30,7 @@ playVid vid = do
     let checkFile = doesFileExist localloc >>= \ready -> unless ready checkFile
     checkFile
     runCommand $ "nohup vlc -f " ++ addq localloc ++ " &>/dev/null &"
-    return ()
+    exitSuccess
   where vn = T.unpack . vidName $ vid
         vu = T.unpack . vidLink $ vid
         addq s = "\"" ++ s ++ "\""
