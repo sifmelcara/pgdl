@@ -19,6 +19,7 @@ import Data.Array
 import Control.Monad
 import Control.Applicative
 import System.IO
+import Control.Concurrent
 
 main = do
     chkcfg
@@ -106,6 +107,16 @@ crtUi vdlst = do
 
     lst `onSelectionChange` schg
     deftAttr lst
+
+
+    -------tmplist-------
+
+    tmpLst <- newTextList (["blah!"]) 3
+    tmpLstGp <- newFocusGroup
+    tmpLstGp `onKeyPressed` (\_ key _ -> if key == KChar 'q' then exitSuccess else return False)
+    addToFocusGroup tmpLstGp tmpLst
+    chgTmpLst <- addToCollection c tmpLst tmpLstGp
+    lfg `onKeyPressed` (\_ key _ -> if key == KChar 's' then chgTmpLst >> return True else return False)
 
     return c
 
