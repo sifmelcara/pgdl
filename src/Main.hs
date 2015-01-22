@@ -23,9 +23,6 @@ import Control.Concurrent
 
 main = do
     chkcfg
-    rd    <- prsVid <$> fetchHtml
-    vdlst <- search rd <$> getArgs
-    when (length vdlst < 1) $ error "empty list!"
 
     ------define widgets-----------
     (dlg, dfcg) <- flip newDialog "File Exists!" =<< plainText "redownload it?"
@@ -101,6 +98,13 @@ main = do
 
     lst `onSelectionChange` schg
     deftAttr lst
+
+    ------evaluate real list--------
+    schedule $ do
+        forkIO $ do
+            rd    <- prsVid <$> fetchHtml
+            vdlst <- search rd <$> getArgs
+            when (length vdlst < 1) $ error "empty list!"
 
     runUi c $ defaultContext {normalAttr = white `on` black, 
                               focusAttr  = black `on` green
