@@ -33,12 +33,6 @@ main = do
 
     -----preprocess fileExist-----
     locdir <- getLocaldir
-    let schg sle = case sle of 
-                SelectionOn _ itm _ -> fex itm >>= \case 
-                                        True  -> setFocusAttribute lst (black `on` red) 
-                                        False -> setFocusAttribute lst (black `on` green)
-                _                   -> return ()
-
     ------generate ui----------
     lui <- centered =<< hFixed 80 lst
     dui <- centered =<< hFixed 30 (dialogWidget dlg)
@@ -93,7 +87,12 @@ main = do
                                 return True
                             _ -> return False)
 
-    lst `onSelectionChange` schg
+    onSelectionChange lst $ \sle -> case sle of
+        SelectionOn _ itm _ -> fex itm >>= \case 
+                True  -> setFocusAttribute lst (black `on` red) 
+                False -> setFocusAttribute lst (black `on` green)
+        _                   -> return ()
+
 
     ------evaluate real list--------
     schedule $ do
