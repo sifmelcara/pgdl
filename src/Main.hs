@@ -55,15 +55,6 @@ main = do
         Just (_, (itm, _)) <- getSelected lst
         playVid itm
                          
-    onKeyPressed lst $ \_ key _ -> case key of
-        KEnter -> do
-            Just (_, (itm, _)) <- getSelected lst
-            fex itm >>= \case 
-                True  -> chgdl
-                False -> playVid itm
-            return True
-        _      -> return False
-
     ifsfg <- newFocusGroup
     onKeyPressed ifsfg $ \_ key _ -> case key of
         KLeft -> chgls >> return True   
@@ -78,7 +69,6 @@ main = do
             chgif
             return True
         _ -> return False
-
 
     schedule $ do
         forkIO $ do
@@ -98,6 +88,15 @@ main = do
                     True  -> setFocusAttribute lst (black `on` red) 
                     False -> setFocusAttribute lst (black `on` green)
                 _                   -> return ()
+
+            onKeyPressed lst $ \_ key _ -> case key of
+                KEnter -> do
+                    Just (_, (itm, _)) <- getSelected lst
+                    fex itm >>= \case 
+                        True  -> chgdl
+                        False -> playVid itm
+                    return True
+                _      -> return False
 
             forkIO $ writeVid vdlst
             return ()
