@@ -25,39 +25,33 @@ import Control.Concurrent
 main = do
     chkcfg
 
+    c <- newCollection
+
     let testv = Video {vidName = "ffff", vidLink = "==++--", vidSize="",vidDate="44"}
-    ------define widgets-----------
-    (dlg, dfcg) <- flip newDialog "File Exists!" =<< plainText "redownload it?"
     lst <- newList 3 
     addToList lst testv =<< (plainText $ beaut testv)
-
-    ------generate ui----------
-    lui <- centered =<< hFixed 80 lst
-    dui <- centered =<< hFixed 30 (dialogWidget dlg)
-
-    -------define focus group-----
     lfg <- newFocusGroup
+    addToFocusGroup lfg lst
+    lui <- centered =<< hFixed 80 lst
+    chgls <- addToCollection c lui lfg
+
+    (dlg, dfcg) <- do
+        wg <- plainText "redownload it?"
+        newDialog wg "File Exists!"
+    dui <- centered =<< hFixed 30 (dialogWidget dlg)
+    chgdl <- addToCollection c dui dfcg
+
     setFocusGroupNextKey dfcg KRight []
     setFocusGroupPrevKey dfcg KLeft  []
-    addToFocusGroup lfg lst
+    dfcg  `onKeyPressed` tryExit
 
-    -------define Collections------
-    c <- newCollection
-    chgls <- addToCollection c lui lfg
-    chgdl <- addToCollection c dui dfcg
-    
-    -------exit when q is pressed-------
-    lfg   `onKeyPressed` (\_ key _ -> if key == KChar 'q' then exitSuccess else return False)
-    dfcg  `onKeyPressed` (\_ key _ -> if key == KChar 'q' then exitSuccess else return False)
-
-    ------define activate process--------
+    lfg   `onKeyPressed` tryExit
                                             
     dlg `onDialogCancel` const exitSuccess
     onDialogAccept dlg $ \_ ->  do
         Just (_, (itm, _)) <- getSelected lst
         playVid itm
                          
-    ---------lst--------
     onKeyPressed lst $ \_ key _ -> case key of
         KEnter -> do
             Just (_, (itm, _)) <- getSelected lst
@@ -68,9 +62,10 @@ main = do
         _      -> return False
 
     ifsfg <- newFocusGroup
-    ifsfg `onKeyPressed` (\_ key _ -> if key == KLeft then chgls >> return True else return False)
-    ifsfg `onKeyPressed` (\_ key _ -> if key == KChar 'q' then exitSuccess else return False)
-
+    onKeyPressed ifsfg $ \_ key _ -> case key of
+        KLeft -> chgls >> return True   
+        _     -> return False
+    ifsfg `onKeyPressed` tryExit
     onKeyPressed lst $ \_ key _ -> case key of
         KRight -> do
             Just (_, (itm, _)) <- getSelected lst
@@ -83,12 +78,10 @@ main = do
 
     onSelectionChange lst $ \sle -> case sle of
         SelectionOn _ itm _ -> fex itm >>= \case 
-                True  -> setFocusAttribute lst (black `on` red) 
-                False -> setFocusAttribute lst (black `on` green)
+            True  -> setFocusAttribute lst (black `on` red) 
+            False -> setFocusAttribute lst (black `on` green)
         _                   -> return ()
 
-
-    ------evaluate real list--------
     schedule $ do
         forkIO $ do
             rd    <- prsVid <$> fetchHtml
@@ -102,11 +95,12 @@ main = do
     runUi c $ defaultContext {normalAttr = white `on` black, 
                               focusAttr  = black `on` green
                              }
-
-fex itm = do
-    --Just (_, (itm, _)) <- getSelected lst
-    locd <- fmap T.unpack getLocaldir
-    doesFileExist $ locd </> (T.unpack . vidName $ itm)
+    where fex itm = do
+            locd <- fmap T.unpack getLocaldir
+            doesFileExist $ locd </> (T.unpack . vidName $ itm)
+          tryExit _ key _ = case key of
+            KChar 'q' -> exitSuccess
+            _         -> return False
 
 crtInfPg :: Video -> T.Text
 crtInfPg vid = T.unlines ["", "",
