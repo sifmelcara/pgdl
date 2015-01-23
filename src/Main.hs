@@ -87,11 +87,16 @@ main = do
     schedule $ do
         forkIO $ do
             rd    <- prsVid <$> fetchHtml
-            newVdlst <- search rd <$> getArgs
-            when (length newVdlst < 1) $ error "empty list!"
+            vdlst <- search rd <$> getArgs
+            when (length vdlst < 1) $ error "empty list!"
+            Just (_, (oldItm, _)) <- getSelected lst
             clearList lst
-            forM_ newVdlst $ \v -> do
+            forM_ vdlst $ \v -> do
                 addToList lst v =<< plainText (beaut v)
+            -- Just ind <- listFindFirst lst oldItm
+            -- setSelected lst ind
+            forkIO $ writeVid vdlst
+            return ()
         return ()
 
     runUi c $ defaultContext {normalAttr = white `on` black, 
