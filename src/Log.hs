@@ -12,6 +12,7 @@ import qualified Data.Text.Encoding as T
 import Data.Binary
 import qualified Data.ByteString.Lazy as B
 import Control.Monad
+import Data.Either
 
 instance Binary T.Text where
     put = put . T.encodeUtf8
@@ -43,11 +44,15 @@ readVid = do
     case fex of
         True -> do
             dat <- B.readFile (hdir </> logname)
-            return $ decode dat
+            let res = decodeOrFail dat
+            case res of
+                Right (_, _, vs) -> return vs
+                _                -> return dlnVid
         False -> do
-            return [Video { vidName = "Downloading..."
-                         , vidLink = ""
-                         , vidDate = ""
-                         , vidSize = ""
-                         }
+            return dlnVid
+    where dlnVid = [Video { vidName = "Downloading..."
+                          , vidLink = ""
+                          , vidDate = ""
+                          , vidSize = ""
+                          }
                    ]
