@@ -93,8 +93,9 @@ main = do
             clearList lst
             forM_ vdlst $ \v -> do
                 addToList lst v =<< plainText (beaut v)
-            -- Just ind <- listFindFirst lst oldItm
-            -- setSelected lst ind
+            listFindFirst lst oldItm >>= \case
+                Just ind -> setSelected lst ind
+                Nothing  -> return ()
             forkIO $ writeVid vdlst
             return ()
         return ()

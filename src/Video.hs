@@ -10,4 +10,7 @@ data Video = Video { vidName :: T.Text
                    , vidDate :: T.Text
                    }
 
+instance Eq Video where
+    x == y = vidName x == vidName y
+    
 
