@@ -37,5 +37,16 @@ writeVid vs = do
 readVid :: IO [Video]
 readVid = do
     hdir <- getHomeDirectory
-    dat <- B.readFile (hdir </> logname)
-    return $ decode dat
+    let absdir = hdir </> logname
+    fex <- doesFileExist absdir
+    case fex of
+        False -> do
+            dat <- B.readFile (hdir </> logname)
+            return $ decode dat
+        True -> do
+            return [Video { vidName = "Downloading..."
+                         , vidLink = ""
+                         , vidDate = ""
+                         , vidSize = ""
+                         }
+                   ]
