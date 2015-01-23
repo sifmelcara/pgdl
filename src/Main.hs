@@ -29,7 +29,8 @@ main = do
     c <- newCollection
 
     lst <- newList 3 
-    diskV <- readVid
+    diskrd <- readVid
+    diskV  <- search diskrd <$> getArgs
     forM_ diskV $ \v -> do
         addToList lst v =<< (plainText $ beaut v)
     lfg <- newFocusGroup
@@ -78,11 +79,6 @@ main = do
             return True
         _ -> return False
 
-    onSelectionChange lst $ \sle -> case sle of
-        SelectionOn _ itm _ -> fex itm >>= \case 
-            True  -> setFocusAttribute lst (black `on` red) 
-            False -> setFocusAttribute lst (black `on` green)
-        _                   -> return ()
 
     schedule $ do
         forkIO $ do
@@ -96,12 +92,19 @@ main = do
             listFindFirst lst oldItm >>= \case
                 Just ind -> setSelected lst ind
                 Nothing  -> return ()
+
+            onSelectionChange lst $ \sle -> case sle of
+                SelectionOn _ itm _ -> fex itm >>= \case 
+                    True  -> setFocusAttribute lst (black `on` red) 
+                    False -> setFocusAttribute lst (black `on` green)
+                _                   -> return ()
+
             forkIO $ writeVid vdlst
             return ()
         return ()
 
     runUi c $ defaultContext {normalAttr = white `on` black, 
-                              focusAttr  = black `on` green
+                              focusAttr  = black `on` blue
                              }
     where fex itm = do
             locd <- fmap T.unpack getLocaldir
