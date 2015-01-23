@@ -40,10 +40,10 @@ readVid = do
     let absdir = hdir </> logname
     fex <- doesFileExist absdir
     case fex of
-        False -> do
+        True -> do
             dat <- B.readFile (hdir </> logname)
             return $ decode dat
-        True -> do
+        False -> do
             return [Video { vidName = "Downloading..."
                          , vidLink = ""
                          , vidDate = ""

@@ -9,6 +9,7 @@ import Search
 import Getconfig
 import Chkcfg
 import Video
+import Log
 
 import Graphics.Vty.Widgets.All
 import qualified Data.Text as T
@@ -27,9 +28,10 @@ main = do
 
     c <- newCollection
 
-    let testv = Video {vidName = "ffff", vidLink = "==++--", vidSize="",vidDate="44"}
     lst <- newList 3 
-    addToList lst testv =<< (plainText $ beaut testv)
+    diskV <- readVid
+    forM_ diskV $ \v -> do
+        addToList lst v =<< (plainText $ beaut v)
     lfg <- newFocusGroup
     addToFocusGroup lfg lst
     lui <- centered =<< hFixed 80 lst
