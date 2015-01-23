@@ -86,7 +86,7 @@ main = do
             onSelectionChange lst $ \sle -> case sle of
                 SelectionOn _ itm _ -> fex itm >>= \case 
                     True  -> setFocusAttribute lst (black `on` red) 
-                    False -> setFocusAttribute lst (black `on` green)
+                    False -> setFocusAttribute lst (black `on` cyan)
                 _                   -> return ()
 
             onKeyPressed lst $ \_ key _ -> case key of
