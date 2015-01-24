@@ -1,6 +1,6 @@
 
 name:                pgdl
-version:             6.2
+version:             6.3
 license:             PublicDomain
 license-file:        LICENSE
 author:              sifmelcara
@@ -19,7 +19,7 @@ source-repository head
 executable pgdl
   hs-source-dirs:      src
   main-is:             Main.hs
-  -- other-modules:       
+  other-modules:       Beaut, Chkcfg, FetchHtml, Getconfig, Log, PlayVid, PrsVid, Search, Video 
   -- other-extensions:    
   build-depends:       base <= 5, split, process, 
                        directory, http-conduit, bytestring,
