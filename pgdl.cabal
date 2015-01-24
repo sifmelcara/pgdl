@@ -4,18 +4,24 @@ version:             6.2
 license:             PublicDomain
 license-file:        LICENSE
 author:              sifmelcara
--- copyright:           
+maintainer:          sifmelcara
 category:            Network
 build-type:          Simple
 extra-source-files:  README
 cabal-version:       >=1.10
+description:         a terminal user interface program that downloads a video from html and plays immediately.
+synopsis:            pgdl
+
+source-repository head
+  type:     git
+  location: https://github.com/sifmelcara/pgdl
 
 executable pgdl
   hs-source-dirs:      src
   main-is:             Main.hs
   -- other-modules:       
   -- other-extensions:    
-  build-depends:       base, split, process, 
+  build-depends:       base <= 5, split, process, 
                        directory, http-conduit, bytestring,
                        transformers, resourcet, tagsoup, 
                        vty, text, vty-ui,
