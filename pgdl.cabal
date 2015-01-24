@@ -21,7 +21,7 @@ executable pgdl
   main-is:             Main.hs
   other-modules:       Beaut, Chkcfg, FetchHtml, Getconfig, Log, PlayVid, PrsVid, Search, Video 
   -- other-extensions:    
-  build-depends:       base >= 4 , split, process, 
+  build-depends:       base == 4.* , split, process, 
                        directory, http-conduit >= 2.0.0, bytestring,
                        transformers, resourcet, tagsoup, 
                        vty, text, vty-ui >= 1.8,
