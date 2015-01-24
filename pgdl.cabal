@@ -19,7 +19,7 @@ executable pgdl
                        directory, http-conduit, bytestring,
                        transformers, resourcet, tagsoup, 
                        vty, text, vty-ui,
-                       text-icu, array, configurator,
+                       configurator,
                        filepath, binary
   ghc-options:         -threaded -O2
   -- hs-source-dirs:      
