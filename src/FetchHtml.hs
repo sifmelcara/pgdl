@@ -13,7 +13,6 @@ import Data.Text.Encoding
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Resource (runResourceT)
 import Data.Maybe
-import Data.Text.ICU.Convert
 
 genReq :: IO Request
 genReq = do
@@ -29,7 +28,8 @@ fetchHtml = do
     runResourceT $ do
         mgr <- liftIO $ newManager conduitManagerSettings
         res <- httpLbs rq mgr
-        conv <- liftIO $ open "utf-8" Nothing
-        liftIO . return . toUnicode conv . LC.toStrict $ responseBody res
+        -- conv <- liftIO $ open "utf-8" Nothing
+        -- liftIO . return . toUnicode conv . LC.toStrict $ responseBody res
+        return . decodeUtf8 . LC.toStrict $ responseBody res
 
 
