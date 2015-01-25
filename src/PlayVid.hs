@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP #-}
 
 module PlayVid where
 
@@ -29,7 +30,11 @@ playVid vid = do
     runCommand $ "nohup curl " ++ addq url ++ " -o " ++ addq localloc ++ "&>/dev/null &"
     let checkFile = doesFileExist localloc >>= \ready -> unless ready checkFile
     checkFile
+#if __MACOSX__
+    runCommand $ "open " ++ addq localloc ++ " -a vlc"
+#else
     runCommand $ "nohup vlc -f " ++ addq localloc ++ " &>/dev/null &"
+#endif
     exitSuccess
   where vn = T.unpack . vidName $ vid
         vu = T.unpack . vidLink $ vid
