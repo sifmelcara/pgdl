@@ -9,8 +9,13 @@ category:            Network
 build-type:          Simple
 extra-source-files:  README
 cabal-version:       >=1.10
-description:         a terminal user interface program that downloads a video from html and plays immediately.
-synopsis:            pgdl
+description:         a terminal user interface program that downloads a video from html and plays immediately.(Calling vlc)
+                     .
+                     Only for Linux and MACOSX.
+                     .
+                     It parses a remote html file which has link tag & filename tag in the same line.
+                     .
+synopsis:            pgdownloader
 
 source-repository head
   type:     git
