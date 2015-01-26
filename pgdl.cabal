@@ -7,7 +7,7 @@ author:              sifmelcara
 maintainer:          sifmelcara
 category:            Network
 build-type:          Simple
-extra-source-files:  README
+extra-source-files:  README.md
 cabal-version:       >=1.10
 description:         a terminal user interface program that downloads a video from html and plays immediately.(Calling vlc)
                      .
