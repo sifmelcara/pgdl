@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE CPP #-}
 
 module PlayVid where
 
@@ -13,6 +12,7 @@ import qualified Data.Text as T
 import System.IO
 import Video
 import System.Exit
+import Distribution.System
 
 playVid :: Video -> IO ()
 playVid vid = do
@@ -30,11 +30,10 @@ playVid vid = do
     runCommand $ "nohup curl " ++ addq url ++ " -o " ++ addq localloc ++ "&>/dev/null &"
     let checkFile = doesFileExist localloc >>= \ready -> unless ready checkFile
     checkFile
-#ifdef __MACOSX_
-    runCommand $ "open " ++ addq localloc ++ " -a vlc"
-#else
-    runCommand $ "nohup vlc -f " ++ addq localloc ++ " &>/dev/null &"
-#endif
+    case buildOS of
+        OSX   -> runCommand $ "open " ++ addq localloc ++ " -a vlc"
+        Linux -> runCommand $ "nohup vlc -f " ++ addq localloc ++ " &>/dev/null &"
+        _     -> error "OS unsupported!"
     exitSuccess
   where vn = T.unpack . vidName $ vid
         vu = T.unpack . vidLink $ vid
