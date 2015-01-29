@@ -2,8 +2,8 @@
 module Chkcfg where
 
 import System.Directory
-import Control.Monad
 import System.FilePath
+import Control.Monad
 
 chkcfg = do
     flp <- fmap (</> ".pgdl") getHomeDirectory

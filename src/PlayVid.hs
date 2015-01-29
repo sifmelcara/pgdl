@@ -3,16 +3,16 @@
 module PlayVid where
 
 import Getconfig
+import Video
 
+import Control.Monad
+import Distribution.System
 import System.Process
 import System.Directory
 import System.FilePath.Posix
-import Control.Monad
-import qualified Data.Text as T
 import System.IO
-import Video
 import System.Exit
-import Distribution.System
+import qualified Data.Text as T
 
 playVid :: Video -> IO ()
 playVid vid = do

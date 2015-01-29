@@ -4,15 +4,16 @@ module FetchHtml where
   
 import Getconfig
 
+import Control.Monad.IO.Class 
+import Control.Monad.Trans.Resource 
+import Data.Text.Encoding
+import Data.Maybe
 import Network.HTTP.Conduit
+
 import qualified Data.ByteString.Char8 as C
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy.Char8 as LC
 import qualified Data.ByteString as B
-import Data.Text.Encoding
-import Control.Monad.IO.Class (liftIO)
-import Control.Monad.Trans.Resource (runResourceT)
-import Data.Maybe
 
 genReq :: IO Request
 genReq = do

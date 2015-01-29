@@ -2,11 +2,12 @@
 
 module PrsVid where
 
-import Text.HTML.TagSoup
+import Video
+
 import Data.List
 import Data.Function
+import Text.HTML.TagSoup
 import qualified Data.Text as T
-import Video
 
 prsVid :: T.Text -> [Video]
 prsVid = map (genVidInf . filter (not. T.null) . map getInf) .

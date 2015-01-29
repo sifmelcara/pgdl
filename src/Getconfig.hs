@@ -2,10 +2,11 @@
 
 module Getconfig where
 
-import qualified Data.Text as T
-import qualified Data.Configurator as C
 import Control.Monad
 import Data.Maybe
+
+import qualified Data.Text as T
+import qualified Data.Configurator as C
 
 getConfig :: IO (T.Text, T.Text, T.Text, T.Text)
 getConfig = do

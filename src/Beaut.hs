@@ -2,9 +2,10 @@
 
 module Beaut where
 
+import Video
+
 import Data.List
 import qualified Data.Text as T
-import Video
 
 beaut :: Video -> T.Text
 beaut vid

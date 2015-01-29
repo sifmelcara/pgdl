@@ -3,16 +3,18 @@
 module Log where
 
 import Video
+
+import Control.Applicative 
+import Control.Monad
 import Data.Binary
+import Data.Either
 import System.Directory
 import System.FilePath
-import Control.Applicative ((<$>))
+import Data.Binary
+
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
-import Data.Binary
 import qualified Data.ByteString.Lazy as B
-import Control.Monad
-import Data.Either
 
 instance Binary T.Text where
     put = put . T.encodeUtf8

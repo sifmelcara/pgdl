@@ -2,9 +2,11 @@
 
 module Search where
 
-import qualified Data.Text as T
-import Data.Function
 import Video
+
+import Data.Function
+
+import qualified Data.Text as T
 
 search :: [Video] -> [String] -> [Video]
 search vlst param = foldl (\vs ps -> filter (targ ps . vidName) vs) vlst pt

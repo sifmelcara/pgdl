@@ -11,17 +11,18 @@ import Chkcfg
 import Video
 import Log
 
-import Graphics.Vty.Widgets.All
-import qualified Data.Text as T
-import System.FilePath
-import System.Exit
-import Graphics.Vty
-import System.Environment
-import System.Directory
 import Control.Monad
 import Control.Applicative
+import System.Directory
+import System.Exit
+import System.Environment
+import System.FilePath
 import System.IO
 import Control.Concurrent
+
+import Graphics.Vty
+import Graphics.Vty.Widgets.All
+import qualified Data.Text as T
 
 main = do
     chkcfg
