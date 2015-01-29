@@ -103,7 +103,7 @@ main = do
         return ()
 
     runUi c $ defaultContext {normalAttr = white `on` black, 
-                              focusAttr  = black `on` cyan
+                              focusAttr  = black `on` blue
                              }
     where fex itm = do
             locd <- fmap T.unpack getLocaldir
