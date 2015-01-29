@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE LambdaCase #-}
 
 module Log where
 
@@ -10,7 +11,6 @@ import Data.Binary
 import Data.Either
 import System.Directory
 import System.FilePath
-import Data.Binary
 
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
@@ -21,15 +21,13 @@ instance Binary T.Text where
     get = T.decodeUtf8 <$> get
 
 instance Binary Video where
-    put vid = do
-        put $ vidName vid
-    get = do
-        name <- get
+    put vid = put $ vidName vid
+    get = get >>=  (\name ->
         return Video { vidName = name
                      , vidLink = ""
                      , vidDate = ""
                      , vidSize = ""
-                     }
+                     })
 
 logname = ".pgdl.cache"
 
@@ -42,19 +40,18 @@ readVid :: IO [Video]
 readVid = do
     hdir <- getHomeDirectory
     let absdir = hdir </> logname
-    fex <- doesFileExist absdir
-    case fex of
+    doesFileExist absdir >>= \case
         True -> do
             dat <- B.readFile (hdir </> logname)
             let res = decodeOrFail dat
             case res of
                 Right (_, _, vs) -> return vs
                 _                -> return dlnVid
-        False -> do
-            return dlnVid
+        False -> return dlnVid
     where dlnVid = [Video { vidName = "Downloading..."
                           , vidLink = ""
                           , vidDate = ""
                           , vidSize = ""
                           }
                    ]
+
