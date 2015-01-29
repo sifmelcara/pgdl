@@ -32,8 +32,7 @@ main = do
     lst <- newList 3 
     diskrd <- readVid
     diskV  <- search diskrd <$> getArgs
-    forM_ diskV $ \v -> do
-        addToList lst v =<< (plainText $ beaut v)
+    forM_ diskV $ \v -> addToList lst v =<< plainText (beaut v)
     lfg <- newFocusGroup
     addToFocusGroup lfg lst
     lui <- centered =<< hFixed 80 lst
@@ -64,10 +63,9 @@ main = do
     onKeyPressed lst $ \_ key _ -> case key of
         KRight -> do
             Just (_, (itm, _)) <- getSelected lst
-            inf <- centered =<< (plainText $ crtInfPg itm)
+            inf <- centered =<< plainText (crtInfPg itm)
             addToFocusGroup ifsfg inf
-            chgif <- addToCollection c inf ifsfg
-            chgif
+            join $ addToCollection c inf ifsfg
             return True
         _ -> return False
 
@@ -78,8 +76,7 @@ main = do
             when (length vdlst < 1) $ error "empty list!"
             Just (_, (oldItm, _)) <- getSelected lst
             clearList lst
-            forM_ vdlst $ \v -> do
-                addToList lst v =<< plainText (beaut v)
+            forM_ vdlst $ \v -> addToList lst v =<< plainText (beaut v)
             listFindFirst lst oldItm >>= \case
                 Just ind -> setSelected lst ind
                 Nothing  -> return ()
