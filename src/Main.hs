@@ -11,14 +11,14 @@ import Chkcfg
 import Video
 import Log
 
-import Control.Monad
 import Control.Applicative
+import Control.Concurrent
+import Control.Monad
 import System.Directory
 import System.Exit
 import System.Environment
 import System.FilePath
 import System.IO
-import Control.Concurrent
 
 import Graphics.Vty
 import Graphics.Vty.Widgets.All
