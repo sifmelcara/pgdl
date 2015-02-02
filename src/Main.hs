@@ -6,10 +6,10 @@ import PrsVid
 import Beaut
 import PlayVid
 import Search
-import Getconfig
 import Chkcfg
 import Video
 import Log
+import TestExist
 
 import Control.Applicative
 import Control.Concurrent
@@ -103,9 +103,7 @@ main = do
     runUi c $ defaultContext {normalAttr = white `on` black, 
                               focusAttr  = black `on` blue
                              }
-    where fex itm = do
-            locd <- fmap T.unpack getLocaldir
-            doesFileExist $ locd </> (T.unpack . vidName $ itm)
+    where fex itm = downloaded $ vidName itm
           tryExit _ key _ = case key of
             KChar 'q' -> exitSuccess
             _         -> return False
