@@ -35,8 +35,16 @@ main = do
     forM_ diskV $ \v -> addToList lst v =<< plainText (beaut v)
     lfg <- newFocusGroup
     addToFocusGroup lfg lst
-    lui <- centered =<< hFixed 80 lst
-    chgls <- addToCollection c lui lfg
+
+    statBar <- plainText ""
+
+    ui <- centered =<< hFixed 80 =<< vBox lst statBar
+    chgls <- addToCollection c ui lfg
+
+    onSelectionChange lst $ \sle -> case sle of
+        SelectionOn _ itm _ -> setText statBar $ genStat itm
+        _ -> return ()
+        
 
     (dlg, dfcg) <- do
         wg <- plainText "redownload it?"
@@ -107,6 +115,8 @@ main = do
           tryExit _ key _ = case key of
             KChar 'q' -> exitSuccess
             _         -> return False
+          genStat itm = vidName itm
+
 
 crtInfPg :: Video -> T.Text
 crtInfPg vid = T.unlines ["", "",
