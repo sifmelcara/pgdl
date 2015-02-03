@@ -38,6 +38,7 @@ main = do
     addToFocusGroup lfg lst
 
     statBar <- plainText ""
+    setNormalAttribute statBar (black `on` green)
 
     ui <- centered =<< hFixed 80 =<< vBox lst statBar
     chgls <- addToCollection c ui lfg
