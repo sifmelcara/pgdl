@@ -10,6 +10,7 @@ import Chkcfg
 import Video
 import Log
 import TestExist
+import GenStat
 
 import Control.Applicative
 import Control.Concurrent
@@ -41,10 +42,6 @@ main = do
     ui <- centered =<< hFixed 80 =<< vBox lst statBar
     chgls <- addToCollection c ui lfg
 
-    onSelectionChange lst $ \sle -> case sle of
-        SelectionOn _ itm _ -> setText statBar $ genStat itm
-        _ -> return ()
-        
 
     (dlg, dfcg) <- do
         wg <- plainText "redownload it?"
@@ -95,6 +92,11 @@ main = do
                     False -> setFocusAttribute lst (black `on` cyan)
                 _                   -> return ()
 
+            onSelectionChange lst $ \sle -> case sle of
+                SelectionOn _ itm _ -> setText statBar =<< genStat itm
+                _ -> return ()
+        
+
             onKeyPressed lst $ \_ key _ -> case key of
                 KEnter -> do
                     Just (_, (itm, _)) <- getSelected lst
@@ -115,7 +117,6 @@ main = do
           tryExit _ key _ = case key of
             KChar 'q' -> exitSuccess
             _         -> return False
-          genStat itm = vidName itm
 
 
 crtInfPg :: Video -> T.Text
