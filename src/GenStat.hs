@@ -9,7 +9,7 @@ import TestExist
 import qualified Data.Text as T
 
 genStat :: Video -> IO T.Text
-genStat Video name _ size date = do
+genStat (Video name _ size date) = do
     st <- toStr $ downloaded name
     return $ (spc 3) `app` date `app`
              (spc 3) `app` size `app`

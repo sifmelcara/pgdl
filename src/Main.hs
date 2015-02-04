@@ -107,7 +107,9 @@ main = do
                     return True
                 _      -> return False
 
-            forkIO $ writeVid vdlst
+            (null <$> getArgs) >>= \case
+                False -> void . forkIO $ writeVid vdlst
+                _     -> return ()
             return ()
         return ()
 
