@@ -22,12 +22,7 @@ instance Binary T.Text where
 
 instance Binary Video where
     put vid = put $ vidName vid
-    get = get >>=  (\name ->
-        return Video { vidName = name
-                     , vidLink = ""
-                     , vidDate = ""
-                     , vidSize = ""
-                     })
+    get = get >>= \name -> return $ Video name "" "" ""
 
 logname = ".pgdl.cache"
 
@@ -48,10 +43,5 @@ readVid = do
                 Right (_, _, vs) -> return vs
                 _                -> return dlnVid
         False -> return dlnVid
-    where dlnVid = [Video { vidName = "Downloading..."
-                          , vidLink = ""
-                          , vidDate = ""
-                          , vidSize = ""
-                          }
-                   ]
+    where dlnVid = [Video "Downloading..." "" "" ""]
 
