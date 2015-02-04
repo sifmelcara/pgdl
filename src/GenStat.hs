@@ -11,10 +11,11 @@ import qualified Data.Text as T
 genStat :: Video -> IO T.Text
 genStat (Video name _ size date) = do
     st <- toStr $ downloaded name
-    return $ (spc 3) `app` date `app`
-             (spc 3) `app` size `app`
-             (spc 20) `app` st `app`
-             (spc 30)
+    return $ T.concat [ spc 3 , date
+                      , spc 3 , size
+                      , spc 20, st
+                      , spc 30
+                      ]
     where app = T.append
           spc :: Int -> T.Text
           spc i = T.replicate i " "
