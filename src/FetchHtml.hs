@@ -18,7 +18,9 @@ genReq = do
     username <- getUsername
     password <- getPassword
     servpath <- getServpath
-    return $ applyBasicAuth (tob username) (tob password) . fromJust . parseUrl $ "http://" ++ T.unpack servpath
+    case username of
+        "" -> return $ fromJust . parseUrl $ "http://" ++ T.unpack servpath
+        _  -> return $ applyBasicAuth (tob username) (tob password) . fromJust . parseUrl $ "http://" ++ T.unpack servpath
     where tob = encodeUtf8
 
 fetchHtml :: IO T.Text
