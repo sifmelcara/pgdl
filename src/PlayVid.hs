@@ -26,8 +26,11 @@ playVid vid = do
     when fex $ removeFile localloc
 
     let purepath = reverse . dropWhile (/= '/') . reverse $ servpath
-    let url = "http://" ++ username ++ ":" ++ password ++ "@" ++ purepath ++ vu
-    runCommand $ "nohup curl " ++ addq url ++ " -o " ++ addq localloc ++ "&>/dev/null &"
+    case username of
+        ""  -> let url = "http://" ++ username ++ ":" ++ password ++ "@" ++ purepath ++ vu
+               in runCommand $ "nohup curl " ++ addq url ++ " -o " ++ addq localloc ++ "&>/dev/null &"
+        _   -> let url = "http://" ++                                       purepath ++ vu 
+               in runCommand $ "nohup curl " ++ addq url ++ " -o " ++ addq localloc ++ "&>/dev/null &"
     let checkFile = doesFileExist localloc >>= \ready -> unless ready checkFile
     checkFile
     case buildOS of
