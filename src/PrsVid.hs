@@ -19,7 +19,9 @@ prsVid = map (genVid . filter (not . T.null) . map pullText) . filter isVidLn . 
             | isTagOpen tg = fromAttrib "href" tg
             | isTagText tg = fromTagText tg
             | otherwise = ""
-          genVid [lnk, nm, dtd, dtt, sz] = Video {vidLink = lnk, vidName = nm, vidDate = dtd `T.append` dtt, vidSize = sz}
+          genVid [lnk, nm, tx] = Video {vidLink = lnk, vidName = nm, vidDate = dt, vidSize = sz}
+            where dt = T.concat . take 2 $ T.words tx
+                  sz = last   $ T.words tx
           genVid _ = Video "Parse Fail" "" "" ""
           fmts = [".mp4", ".avi", ".mkv"]
 
