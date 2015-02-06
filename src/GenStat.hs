@@ -12,7 +12,7 @@ genStat :: Video -> IO T.Text
 genStat (Video name _ size date) = do
     st <- toStr $ downloaded name
     return $ T.concat [ spc 3 , date
-                      , spc 3 , size
+                      , spc 5 , size
                       , spc 20, st
                       , spc 30
                       ]
