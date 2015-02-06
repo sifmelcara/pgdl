@@ -21,7 +21,7 @@ prsVid = map (genVid . filter (not . T.null) . map pullText) . filter isVidLn . 
             | isTagText tg = fromTagText tg
             | otherwise = ""
           genVid [lnk, _, tx] = Video {vidLink = lnk, vidName = nm, vidDate = dt, vidSize = sz}
-            where dt = T.concat . take 2 $ T.words tx
+            where dt = T.intercalate " " . take 2 $ T.words tx
                   sz = T.pack . hsz . read . last . words . T.unpack $ tx
                   hsz :: Int -> String
                   hsz i = show (i `div` (1024*1024)) ++ "M"
