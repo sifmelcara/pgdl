@@ -17,7 +17,7 @@ prsVid = sortVid .
          filter isVidLn . map parseTags . T.lines
     where isVidLn = any isVidLnk
           isVidLnk tg
-            | isTagOpen tg = any (`T.isSuffixOf` (fromAttrib "href" tg)) fmts
+            | isTagOpen tg = any (`T.isSuffixOf` fromAttrib "href" tg) fmts
             | otherwise = False
           pullText tg
             | isTagOpen tg = fromAttrib "href" tg

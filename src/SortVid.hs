@@ -12,9 +12,9 @@ sortVid :: [Video] -> [Video]
 sortVid = sortBy (cmpDate `on` vidDate)
 
 cmpDate :: T.Text -> T.Text -> Ordering
-cmpDate = (flip compare) `on` prs
+cmpDate = flip compare `on` prs
     where prs tx = [year, tranMon mon, day, time] 
-            where [day, mon, year, time] = concat . map (T.splitOn "-") . T.splitOn " " $ tx
+            where [day, mon, year, time] = concat . map (T.splitOn "-") . (T.splitOn " ") $ tx
           
 tranMon :: T.Text -> T.Text
 tranMon m = case m of
