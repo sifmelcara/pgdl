@@ -22,7 +22,9 @@ prsVid = map (genVid . filter (not . T.null) . map pullText) . filter isVidLn . 
             | otherwise = ""
           genVid [lnk, _, tx] = Video {vidLink = lnk, vidName = nm, vidDate = dt, vidSize = sz}
             where dt = T.concat . take 2 $ T.words tx
-                  sz = last   $ T.words tx
+                  sz = T.pack . hsz . read . last . words . T.unpack $ tx
+                  hsz :: Int -> String
+                  hsz i = show (i `div` (1024*1024)) ++ "M"
                   nm = genName lnk
           genVid _ = Video "Parse Fail" "" "" ""
           fmts = [".mp4", ".avi", ".mkv"]
