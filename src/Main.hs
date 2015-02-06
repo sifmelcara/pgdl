@@ -108,8 +108,8 @@ main = do
                 _      -> return False
 
             (null <$> getArgs) >>= \case
-                False -> void . forkIO $ writeVid vdlst
-                _     -> return ()
+                True -> void . forkIO $ writeVid vdlst
+                _    -> return ()
             return ()
         return ()
 
