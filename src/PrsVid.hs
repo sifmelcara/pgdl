@@ -10,7 +10,22 @@ import Text.HTML.TagSoup
 import qualified Data.Text as T
 
 prsVid :: T.Text -> [Video]
-prsVid = map (genVidInf . filter (not. T.null) . map getInf) .
+prsVid = map (genVid . filter (not . T.null) . map pullText) . filter isVidLn . map parseTags . T.lines
+    where isVidLn = any isVidLnk
+          isVidLnk tg
+            | isTagOpen tg = any (`T.isSuffixOf` (fromAttrib "href" tg)) fmts
+            | otherwise = False
+          pullText tg
+            | isTagOpen tg = fromAttrib "href" tg
+            | isTagText tg = fromTagText tg
+            | otherwise = ""
+          genVid [lnk, nm, dtd, dtt, sz] = Video {vidLink = lnk, vidName = nm, vidDate = dtd `T.append` dtt, vidSize = sz}
+          genVid _ = Video "Parse Fail" "" "" ""
+          fmts = [".mp4", ".avi", ".mkv"]
+
+
+{-
+         map (genVidInf . filter (not. T.null) . map getInf) .
          filter isVideoLine . 
          map parseTags . T.lines
     where isVideoLine = any isNameTag
@@ -20,22 +35,18 @@ prsVid = map (genVidInf . filter (not. T.null) . map getInf) .
           isLinkTag tg
             | isTagOpen tg = not. T.null $ fromAttrib "href" tg
             | otherwise = False
-          isSizeTag tg
-            | isTagText tg = any (`T.isSuffixOf` fromTagText tg) ["K", "M", "G"]
-            | otherwise = False
-          isDateTag tg
+          isDtSzTag tg
             | isTagText tg = all (`T.isInfixOf` fromTagText tg)  ["-", ":"]
             | otherwise = False
           getInf tg
             | isNameTag tg = fromTagText tg
             | isLinkTag tg = fromAttrib "href" tg
-            | isSizeTag tg = fromTagText tg
-            | isDateTag tg = fromTagText tg
+            | isDtSzTag tg = $ fromTagText tg
             | otherwise = ""
           genVidInf [lnk, nm, dt, sz] = Video {vidLink = lnk, vidName = nm, vidDate = dt, vidSize = sz}  
-          getVidInf _ = Video {vidLink = T.empty, vidName = "parse error", vidDate = "", vidSize = ""}
+          genVidInf _ = Video {vidLink = T.empty, vidName = "parse error", vidDate = "", vidSize = ""}
           vdfmt = [".avi", ".mp4", ".mkv"]
 
 
 
-
+-}
