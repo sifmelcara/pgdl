@@ -4,6 +4,7 @@ module PrsVid where
 
 import Video
 import GenName
+import SortVid
 
 import Data.List
 import Data.Function
@@ -11,7 +12,9 @@ import Text.HTML.TagSoup
 import qualified Data.Text as T
 
 prsVid :: T.Text -> [Video]
-prsVid = map (genVid . filter (not . T.null) . map pullText) . filter isVidLn . map parseTags . T.lines
+prsVid = sortVid .
+         map (genVid . filter (not . T.null) . map pullText) .
+         filter isVidLn . map parseTags . T.lines
     where isVidLn = any isVidLnk
           isVidLnk tg
             | isTagOpen tg = any (`T.isSuffixOf` (fromAttrib "href" tg)) fmts
