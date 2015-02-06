@@ -3,6 +3,7 @@
 module PrsVid where
 
 import Video
+import GenName
 
 import Data.List
 import Data.Function
@@ -19,9 +20,10 @@ prsVid = map (genVid . filter (not . T.null) . map pullText) . filter isVidLn . 
             | isTagOpen tg = fromAttrib "href" tg
             | isTagText tg = fromTagText tg
             | otherwise = ""
-          genVid [lnk, nm, tx] = Video {vidLink = lnk, vidName = nm, vidDate = dt, vidSize = sz}
+          genVid [lnk, _, tx] = Video {vidLink = lnk, vidName = nm, vidDate = dt, vidSize = sz}
             where dt = T.concat . take 2 $ T.words tx
                   sz = last   $ T.words tx
+                  nm = genName lnk
           genVid _ = Video "Parse Fail" "" "" ""
           fmts = [".mp4", ".avi", ".mkv"]
 
