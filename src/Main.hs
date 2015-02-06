@@ -37,7 +37,7 @@ main = do
     lfg <- newFocusGroup
     addToFocusGroup lfg lst
 
-    statBar <- plainText $ "   Waiting for data..." `T.append` T.replicate 99 " "
+    statBar <- plainText waitingBar
     setNormalAttribute statBar (black `on` green)
 
     ui <- centered =<< hFixed 80 =<< vBox lst statBar

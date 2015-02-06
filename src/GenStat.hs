@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE LambdaCase #-}
 
-module GenStat (genStat) where
+module GenStat (genStat, waitingBar) where
 
 import Video
 import TestExist
@@ -19,6 +19,8 @@ genStat (Video name _ size date) = do
     where app = T.append
           spc :: Int -> T.Text
           spc i = T.replicate i " "
+
+waitingBar = "   Waiting for data..." `T.append` T.replicate 99 " "
 
 toStr :: IO Bool -> IO T.Text
 toStr b = b >>= \case
