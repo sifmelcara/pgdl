@@ -1,7 +1,9 @@
 # pgdl
-a terminal user interface program that downloads a video from html and plays immediately.(Calling vlc)
 
-Only for Linux and MACOSX.
+a terminal user interface program that downloads a video from html and call vlc to play it immediately.
 
-It parses a remote html file which has link tag & filename tag in the same line.
+Client: Only for Linux and MACOSX.
+Server: Only for nginx's file download page.
+    
+The program will sort the files by date while the files in nginx's download page just show in file names' order.
 
