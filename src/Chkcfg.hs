@@ -13,16 +13,16 @@ chkcfg = do
               error "please config file at ~/.pgdl first!"
 
 defcfg = unlines [  "",
-                    "# example:",
-                    "# username = \"jack\"",
-                    "# password = \"mypassw\"",
-                    "# servpath = \"example.org/videodir/?C=M;O=D\"",
-                    "# localdir = \"/home/jack/Downloads/\"", 
+                    "# example: ",
+                    "# username = \"jack\" ",
+                    "# password = \"mypassw\" ",
+                    "# servpath = \"example.org/videodir/\" ",
+                    "# localdir = \"/home/jack/Downloads/\" ", 
                     "",
-                    "username = ",
-                    "password = ",
-                    "servpath = ",
-                    "localdir = ",
+                    "username = \"\"",
+                    "password = \"\"",
+                    "servpath = \"\"",
+                    "localdir = \"\"",
                     ""
                  ]
 
