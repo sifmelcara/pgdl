@@ -30,7 +30,7 @@ executable pgdl
                        TestExist, GenName, SortVid, CrtInf
   build-depends:       base == 4.* , process, 
                        directory, bytestring,
-                       tagsoup, 
+                       tagsoup, network-uri, 
                        vty, text, vty-ui >= 1.8,
                        configurator >= 0.3.0.0, HTTP,
                        filepath, binary >= 0.7.0.0, Cabal
