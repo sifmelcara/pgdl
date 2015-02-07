@@ -13,6 +13,6 @@ import qualified Data.Text as T
 downloaded :: T.Text -> IO Bool
 downloaded t = do
     lcd <- getLocaldir
-    doesFileExist $ (combine `on` T.unpack) lcd t
+    doesFileExist $ lcd </> (T.unpack t)
 
 
