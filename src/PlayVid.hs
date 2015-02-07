@@ -16,10 +16,10 @@ import qualified Data.Text as T
 
 playVid :: Video -> IO ()
 playVid vid = do
-    username <- fmap T.unpack getUsername
-    password <- fmap T.unpack getPassword
-    servpath <- fmap T.unpack getServpath
-    localdir <- fmap T.unpack getLocaldir
+    username <- getUsername
+    password <- getPassword
+    servpath <- getServpath
+    localdir <- getLocaldir
 
     let localloc = localdir </> vn
     fex <- doesFileExist localdir
