@@ -8,7 +8,7 @@ import Data.Maybe
 import qualified Data.Text as T
 import qualified Data.Configurator as C
 
-getConfig :: IO (T.Text, T.Text, T.Text, T.Text)
+getConfig :: IO (String, String, String, String)
 getConfig = do
     config <- C.load [C.Required "$(HOME)/.pgdl"]
     username <- C.lookup config "username"
