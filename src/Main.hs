@@ -11,6 +11,7 @@ import Video
 import Log
 import TestExist
 import GenStat
+import CrtInf
 
 import Control.Applicative
 import Control.Concurrent
@@ -121,15 +122,5 @@ main = do
             KChar 'q' -> exitSuccess
             _         -> return False
 
-
-crtInfPg :: Video -> T.Text
-crtInfPg vid = T.unlines ["", "",
-                          "File name: " `app` (spl . vidName) vid,
-                          "File size: " `app` vidSize vid,
-                          "File date: " `app` vidDate vid,
-                          "File link: " `app` (spl . vidLink) vid
-                         ]
-    where app = T.append
-          spl = T.intercalate "\n" . T.chunksOf 60 
 
 
