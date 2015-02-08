@@ -10,7 +10,7 @@ import qualified Data.Text as T
 
 search :: [Video] -> [String] -> [Video]
 search vids par = filter pred vids
-    where pred v = all (\tar -> name `T.isInfixOf` (T.pack tar)) par
+    where pred v = all (\tar -> (T.pack tar) `T.isInfixOf` name) par
             where name = vidName v
 
 {-
