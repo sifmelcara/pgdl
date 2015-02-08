@@ -5,31 +5,24 @@ module Log where
 
 import Video
 
-import Control.Applicative 
-import Control.Monad
-import Data.Binary
-import Data.Either
 import System.Directory
 import System.FilePath
 
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as T
-import qualified Data.ByteString.Lazy as B
+import qualified Data.Text.IO as T
 
-instance Binary T.Text where
-    put = put . T.encodeUtf8
-    get = T.decodeUtf8 <$> get
+encVid :: [Video] -> T.Text
+encVid vs = T.intercalate "\n" $ map vidName vs
 
-instance Binary Video where
-    put vid = put $ vidName vid
-    get = get >>= \name -> return $ Video name "" "" ""
+decVid :: T.Text -> [Video]
+decVid = map (\t -> Video t "" "" "") . T.lines
 
 logname = ".pgdl.cache"
 
 writeVid :: [Video] -> IO ()
 writeVid vs = do
     hdir <- getHomeDirectory
-    B.writeFile (hdir </> logname) $ encode vs  
+    T.writeFile (hdir </> logname) $ encVid vs 
 
 readVid :: IO [Video]
 readVid = do
@@ -37,11 +30,9 @@ readVid = do
     let absdir = hdir </> logname
     doesFileExist absdir >>= \case
         True -> do
-            dat <- B.readFile (hdir </> logname)
-            let res = decodeOrFail dat
-            case res of
-                Right (_, _, vs) -> return vs
-                _                -> return dlnVid
+            dat <- T.readFile (hdir </> logname)
+            return $ decVid dat
         False -> return dlnVid
     where dlnVid = [Video "Downloading..." "" "" ""]
+
 
