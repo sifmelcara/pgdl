@@ -1,5 +1,5 @@
 
-module Chkcfg where
+module Chkcfg (chkcfg) where
 
 import System.Directory
 import System.FilePath
