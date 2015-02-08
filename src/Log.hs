@@ -33,6 +33,7 @@ readVid = do
             dat <- T.readFile (hdir </> logname)
             return $ decVid dat
         False -> return dlnVid
-    where dlnVid = [Video "Downloading..." "" "" ""]
+
+dlnVid = [Video "Downloading..." "" "" ""]
 
 
