@@ -20,8 +20,10 @@ newAskScene = do
     downB <- newButton "Yes"
     quitB <- newButton "Quit"
     buttonBox <- (mkwIO playB) <++> (mkwIO downB) <++> (mkwIO quitB)
-    --setBoxSpacing buttonBox 4
-    b <- withPadding (padAll 1) =<< (plainText "Download it again?") <--> (return buttonBox)
+    b <- do
+        bx <- (plainText "    Download it again?") <--> (return buttonBox)
+        setBoxSpacing bx 1
+        withPadding (padAll 1) bx
     fg <- newFocusGroup
     mapM_ (addToFocusGroup fg . buttonWidget) [playB, downB, quitB]
     ui <- withBorderedLabel "File Exists!" =<< bordered b
