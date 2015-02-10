@@ -12,6 +12,7 @@ import Log
 import TestExist
 import GenStat
 import CrtInf
+import AskScene
 
 import Control.Applicative
 import Control.Concurrent
@@ -47,22 +48,20 @@ main = do
 
 
     (dlg, dfcg) <- newAskScene
-    dui <- centered =<< hFixed 30 (dialogWidget dlg)
+    dui <- centered =<< hFixed 30 (sceneWidget dlg)
     chgdl <- addToCollection c dui dfcg
 
-    --setFocusGroupNextKey dfcg KRight []
-    --setFocusGroupPrevKey dfcg KLeft  []
     dfcg  `onKeyPressed` tryExit
 
     lfg   `onKeyPressed` tryExit
                                             
-    onAskScenePl dlg $ \_ -> do
+    onScePlay dlg $ \_ -> do
         Just (_, (itm, _)) <- getSelected lst
         justPlay itm
-    onAskSceneDl dlg $ \_ -> do
+    onSceDown dlg $ \_ -> do
         Just (_, (itm, _)) <- getSelected lst
         playVid itm
-    onAskSceneQt dlg $ const exitSuccess
+    onSceQuit dlg $ const exitSuccess
     ifsfg <- newFocusGroup
     onKeyPressed ifsfg $ \_ key _ -> case key of
         KLeft -> chgls >> return True   
