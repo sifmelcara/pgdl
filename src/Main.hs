@@ -48,7 +48,7 @@ main = do
 
 
     (dlg, dfcg) <- newAskScene
-    dui <- centered =<< hFixed 30 (sceneWidget dlg)
+    dui <- centered =<< hFixed 40 (sceneWidget dlg)
     chgdl <- addToCollection c dui dfcg
 
     dfcg  `onKeyPressed` tryExit

@@ -15,11 +15,12 @@ data AskScene = AskScene { sceneWidget :: Widget (Bordered Padded)
 
 newAskScene :: IO (AskScene, Widget FocusGroup)
 newAskScene = do
-    playB <- newButton "Play it"
-    downB <- newButton "Download and Play"
+    playB <- newButton "No"
+    downB <- newButton "Yes"
     quitB <- newButton "Quit"
     buttonBox <- (mkwIO playB) <++> (mkwIO downB) <++> (mkwIO quitB)
-    b <- withPadding (padAll 1) =<< (plainText "What to do?") <--> (return buttonBox)
+    --setBoxSpacing buttonBox 4
+    b <- withPadding (padAll 1) =<< (plainText "Download it again?") <--> (return buttonBox)
     fg <- newFocusGroup
     mapM_ (addToFocusGroup fg . buttonWidget) [playB, downB, quitB]
     ui <- withBorderedLabel "File Exists!" =<< bordered b
