@@ -58,8 +58,10 @@ main = do
 
     lfg   `onKeyPressed` tryExit
                                             
-    dlg `onDialogCancel` const exitSuccess
-    onDialogAccept dlg $ \_ ->  do
+    onDialogCancel dlg $ \_ -> do
+        Just (_, (itm, _)) <- getSelected lst
+        justPlay itm
+    onDialogAccept dlg $ \_ -> do
         Just (_, (itm, _)) <- getSelected lst
         playVid itm
                          
