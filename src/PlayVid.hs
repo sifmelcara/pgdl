@@ -42,4 +42,20 @@ playVid vid = do
         vu = T.unpack . vidLink $ vid
         addq s = "\"" ++ s ++ "\""
 
+justPlay :: Video -> IO ()
+justPlay vid = do
+    servpath <- getServpath
+    localdir <- getLocaldir
+    let localloc = localdir </> vn
+    case buildOS of
+        OSX   -> runCommand $ "open " ++ addq localloc ++ " -a vlc"
+        Linux -> runCommand $ "nohup vlc -f " ++ addq localloc ++ " &>/dev/null &"
+        _     -> error "OS unsupported!"
+    exitSuccess
+  where vn = T.unpack . vidName $ vid
+        addq s = "\"" ++ s ++ "\""
+    
+    
+
+
 
