@@ -46,25 +46,23 @@ main = do
     chgls <- addToCollection c ui lfg
 
 
-    (dlg, dfcg) <- do
-        wg <- plainText "redownload it?"
-        newDialog wg "File Exists!"
+    (dlg, dfcg) <- newAskScene
     dui <- centered =<< hFixed 30 (dialogWidget dlg)
     chgdl <- addToCollection c dui dfcg
 
-    setFocusGroupNextKey dfcg KRight []
-    setFocusGroupPrevKey dfcg KLeft  []
+    --setFocusGroupNextKey dfcg KRight []
+    --setFocusGroupPrevKey dfcg KLeft  []
     dfcg  `onKeyPressed` tryExit
 
     lfg   `onKeyPressed` tryExit
                                             
-    onDialogCancel dlg $ \_ -> do
+    onAskScenePl dlg $ \_ -> do
         Just (_, (itm, _)) <- getSelected lst
         justPlay itm
-    onDialogAccept dlg $ \_ -> do
+    onAskSceneDl dlg $ \_ -> do
         Just (_, (itm, _)) <- getSelected lst
         playVid itm
-                         
+    onAskSceneQt dlg $ const exitSuccess
     ifsfg <- newFocusGroup
     onKeyPressed ifsfg $ \_ key _ -> case key of
         KLeft -> chgls >> return True   
