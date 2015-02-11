@@ -27,7 +27,7 @@ executable pgdl
   main-is:             Main.hs
   other-modules:       Beaut, Chkcfg, FetchHtml, Getconfig, Log, 
                        PlayVid, PrsVid, Search, Video, GenStat, 
-                       TestExist, GenName, SortVid, CrtInf
+                       TestExist, GenName, SortVid, CrtInf, AskScene
   build-depends:       base == 4.* , process, 
                        directory, bytestring,
                        tagsoup, network-uri, 
