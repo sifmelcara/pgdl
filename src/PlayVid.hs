@@ -60,6 +60,7 @@ removeVid :: Video -> IO ()
 removeVid vid = do
     localDir <- getLocaldir
     removeFile $ localDir </> vn
+    exitSuccess
     where vn = T.unpack . vidName $ vid
 
 
