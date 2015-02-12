@@ -27,7 +27,7 @@ newAskScene = do
         setBoxSpacing bx 1
         withPadding (padAll 1) bx
     fg <- newFocusGroup
-    mapM_ (addToFocusGroup fg . buttonWidget) [playB, downB, quitB]
+    mapM_ (addToFocusGroup fg . buttonWidget) [playB, downB, quitB, remvB]
     ui <- withBorderedLabel "File Exists!" =<< bordered b
     [phs, dhs, qhs, rhs] <- replicateM 4 newHandlers
     let sce = AskScene { sceneWidget = ui
