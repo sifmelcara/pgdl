@@ -29,7 +29,7 @@ newAskScene = do
     fg <- newFocusGroup
     mapM_ (addToFocusGroup fg . buttonWidget) [playB, downB, quitB]
     ui <- withBorderedLabel "File Exists!" =<< bordered b
-    [phs, dhs, qhs, rhs] <- replicateM 3 newHandlers
+    [phs, dhs, qhs, rhs] <- replicateM 4 newHandlers
     let sce = AskScene { sceneWidget = ui
                        , playHand = phs
                        , downHand = dhs

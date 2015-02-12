@@ -62,6 +62,9 @@ main = do
         Just (_, (itm, _)) <- getSelected lst
         playVid itm
     onSceQuit dlg $ const exitSuccess
+    onSceRemv dlg $ \_ -> do
+        Just (_, (itm, _)) <- getSelected lst
+        removeVid itm
     ifsfg <- newFocusGroup
     onKeyPressed ifsfg $ \_ key _ -> case key of
         KLeft -> chgls >> return True   
