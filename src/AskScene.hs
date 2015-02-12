@@ -12,6 +12,7 @@ data AskScene = AskScene { sceneWidget :: Widget (Bordered Padded)
                          , playHand :: Handlers AskScene
                          , downHand :: Handlers AskScene
                          , quitHand :: Handlers AskScene
+                         , remvHand :: Handlers AskScene
                          }
 
 newAskScene :: IO (AskScene, Widget FocusGroup)
@@ -19,7 +20,8 @@ newAskScene = do
     playB <- newButton "No"
     downB <- newButton "Yes"
     quitB <- newButton "Quit"
-    buttonBox <- (mkwIO playB) <++> (mkwIO downB) <++> (mkwIO quitB)
+    remvB <- newButton "Remov"
+    buttonBox <- (mkwIO playB) <++> (mkwIO downB) <++> (mkwIO quitB) <++> (mkwIO remvB)
     b <- do
         bx <- (plainText "    Download it again?") <--> (return buttonBox)
         setBoxSpacing bx 1
@@ -27,11 +29,12 @@ newAskScene = do
     fg <- newFocusGroup
     mapM_ (addToFocusGroup fg . buttonWidget) [playB, downB, quitB]
     ui <- withBorderedLabel "File Exists!" =<< bordered b
-    [phs, dhs, qhs] <- replicateM 3 newHandlers
+    [phs, dhs, qhs, rhs] <- replicateM 3 newHandlers
     let sce = AskScene { sceneWidget = ui
                        , playHand = phs
                        , downHand = dhs
                        , quitHand = qhs
+                       , remvHand = rhs
                        }
     onButtonPressed playB $ \_ -> 
         fireEvent sce (return . playHand) sce
@@ -39,6 +42,8 @@ newAskScene = do
         fireEvent sce (return . downHand) sce
     onButtonPressed quitB $ \_ -> 
         fireEvent sce (return . quitHand) sce
+    onButtonPressed remvB $ \_ ->
+        fireEvent sce (return . remvHand) sce
     setFocusGroupNextKey fg KRight []
     setFocusGroupPrevKey fg KLeft []
     return (sce, fg)
@@ -53,5 +58,6 @@ onSceDown = addHandler (return . downHand)
 onSceQuit :: AskScene -> Handler AskScene -> IO ()
 onSceQuit = addHandler (return . quitHand)
 
-
+onSceRemv :: AskScene -> Handler AskScene -> IO()
+onSceRemv = addHandler (return . remvHand)
 
