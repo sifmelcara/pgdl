@@ -56,6 +56,11 @@ justPlay vid = do
         addq s = "\"" ++ s ++ "\""
     
     
+removeVid :: Video -> IO ()
+removeVid vid = do
+    localDir <- getLocaldir
+    removeFile $ localDir </> vn
+    where vn = T.unpack . vidName $ vid
 
 
 
