@@ -6,8 +6,6 @@ import Video
 import GenName
 import SortVid
 
-import Data.List
-import Data.Function
 import Text.HTML.TagSoup
 import qualified Data.Text as T
 
