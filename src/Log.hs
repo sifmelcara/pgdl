@@ -17,6 +17,7 @@ encVid vs = T.intercalate "\n" $ map vidName vs
 decVid :: T.Text -> [Video]
 decVid = map (\t -> Video t "" "" "") . T.lines
 
+logname :: FilePath
 logname = ".pgdl.cache"
 
 writeVid :: [Video] -> IO ()
@@ -34,6 +35,7 @@ readVid = do
             return $ decVid dat
         False -> return dlnVid
 
+dlnVid :: [Video]
 dlnVid = [Video "Downloading..." "" "" ""]
 
 

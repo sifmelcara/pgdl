@@ -4,7 +4,6 @@ module TestExist where
 
 import Getconfig
 
-import Data.Function
 import System.Directory
 import System.FilePath
 
