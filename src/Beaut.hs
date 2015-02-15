@@ -4,7 +4,6 @@ module Beaut where
 
 import Video
 
-import Data.List
 import qualified Data.Text as T
 
 beaut :: Video -> T.Text

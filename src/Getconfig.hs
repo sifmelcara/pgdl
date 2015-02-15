@@ -5,7 +5,6 @@ module Getconfig where
 import Control.Monad
 import Data.Maybe
 
-import qualified Data.Text as T
 import qualified Data.Configurator as C
 
 getConfig :: IO (String, String, String, String)
@@ -19,8 +18,15 @@ getConfig = do
     return (fj username, fj password, fj servpath, fj localdir)
     where fj = fromJust
 
+getUsername :: IO String
 getUsername = fmap (\(r, _, _, _) -> r) getConfig
+
+getPassword :: IO String
 getPassword = fmap (\(_, r, _, _) -> r) getConfig
+
+getServpath :: IO String
 getServpath = fmap (\(_, _, r, _) -> r) getConfig
+
+getLocaldir :: IO String
 getLocaldir = fmap (\(_, _, _, r) -> r) getConfig
 

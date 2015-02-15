@@ -7,7 +7,6 @@ import Getconfig
 import Network.HTTP
 import Network.URI
 import Data.Text.Encoding
-import Data.ByteString
 import Data.Maybe
 import qualified Data.Text as T
 
