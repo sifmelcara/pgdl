@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
 
 module PlayVid where
 
@@ -10,7 +11,6 @@ import Distribution.System
 import System.Process
 import System.Directory
 import System.FilePath.Posix
-import System.IO
 import System.Exit
 import qualified Data.Text as T
 

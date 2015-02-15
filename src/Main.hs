@@ -18,15 +18,11 @@ import AskScene
 import Control.Applicative
 import Control.Concurrent
 import Control.Monad
-import System.Directory
 import System.Exit
 import System.Environment
-import System.FilePath
-import System.IO
 
 import Graphics.Vty
 import Graphics.Vty.Widgets.All
-import qualified Data.Text as T
 
 main = do
     chkcfg
