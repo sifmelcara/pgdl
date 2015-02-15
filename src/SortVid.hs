@@ -9,12 +9,12 @@ import Data.List
 import Data.Function
 
 sortVid :: [Video] -> [Video]
-sortVid = sortBy (cmpDate `on` vidDate)
+sortVid = sortBy cmp
 
-cmpDate :: T.Text -> T.Text -> Ordering
-cmpDate = flip compare `on` prs
-    where prs tx = [year, tranMon mon, day, time] 
-            where [day, mon, year, time] = concat . map (T.splitOn "-") . (T.splitOn " ") $ tx
+cmp :: Video -> Video -> Ordering
+cmp = flip compare `on` prs
+    where prs tx = [year, tranMon mon, day, time, vidName tx] 
+            where [day, mon, year, time] = concat . map (T.splitOn "-") . (T.splitOn " ") . vidDate $ tx
           
 tranMon :: T.Text -> T.Text
 tranMon m = case m of
@@ -30,4 +30,5 @@ tranMon m = case m of
     "Oct" -> "J"
     "Nov" -> "K"
     "Dec" -> "L"
+    _     -> " "
 
