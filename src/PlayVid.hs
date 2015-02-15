@@ -44,7 +44,6 @@ playVid vid = do
 
 justPlay :: Video -> IO ()
 justPlay vid = do
-    servpath <- getServpath
     localdir <- getLocaldir
     let localloc = localdir </> vn
     case buildOS of

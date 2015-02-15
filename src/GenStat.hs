@@ -16,10 +16,10 @@ genStat (Video name _ size date) = do
                       , spc 20, st
                       , spc 30
                       ]
-    where app = T.append
-          spc :: Int -> T.Text
+    where spc :: Int -> T.Text
           spc i = T.replicate i " "
 
+waitingBar :: T.Text
 waitingBar = "   Waiting for data..." `T.append` T.replicate 99 " "
 
 toStr :: IO Bool -> IO T.Text

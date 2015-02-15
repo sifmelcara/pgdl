@@ -5,7 +5,6 @@ module AskScene where
 import Graphics.Vty.Widgets.All
 import Graphics.Vty.Input.Events
 
-import qualified Data.Text as T
 import Control.Monad
 
 data AskScene = AskScene { sceneWidget :: Widget (Bordered Padded)

@@ -24,6 +24,7 @@ import System.Environment
 import Graphics.Vty
 import Graphics.Vty.Widgets.All
 
+main :: IO ()
 main = do
     chkcfg
 
