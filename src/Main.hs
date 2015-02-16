@@ -33,7 +33,8 @@ main = do
     lst <- newList 3 
     diskrd <- readVid
     args <- getArgs
-    let diskV = if null args then diskrd else dlnVid
+    let diskV = if null args || head args == "-f" then diskrd
+                else dlnVid
     forM_ diskV $ \v -> addToList lst v =<< plainText (beaut v)
     lfg <- newFocusGroup
     addToFocusGroup lfg lst
@@ -76,12 +77,12 @@ main = do
             join $ addToCollection c inf ifsfg
             return True
         _ -> return False
-
-    schedule $ do
+    if null args || head args \= "-f" 
+    then schedule $ do
         forkIO $ do
-            rd    <- prsVid <$> fetchHtml
-            vdlst <- search rd <$> getArgs
-            when (length vdlst < 1) $ error "empty list!"
+            rd <- prsVid <$> fetchHtml
+            let vdlst = search rd args
+            when (length vdlst < 1) $ error "no video found!"
             Just (_, (oldItm, _)) <- getSelected lst
             clearList lst
             forM_ vdlst $ \v -> addToList lst v =<< plainText (beaut v)
@@ -89,31 +90,21 @@ main = do
                 Just ind -> setSelected lst ind
                 Nothing  -> return ()
 
-            onSelectionChange lst $ \sle -> case sle of
-                SelectionOn _ itm _ -> fex itm >>= \case 
-                    True  -> setFocusAttribute lst (black `on` red) 
-                    False -> setFocusAttribute lst (black `on` cyan)
-                _                   -> return ()
+            vLstAction lst chgdl statBar
 
-            onSelectionChange lst $ \sle -> case sle of
-                SelectionOn _ itm _ -> setText statBar =<< genStat itm
-                _ -> return ()
-        
-
-            onKeyPressed lst $ \_ key _ -> case key of
-                KEnter -> do
-                    Just (_, (itm, _)) <- getSelected lst
-                    fex itm >>= \case 
-                        True  -> chgdl
-                        False -> playVid itm
-                    return True
-                _      -> return False
-
-            (null <$> getArgs) >>= \case
+            (null <$> getArgs) >>= \case                
                 True -> void . forkIO $ writeVid vdlst
                 _    -> return ()
             return ()
         return ()
+    else schedule $ do
+        forkIO $ do
+            rd <- prsFld <$> fetchHtml
+            let fdlst = searchF rd (tail args)
+            when (length fdlst < 1) $ error "no folder found!"
+            clearList lst
+            forM_ fdlst $ \v -> addToList lst v =<< plainText (beautF v)
+            
 
     runUi c $ defaultContext {normalAttr = white `on` black, 
                               focusAttr  = black `on` blue
@@ -124,4 +115,24 @@ main = do
             _         -> return False
 
 
+vLstAction lst chgdl statBar = do
+    onSelectionChange lst $ \sle -> case sle of
+        SelectionOn _ itm _ -> fex itm >>= \case 
+            True  -> setFocusAttribute lst (black `on` red) 
+            False -> setFocusAttribute lst (black `on` cyan)
+        _                   -> return ()
+
+    onSelectionChange lst $ \sle -> case sle of
+        SelectionOn _ itm _ -> setText statBar =<< genStat itm
+        _ -> return ()
+
+    onKeyPressed lst $ \_ key _ -> case key of
+        KEnter -> do
+            Just (_, (itm, _)) <- getSelected lst
+            fex itm >>= \case 
+                True  -> chgdl
+                False -> playVid itm
+            return True
+        _      -> return False
+    where fex itm = downloaded $ vidName itm
 
