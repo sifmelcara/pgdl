@@ -8,8 +8,10 @@ data Video = Video { vidName :: T.Text
                    , vidLink :: T.Text
                    , vidSize :: T.Text
                    , vidDate :: T.Text
-                   }
-             | Folder T.Text
+                   } |
+             Folder { fldName :: T.Text
+                    , fldLink :: T.Text
+                    }
 
 instance Eq Video where
     x == y = vidName x == vidName y

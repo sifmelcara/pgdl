@@ -77,7 +77,7 @@ main = do
             join $ addToCollection c inf ifsfg
             return True
         _ -> return False
-    if null args || head args \= "-f" 
+    if null args || head args /= "-f" 
     then schedule $ do
         forkIO $ do
             rd <- prsVid <$> fetchHtml
@@ -104,6 +104,26 @@ main = do
             when (length fdlst < 1) $ error "no folder found!"
             clearList lst
             forM_ fdlst $ \v -> addToList lst v =<< plainText (beautF v)
+            return ()
+
+    let openFld lnk = do
+        ctnt <- prsVid <$> fetchFld lnk
+        when (null ctnt) $ error "no video in the folder!"
+        clearList lst 
+        forM_ ctnt $ \v -> addToList lst v =<< plainText (beaut v)
+        vLstAction lst chgdl statBar
+        return ()
+
+    onKeyPressed lst $ \_ key _ -> case key of
+        KEnter -> do
+            Just (_, (itm, _)) <- getSelected lst
+            case itm of
+                Folder _ lnk -> openFld lnk
+                v -> fex v >>= \case
+                    True -> chgdl
+                    False -> playVid
+            return True
+        _   -> return False
             
 
     runUi c $ defaultContext {normalAttr = white `on` black, 
@@ -126,13 +146,5 @@ vLstAction lst chgdl statBar = do
         SelectionOn _ itm _ -> setText statBar =<< genStat itm
         _ -> return ()
 
-    onKeyPressed lst $ \_ key _ -> case key of
-        KEnter -> do
-            Just (_, (itm, _)) <- getSelected lst
-            fex itm >>= \case 
-                True  -> chgdl
-                False -> playVid itm
-            return True
-        _      -> return False
     where fex itm = downloaded $ vidName itm
 
