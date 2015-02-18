@@ -108,12 +108,12 @@ main = do
         return ()
 
     let openFld lnk = do
-        ctnt <- (map (attcLink lnk) . prsVid) <$> fetchFld lnk
-        when (null ctnt) $ error "no video in the folder!"
-        clearList lst 
-        forM_ ctnt $ \v -> addToList lst v =<< plainText (beaut v)
-        vLstAction lst chgdl statBar
-        return ()
+            ctnt <- (map (attcLink lnk) . prsVid) <$> fetchFld lnk 
+            when (null ctnt) $ error "no video in the folder!" 
+            clearList lst 
+            forM_ ctnt $ \v -> addToList lst v =<< plainText (beaut v) 
+            vLstAction lst chgdl statBar 
+            return () 
 
     onKeyPressed lst $ \_ key _ -> case key of
         KEnter -> do
