@@ -119,7 +119,7 @@ main = do
         KEnter -> do
             Just (_, (itm, _)) <- getSelected lst
             case itm of
-                Folder _ lnk -> openFld lnk
+                Folder _ lnk _ -> openFld lnk
                 v -> fex v >>= \case
                     True -> chgdl
                     False -> playVid itm

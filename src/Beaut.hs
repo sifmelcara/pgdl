@@ -20,5 +20,5 @@ beaut (Video str _ _ _)
           spl = filter (\t -> T.length t /= 0) . getTags ["[", "]"] . return
           getTags dl s = foldl (\ls d -> concatMap (T.splitOn d) ls) s dl
 
-beaut (Folder str _) = "\n" `T.append` str
+beaut (Folder str _ _) = "\n" `T.append` str
 
