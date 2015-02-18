@@ -16,7 +16,7 @@ description:         a terminal user interface program that downloads a video fr
                      Server: Only for nginx's file download page.
                      .
                      The program will sort the files by date while files in nginx's download page just sort in file name.
-                     Pass flag -f to read folder.
+                     Pass argument -f to read folder.
 
 synopsis:            pgdownloader
 
