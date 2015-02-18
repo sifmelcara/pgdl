@@ -33,7 +33,7 @@ main = do
     lst <- newList 3 
     diskrd <- readVid
     args <- getArgs
-    let diskV = if null args || head args == "-f" then diskrd
+    let diskV = if null args then diskrd
                 else dlnVid
     forM_ diskV $ \v -> addToList lst v =<< plainText (beaut v)
     lfg <- newFocusGroup

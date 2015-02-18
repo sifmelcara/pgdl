@@ -31,8 +31,8 @@ prsVid = sortVid .
           fmts = [".mp4", ".avi", ".mkv"]
 
 prsFld :: T.Text -> [Video]
-prsFld = map (mkFld . head) . map (filter isTagOpen) . filter isFldLn . map parseTags . T.lines
-    where isFldLn = any isFldLnk
+prsFld = map (mkFld . head) . filter isFldLn . map parseTags . T.lines
+    where isFldLn = isFldLnk . head
           isFldLnk tg
             | isTagOpen tg = (`T.isSuffixOf` fromAttrib "href" tg) "/"
             | otherwise = False
