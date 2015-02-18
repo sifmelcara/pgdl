@@ -8,6 +8,7 @@ import Network.HTTP
 import Network.URI
 import Data.Text.Encoding
 import Data.Maybe
+import System.FilePath
 import qualified Data.Text as T
 
 fetchHtml :: IO T.Text
@@ -20,3 +21,12 @@ fetchHtml = do
     cnt <- getResponseBody res
     return $ decodeUtf8 cnt
 
+fetchFld :: String -> IO T.Text
+fetchFld fn = do
+    usrn <- getUsername
+    usrp <- getPassword
+    servp <- getServpath
+    let uri = "http://" ++ usrn ++ ":" ++ usrp ++ "@" ++ servp </> fn
+    res <- simpleHTTP . mkRequest GET . fromJust . parseURI $ uri
+    cnt <- getResponseBody res
+    return $ decodeUtf8 cnt
