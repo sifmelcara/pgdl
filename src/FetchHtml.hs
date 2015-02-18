@@ -21,8 +21,8 @@ fetchHtml = do
     cnt <- getResponseBody res
     return $ decodeUtf8 cnt
 
-fetchFld :: String -> IO T.Text
-fetchFld fn = do
+fetchFld :: T.Text -> IO T.Text
+fetchFld fnt = do
     usrn <- getUsername
     usrp <- getPassword
     servp <- getServpath
@@ -30,3 +30,4 @@ fetchFld fn = do
     res <- simpleHTTP . mkRequest GET . fromJust . parseURI $ uri
     cnt <- getResponseBody res
     return $ decodeUtf8 cnt
+    where fn = T.unpack fnt

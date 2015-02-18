@@ -105,6 +105,7 @@ main = do
             clearList lst
             forM_ fdlst $ \v -> addToList lst v =<< plainText (beaut v)
             return ()
+        return ()
 
     let openFld lnk = do
         ctnt <- prsVid <$> fetchFld lnk
@@ -121,7 +122,7 @@ main = do
                 Folder _ lnk -> openFld lnk
                 v -> fex v >>= \case
                     True -> chgdl
-                    False -> playVid
+                    False -> playVid itm
             return True
         _   -> return False
             
