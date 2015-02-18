@@ -108,7 +108,7 @@ main = do
         return ()
 
     let openFld lnk = do
-        ctnt <- prsVid <$> fetchFld lnk
+        ctnt <- (map (attcLink lnk) . prsVid) <$> fetchFld lnk
         when (null ctnt) $ error "no video in the folder!"
         clearList lst 
         forM_ ctnt $ \v -> addToList lst v =<< plainText (beaut v)
