@@ -8,13 +8,23 @@ import qualified Data.Text as T
 
 crtInfPg :: Video -> T.Text
 crtInfPg vid = T.unlines ["", "",
-                          "File name: " `app` (spl . vidName) vid,
-                          "File size: " `app` vidSize vid,
-                          "File date: " `app` vidDate vid,
-                          "File link: " `app` (spl . vidLink) vid
+                          "File name: " `app` (spl . getName) vid,
+                          "File size: " `app` getSize vid,
+                          "File date: " `app` getDate vid,
+                          "File link: " `app` (spl . getLink) vid
                          ]
     where app = T.append
           spl = T.intercalate "\n" . T.chunksOf 60 
-
-
+          getName v
+            | isVid v = vidName v
+            | otherwise = fldName v
+          getSize v
+            | isVid v = vidSize v
+            | otherwise = "I'm a folder"
+          getDate v
+            | isVid v = vidDate v
+            | otherwise = fldDate v
+          getLink v
+            | isVid v = vidLink v
+            | otherwise = fldLink v
 
