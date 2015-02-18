@@ -9,12 +9,17 @@ import Data.List
 import Data.Function
 
 sortVid :: [Video] -> [Video]
-sortVid = sortBy cmp
+sortVid = sortBy cmpv
 
-cmp :: Video -> Video -> Ordering
+cmpv :: Video -> Video -> Ordering
+cmpv v1 v2
+    | isVid v1 = (cmp `on` vidDate) v1 v2
+    | otherwise = (cmp `on` fldDate) v1 v2
+
+cmp :: T.Text -> T.Text -> Ordering
 cmp = flip compare `on` prs
-    where prs tx = [year, tranMon mon, day, time, vidName tx] 
-            where [day, mon, year, time] = concat . map (T.splitOn "-") . (T.splitOn " ") . vidDate $ tx
+    where prs tx = [year, tranMon mon, day, time] 
+            where [day, mon, year, time] = concat . map (T.splitOn "-") . (T.splitOn " ") $ tx
           
 tranMon :: T.Text -> T.Text
 tranMon m = case m of
