@@ -6,4 +6,5 @@ Client: Only for Linux and MACOSX.
 Server: Only for nginx's file download page.
     
 The program will sort the files by date while the files in nginx's download page just show in file names' order.
+Pass flag -f to read folder.
 
