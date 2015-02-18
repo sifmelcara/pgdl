@@ -100,7 +100,7 @@ main = do
     else schedule $ do
         forkIO $ do
             rd <- prsFld <$> fetchHtml
-            let fdlst = searchF rd (tail args)
+            let fdlst = search rd (tail args)
             when (length fdlst < 1) $ error "no folder found!"
             clearList lst
             forM_ fdlst $ \v -> addToList lst v =<< plainText (beaut v)
