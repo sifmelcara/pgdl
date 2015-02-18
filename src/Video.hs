@@ -16,4 +16,11 @@ data Video = Video { vidName :: T.Text
 instance Eq Video where
     x == y = vidName x == vidName y
     
+isVid :: Video -> Bool
+isVid (Video _ _ _ _) = True
+isVid _ = False
+
+isFld :: Video -> Bool
+isFld v = not $ isVid v
+
 
