@@ -103,7 +103,7 @@ main = do
             let fdlst = searchF rd (tail args)
             when (length fdlst < 1) $ error "no folder found!"
             clearList lst
-            forM_ fdlst $ \v -> addToList lst v =<< plainText (beautF v)
+            forM_ fdlst $ \v -> addToList lst v =<< plainText (beaut v)
             return ()
 
     let openFld lnk = do
