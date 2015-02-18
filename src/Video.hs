@@ -12,6 +12,7 @@ data Video = Video { vidName :: T.Text
                    } |
              Folder { fldName :: T.Text
                     , fldLink :: T.Text
+                    , fldDate :: T.Text
                     }
 
 instance Eq Video where

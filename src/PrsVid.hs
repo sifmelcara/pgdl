@@ -31,12 +31,18 @@ prsVid = sortVid .
           fmts = [".mp4", ".avi", ".mkv"]
 
 prsFld :: T.Text -> [Video]
-prsFld = map (mkFld . head) . filter isFldLn . map parseTags . T.lines
+prsFld = map (mkFld . filter (not . T.null) . map pullText) . filter isFldLn . map parseTags . T.lines
     where isFldLn = isFldLnk . head
           isFldLnk tg
             | isTagOpen tg = (`T.isSuffixOf` fromAttrib "href" tg) "/"
             | otherwise = False
-          mkFld :: Tag T.Text -> Video
-          mkFld tg = Folder {fldName = T.init . genName $ tx, fldLink = tx}
-            where tx = fromAttrib "href" tg
+          mkFld :: [T.Text] -> Video
+          mkFld [lnk, _, tx] = Folder {fldName = nm, fldLink = lnk, fldDate = dt}
+            where nm = T.init . genName $ lnk
+                  dt = T.intercalate "" . take 2 $ T.words tx
+          pullText tg
+            | isTagOpen tg = fromAttrib "href" tg
+            | isTagText tg = fromTagText tg
+            | otherwise = ""
+
 
