@@ -22,7 +22,7 @@ prsVid = sortVid .
             | isTagText tg = fromTagText tg
             | otherwise = ""
           genVid [lnk, _, tx] = Video {vidLink = lnk, vidName = nm, vidDate = dt, vidSize = sz}
-            where dt = T.intercalate " " . take 2 $ T.words tx
+            where dt = T.intercalate "-" . take 2 $ T.words tx
                   sz = T.pack . hsz . read . last . words . T.unpack $ tx
                   hsz :: Int -> String
                   hsz i = show (i `div` (1024*1024)) ++ "M"
@@ -39,7 +39,7 @@ prsFld = sortVid . map (mkFld . filter (not . T.null) . map pullText) . filter i
           mkFld :: [T.Text] -> Video
           mkFld [lnk, _, tx] = Folder {fldName = nm, fldLink = lnk, fldDate = dt}
             where nm = T.init . genName $ lnk
-                  dt = T.intercalate "" . take 2 $ T.words tx
+                  dt = T.intercalate "-" . take 2 $ T.words tx
           pullText tg
             | isTagOpen tg = fromAttrib "href" tg
             | isTagText tg = fromTagText tg

@@ -19,7 +19,7 @@ cmpv v1 v2
 cmp :: T.Text -> T.Text -> Ordering
 cmp = flip compare `on` prs
     where prs tx = [year, tranMon mon, day, time] 
-            where [day, mon, year, time] = concat . map (T.splitOn "-") . (T.splitOn " ") $ tx
+            where [day, mon, year, time] = T.splitOn "-" $ tx
           
 tranMon :: T.Text -> T.Text
 tranMon m = case m of
