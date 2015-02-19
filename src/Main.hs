@@ -104,6 +104,7 @@ main = do
             when (length fdlst < 1) $ error "no folder found!"
             clearList lst
             forM_ fdlst $ \v -> addToList lst v =<< plainText (beaut v)
+            setFocusAttribute lst (black `on` cyan)
             return ()
         return ()
 
