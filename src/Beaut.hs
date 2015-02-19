@@ -7,7 +7,11 @@ import Video
 import qualified Data.Text as T
 
 beaut :: Video -> T.Text
-beaut (Video str _ _ _)
+beaut (Video str _ _ _) = beautT str
+beaut (Folder str _ _)  = "\n" `T.append` str
+
+beautT :: T.Text -> T.Text
+beautT str
     | length dat < 3 = "\n" `app` str
     | otherwise      = T.intercalate "\n" [tb 4 `app` sbt, 
                                            tb 10 `app` nme, 
@@ -20,5 +24,4 @@ beaut (Video str _ _ _)
           spl = filter (\t -> T.length t /= 0) . getTags ["[", "]"] . return
           getTags dl s = foldl (\ls d -> concatMap (T.splitOn d) ls) s dl
 
-beaut (Folder str _ _) = "\n" `T.append` str
 
