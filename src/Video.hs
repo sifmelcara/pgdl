@@ -19,7 +19,7 @@ instance Eq Video where
     x == y = vidName x == vidName y
     
 isVid :: Video -> Bool
-isVid (Video _ _ _ _) = True
+isVid Video {} = True
 isVid _ = False
 
 isFld :: Video -> Bool

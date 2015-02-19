@@ -40,6 +40,7 @@ prsFld = sortVid . map (mkFld . filter (not . T.null) . map pullText) . filter i
           mkFld [lnk, _, tx] = Folder {fldName = nm, fldLink = lnk, fldDate = dt}
             where nm = T.init . genName $ lnk
                   dt = T.intercalate "-" . take 2 $ T.words tx
+          mkFld _ = Folder "Folder Parse Fail" "" ""
           pullText tg
             | isTagOpen tg = fromAttrib "href" tg
             | isTagText tg = fromTagText tg

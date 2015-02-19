@@ -19,6 +19,8 @@ genStat (Video name _ size date) = do
     where spc :: Int -> T.Text
           spc i = T.replicate i " "
 
+genStat (Folder {}) = return "I'm a folder"
+
 waitingBar :: T.Text
 waitingBar = "   Waiting for data..." `T.append` T.replicate 99 " "
 

@@ -135,7 +135,6 @@ main = do
             KChar 'q' -> exitSuccess
             _         -> return False
 
-
 vLstAction lst chgdl statBar = do
     onSelectionChange lst $ \sle -> case sle of
         SelectionOn _ itm _ -> fex itm >>= \case 
