@@ -12,9 +12,10 @@ sortVid :: [Video] -> [Video]
 sortVid = sortBy cmpv
 
 cmpv :: Video -> Video -> Ordering
-cmpv v1 v2
-    | isVid v1 = (cmp `on` vidDate) v1 v2
-    | otherwise = (cmp `on` fldDate) v1 v2
+cmpv = cmp `on` dt
+    where dt v
+            | isVid v = vidDate v
+            | otherwise = fldDate v
 
 cmp :: T.Text -> T.Text -> Ordering
 cmp = flip compare `on` prs
