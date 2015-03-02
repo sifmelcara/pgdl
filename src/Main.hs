@@ -91,7 +91,14 @@ main = do
                 Just ind -> setSelected lst ind
                 Nothing  -> return ()
 
-            vLstAction lst chgdl statBar
+            onSelectionChange lst $ \sle -> case sle of
+                SelectionOn _ itm _ -> fex itm >>= \case 
+                    True  -> setFocusAttribute lst (black `on` red) 
+                    False -> setFocusAttribute lst (black `on` cyan)
+                _                   -> return ()
+            onSelectionChange lst $ \sle -> case sle of
+                SelectionOn _ itm _ -> setText statBar =<< genStat itm
+                _ -> return ()
 
             (null <$> getArgs) >>= \case                
                 True -> void . forkIO $ writeVid vdlst
@@ -100,11 +107,10 @@ main = do
         return ()
 
     let openFld lnk = do
-            ctnt <- (map (attcLink lnk) . prsVid) <$> fetchFld lnk 
+            ctnt <- (map (attcLink lnk) . prsHtm) <$> fetchFld lnk 
             when (null ctnt) $ error "no video in the folder!" 
             clearList lst 
             forM_ ctnt $ \v -> addToList lst v =<< plainText (beaut v) 
-            vLstAction lst chgdl statBar 
             return () 
 
     -- User chose a folder or video !
@@ -123,21 +129,11 @@ main = do
     runUi c $ defaultContext {normalAttr = white `on` black, 
                               focusAttr  = black `on` blue
                              }
-    where fex itm = downloaded $ vidName itm
-          tryExit _ key _ = case key of
+    where tryExit _ key _ = case key of
             KChar 'q' -> exitSuccess
             _         -> return False
 
-vLstAction lst chgdl statBar = do
-    onSelectionChange lst $ \sle -> case sle of
-        SelectionOn _ itm _ -> fex itm >>= \case 
-            True  -> setFocusAttribute lst (black `on` red) 
-            False -> setFocusAttribute lst (black `on` cyan)
-        _                   -> return ()
-
-    onSelectionChange lst $ \sle -> case sle of
-        SelectionOn _ itm _ -> setText statBar =<< genStat itm
-        _ -> return ()
-
-    where fex itm = downloaded $ vidName itm
+fex itm
+    | isVid itm = downloaded $ vidName itm
+    | otherwise = return False
 
