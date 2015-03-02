@@ -19,10 +19,13 @@ genStat (Video name _ size date) = do
     where spc :: Int -> T.Text
           spc i = T.replicate i " "
 
-genStat (Folder {}) = return $ T.concat [ spc 3
-                                        , "I'm a folder"
-                                        , spc 99
-                                        ]
+genStat (Folder name _ date) = do
+    return $ T.concat [ spc 3
+                      , date
+                      , spc 5
+                      , "I'm a folder"
+                      , spc 99
+                      ]
     where spc i = T.replicate i " "
 
 waitingBar :: T.Text
