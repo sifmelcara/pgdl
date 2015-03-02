@@ -1,6 +1,6 @@
 
 name:                pgdl
-version:             7.5
+version:             7.6
 license:             PublicDomain
 license-file:        LICENSE
 author:              sifmelcara
@@ -10,13 +10,12 @@ build-type:          Simple
 extra-source-files:  README.md
 cabal-version:       >=1.10
 description:         a terminal user interface program that downloads a video from html and call vlc to play it immediately.
+                     (Linux: vlc -f "video.mp4", MACOSX: open "video.mp4" -a vlc)
                      .
                      Client: Only for Linux and MACOSX.
-                     .
                      Server: Only for nginx's file download page.
                      .
-                     The program will sort the files by date while files in nginx's download page just sort in file name.
-                     Pass argument -f to read folder.
+                     The program will sort the video files and folders by date while files in nginx's download page just sort by name.
 
 synopsis:            pgdownloader
 
