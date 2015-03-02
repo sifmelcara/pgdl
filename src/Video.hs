@@ -27,12 +27,19 @@ isFld v = not $ isVid v
 
 
 attcLink :: T.Text -> Video -> Video
-attcLink fnt vid = Video { vidName = name
+attcLink fnt (Video name linkt size date) = Video 
+                         { vidName = name
                          , vidLink = T.pack $ fn </> link
                          , vidSize = size
                          , vidDate = date
                          }
     where fn = T.unpack fnt
-          (Video name linkt size date) = vid
+          link = T.unpack linkt
+attcLink fnt (Folder name linkt date) = Folder
+                         { fldName = name
+                         , fldLink = T.pack $ fn </> link
+                         , fldDate = date
+                         }
+    where fn = T.unpack fnt
           link = T.unpack linkt
 
