@@ -8,7 +8,7 @@ import qualified Data.Text as T
 
 beaut :: Video -> T.Text
 beaut (Video str _ _ _) = beautT str
-beaut (Folder str _ _)  = "\n" `T.append` str
+beaut (Folder str _ _)  = beautT str
 
 beautT :: T.Text -> T.Text
 beautT str
