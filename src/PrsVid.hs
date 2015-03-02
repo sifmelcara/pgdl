@@ -9,9 +9,11 @@ import SortVid
 import Text.HTML.TagSoup
 import qualified Data.Text as T
 
+prsHtm :: T.Text -> [Video]
+prsHtm t = sortVid $ (prsVid t) ++ (prsFld t)
+
 prsVid :: T.Text -> [Video]
-prsVid = sortVid .
-         map (genVid . filter (not . T.null) . map pullText) .
+prsVid = map (genVid . filter (not . T.null) . map pullText) .
          filter isVidLn . map parseTags . T.lines
     where isVidLn = any isVidLnk
           isVidLnk tg
@@ -31,7 +33,7 @@ prsVid = sortVid .
           fmts = [".mp4", ".avi", ".mkv"]
 
 prsFld :: T.Text -> [Video]
-prsFld = sortVid . map (mkFld . filter (not . T.null) . map pullText) . filter isFldLn . map parseTags . T.lines
+prsFld = map (mkFld . filter (not . T.null) . map pullText) . filter isFldLn . map parseTags . T.lines
     where isFldLn = isFldLnk . head
           isFldLnk tg
             | isTagOpen tg = (`T.isSuffixOf` fromAttrib "href" tg) "/"
