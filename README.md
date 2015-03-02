@@ -10,6 +10,6 @@ The program will sort the video files and folders by date while files in nginx's
 
 ## Installing
 
-cabal update
+cabal update <br>
 cabal install pgdl
 
