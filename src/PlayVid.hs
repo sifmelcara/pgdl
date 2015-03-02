@@ -16,6 +16,8 @@ import qualified Data.Text as T
 
 playVid :: Video -> IO ()
 playVid vid = do
+    when (isFld vid) $ error "give playVid a folder."
+                 
     username <- getUsername
     password <- getPassword
     servpath <- getServpath
