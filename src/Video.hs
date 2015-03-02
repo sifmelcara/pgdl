@@ -16,7 +16,10 @@ data Video = Video { vidName :: T.Text
                     }
 
 instance Eq Video where
-    x == y = vidName x == vidName y
+    x == y 
+        | isVid x && isVid y = vidName x == vidName y
+        | isFld x && isFld y = fldName x == fldName y
+        | otherwise = False
     
 isVid :: Video -> Bool
 isVid Video {} = True
