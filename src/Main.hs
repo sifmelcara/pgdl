@@ -92,7 +92,8 @@ main = do
                 Nothing  -> return ()
 
             onSelectionChange lst $ \sle -> case sle of
-                SelectionOn _ itm _ -> fex itm >>= \case 
+                SelectionOn _ itm _ -> if isFld itm then setFocusAttribute lst (black `on` magenta)
+                                                    else fex itm >>= \case 
                     True  -> setFocusAttribute lst (black `on` red) 
                     False -> setFocusAttribute lst (black `on` cyan)
                 _                   -> return ()
