@@ -12,7 +12,10 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 
 encVid :: [Video] -> T.Text
-encVid vs = T.intercalate "\n" $ map vidName vs
+encVid vs = T.intercalate "\n" $ map genName vs
+    where genName v
+            | isVid v = vidName v
+            | otherwise = fldName v
 
 decVid :: T.Text -> [Video]
 decVid = map (\t -> Video t "" "" "") . T.lines
