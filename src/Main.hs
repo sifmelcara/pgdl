@@ -53,7 +53,8 @@ main = do
     dfcg  `onKeyPressed` tryExit
 
     lfg   `onKeyPressed` tryExit
-                                            
+    
+    -- four button in ask scene's action
     onScePlay dlg $ \_ -> do
         Just (_, (itm, _)) <- getSelected lst
         justPlay itm
@@ -64,6 +65,7 @@ main = do
     onSceRemv dlg $ \_ -> do
         Just (_, (itm, _)) <- getSelected lst
         removeVid itm
+
     ifsfg <- newFocusGroup
     onKeyPressed ifsfg $ \_ key _ -> case key of
         KLeft -> chgls >> return True   
@@ -77,12 +79,11 @@ main = do
             join $ addToCollection c inf ifsfg
             return True
         _ -> return False
-    if null args || head args /= "-f" 
-    then schedule $ do
+    schedule $ do
         forkIO $ do
-            rd <- prsVid <$> fetchHtml
+            rd <- prsHtm <$> fetchHtml
             let vdlst = search rd args
-            when (length vdlst < 1) $ error "no video found!"
+            when (length vdlst < 1) $ error "no video or folder found!"
             Just (_, (oldItm, _)) <- getSelected lst
             clearList lst
             forM_ vdlst $ \v -> addToList lst v =<< plainText (beaut v)
@@ -97,16 +98,6 @@ main = do
                 _    -> return ()
             return ()
         return ()
-    else schedule $ do
-        forkIO $ do
-            rd <- prsFld <$> fetchHtml
-            let fdlst = search rd (tail args)
-            when (length fdlst < 1) $ error "no folder found!"
-            clearList lst
-            forM_ fdlst $ \v -> addToList lst v =<< plainText (beaut v)
-            setFocusAttribute lst (black `on` cyan)
-            return ()
-        return ()
 
     let openFld lnk = do
             ctnt <- (map (attcLink lnk) . prsVid) <$> fetchFld lnk 
@@ -116,6 +107,7 @@ main = do
             vLstAction lst chgdl statBar 
             return () 
 
+    -- User chose a folder or video !
     onKeyPressed lst $ \_ key _ -> case key of
         KEnter -> do
             Just (_, (itm, _)) <- getSelected lst
