@@ -133,8 +133,7 @@ main = do
     where tryExit _ key _ = case key of
             KChar 'q' -> exitSuccess
             _         -> return False
-
-fex itm
-    | isVid itm = downloaded $ vidName itm
-    | otherwise = return False
+          fex itm
+            | isVid itm = downloaded $ vidName itm
+            | otherwise = return False
 
