@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
 
-module PlayVid where
+module RealWorld where
 
 import Getconfig
 import Video
@@ -14,6 +14,7 @@ import System.FilePath.Posix
 import System.Exit
 import qualified Data.Text as T
 
+-- play a video
 playVid :: Video -> IO ()
 playVid vid = do
     when (isFld vid) $ error "give playVid a folder."
@@ -56,7 +57,7 @@ justPlay vid = do
   where vn = T.unpack . vidName $ vid
         addq s = "\"" ++ s ++ "\""
     
-    
+-- | remove a video 
 removeVid :: Video -> IO ()
 removeVid vid = do
     localDir <- getLocaldir
@@ -64,6 +65,7 @@ removeVid vid = do
     exitSuccess
     where vn = T.unpack . vidName $ vid
 
+-- | determine whether a video is downloaded
 downloaded :: T.Text -> IO Bool
 downloaded t = do
     lcd <- getLocaldir

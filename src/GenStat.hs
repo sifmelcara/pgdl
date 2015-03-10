@@ -4,7 +4,7 @@
 module GenStat (genStat, waitingBar) where
 
 import Video
-import RealWord
+import RealWorld
 
 import qualified Data.Text as T
 

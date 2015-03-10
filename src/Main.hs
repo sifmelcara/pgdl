@@ -5,11 +5,10 @@
 import FetchHtml
 import PrsVid
 import NameAlgo 
-import PlayVid
+import RealWorld
 import Chkcfg
 import Video
 import Log
-import TestExist
 import GenStat
 import CrtInf
 import AskScene
