@@ -3,9 +3,6 @@
 
 module Getconfig where
 
-import Control.Monad
-import Data.Maybe
-
 import qualified Data.Configurator as C
 import qualified Data.Configurator.Types as C
 

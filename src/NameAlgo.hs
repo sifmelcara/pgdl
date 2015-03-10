@@ -18,10 +18,11 @@ beaut (Folder str _ _)  = beautT str
 beautT :: T.Text -> T.Text
 beautT str = case cutName str of
     Left x -> "\n" `apd` x
-    Right [sbt, nam, eps] -> T.unlines $ [ ws 4  `apd` sbt
-                                         , ws 10 `apd` nam
-                                         , ws 30 `apd` eps
-                                         ]
+    Right (sbt:nam:eps:_) -> T.unlines  [ ws 4  `apd` sbt
+                                        , ws 10 `apd` nam
+                                        , ws 30 `apd` eps
+                                        ]
+    _ -> error "something wrong in video name parsing function"
     where apd = T.append
           ws t = T.replicate t " "
 
@@ -67,7 +68,7 @@ isAlike vf1 vf2 = if isLeft e1 || isLeft e2
           (Right (_:vn1:_)) = e1
           (Right (_:vn2:_)) = e2
           -- vn1 and vn2 are the video name without subtitle or episode, etc.
-          lim = (length (T.unpack vn1)) `div` 2
+          lim = length (T.unpack vn1) `div` 2
           dis = editDis vn1 vn2
 
 search :: [Video] ->  -- ^ video list

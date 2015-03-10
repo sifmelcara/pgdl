@@ -15,9 +15,6 @@ crtInfPg vid = T.unlines ["", "",
                          ]
     where app = T.append
           spl = T.intercalate "\n" . T.chunksOf 60 
-          getName v
-            | isVid v = vidName v
-            | otherwise = fldName v
           getSize v
             | isVid v = vidSize v
             | otherwise = "I'm a folder"
