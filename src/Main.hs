@@ -105,39 +105,56 @@ main = do
             return True
         _ -> return False
 
+    lfg `onKeyPressed` tryExit
+    dfcg `onKeyPressed` tryExit
     ifsfg `onKeyPressed` tryExit
-    dfcg  `onKeyPressed` tryExit
-    lfg   `onKeyPressed` tryExit
 
+    -- let's download video from internet !
     schedule $ do
         forkIO $ do
             rd <- prsHtm <$> fetchHtml
+            -- prsHtm :: Text -> [Video (whether video or folder)]
+
             let vdlst = search rd args
-            when (length vdlst < 1) $ error "no video or folder found!"
+            when (length vdlst < 1) $ error "no search result found (or it's empty)."
+
             Just (_, (oldItm, _)) <- getSelected lst
+            -- store the location before page refresh
+
             clearList lst
             forM_ vdlst $ \v -> addToList lst v =<< plainText (beaut v)
+            -- show new list
+
             listFindFirst lst oldItm >>= \case
                 Just ind -> setSelected lst ind
                 Nothing  -> return ()
 
             onSelectionChange lst $ \sle -> case sle of
-                SelectionOn _ itm _ -> if isFld itm then setFocusAttribute lst (black `on` magenta)
-                                                    else fex itm >>= \case 
-                    True  -> setFocusAttribute lst (black `on` red) 
-                    False -> setFocusAttribute lst (black `on` cyan)
+                SelectionOn _ itm _ -> case isFld itm of
+                    True -> setFocusAttribute lst (black `on` magenta)
+                            -- folder's color
+                    _    -> fex itm >>= \case
+                        True  -> setFocusAttribute lst (black `on` red) 
+                                 -- if video have been download, use red color
+                        False -> setFocusAttribute lst (black `on` cyan)
+                                 -- if video haven't been download, use cyan
                 _                   -> return ()
+
             onSelectionChange lst $ \sle -> case sle of
                 SelectionOn _ itm _ -> setText statBar =<< genStat itm
+                -- refresh state bar after any scroll
                 _ -> return ()
 
             when (null args) $ void . forkIO . writeVid $ vdlst
+            -- only write cache when user didn't search video
+
             return ()
         return ()
 
     let openFld lnk = do
             ctnt <- (map (attcLink lnk) . prsHtm) <$> fetchFld lnk 
-            when (null ctnt) $ error "no video in the folder!" 
+            -- attach folder link to the videos in the folder
+            when (null ctnt) $ error "there is no video in the folder!" 
             clearList lst 
             forM_ ctnt $ \v -> addToList lst v =<< plainText (beaut v) 
             return () 
@@ -158,10 +175,12 @@ main = do
     runUi c $ defaultContext {normalAttr = white `on` black, 
                               focusAttr  = black `on` blue
                              }
+
     where tryExit _ key _ = case key of
             KChar 'q' -> exitSuccess
             _         -> return False
           fex itm
             | isVid itm = downloaded $ vidName itm
             | otherwise = return False
+
 
