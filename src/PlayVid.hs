@@ -64,5 +64,8 @@ removeVid vid = do
     exitSuccess
     where vn = T.unpack . vidName $ vid
 
-
+downloaded :: T.Text -> IO Bool
+downloaded t = do
+    lcd <- getLocaldir
+    doesFileExist $ lcd </> T.unpack t
 
