@@ -35,5 +35,23 @@ cutName str
                      [T.Text] -> -- ^ initial patterns
                      [T.Text]
           getTags dl s = foldl (\ls d -> concatMap (T.splitOn d) ls) s dl
-    
+
+-- | return the edit distance of two string
+editDis :: T.Text -> T.Text -> Int
+editDis t1 t2 = dp!(len1, len2)
+    where (s1, s2) = (T.unpack t1, T.unpack t2)
+          (len1, len2) = (length s1, length s2)
+          a1 = listArray (1, len1) s1
+          a2 = listArray (1, len2) s2
+          bnd = ((0, 0), (len1, len2))
+          dp = listArray bnd [go i j | (i, j) <- range bnd]
+          go i 0 = i
+          go 0 j = j
+          go i j = minimum [ dp!(i, j-1) + 1
+                           , dp!(j-1, i) + 1
+                           , dp!(i-1, j-1) + cost
+                           ]
+            where cost = if a1!i == a2!j then 0 else 1
+
+
 
