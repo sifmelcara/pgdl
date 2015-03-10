@@ -172,8 +172,8 @@ main = do
         _   -> return False
             
 
-    runUi c $ defaultContext {normalAttr = white `on` black, 
-                              focusAttr  = black `on` blue
+    runUi c $ defaultContext { normalAttr = white `on` black 
+                             , focusAttr  = black `on` blue
                              }
 
     where tryExit _ key _ = case key of
