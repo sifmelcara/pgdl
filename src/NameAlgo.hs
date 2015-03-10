@@ -70,3 +70,9 @@ isAlike vf1 vf2 = if isLeft e1 || isLeft e2
           dis = editDis vn1 vn2
 
 
+search :: [Video] -> [String] -> [Video]
+search vids par = filter ok vids
+    where ok v = all (\tar -> T.pack tar `ifx` name) par
+            where name = if isVid v then vidName v else fldName v
+                  ifx = T.isInfixOf `on` T.toCaseFold
+
