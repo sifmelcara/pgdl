@@ -29,7 +29,7 @@ executable pgdl
   other-modules:       Beaut, Chkcfg, FetchHtml, Getconfig, Log, 
                        PlayVid, PrsVid, Search, Video, GenStat, 
                        TestExist, GenName, SortVid, CrtInf, AskScene
-  build-depends:       base == 4.* , process, 
+  build-depends:       base >= 4.7 && base < 5, process, 
                        directory, bytestring,
                        tagsoup, network-uri, 
                        vty, text, vty-ui >= 1.8,
