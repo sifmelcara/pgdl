@@ -4,7 +4,7 @@
 
 import FetchHtml
 import PrsVid
-import Beaut
+import NameAlgo 
 import PlayVid
 import Search
 import Chkcfg
