@@ -26,33 +26,40 @@ import Graphics.Vty.Widgets.All
 
 main :: IO ()
 main = do
-    chkcfg
+    chkcfg 
+    -- check if there exists a configuration file, if not, then create one
 
     c <- newCollection
 
-    lst <- newList 3 
+    lst <- newList 3
+    -- the main list will display on screen
+
     diskrd <- readVid
+    -- read cache in the disk, if the cache do not exists, return "downloading"
+
     args <- getArgs
     let diskV = if null args then diskrd
-                else dlnVid
+                             else dlnVid
+    -- if user want to search a video, then don't load cache to the screen 
+
     forM_ diskV $ \v -> addToList lst v =<< plainText (beaut v)
+    -- add disk videos to list
+
     lfg <- newFocusGroup
     addToFocusGroup lfg lst
 
     statBar <- plainText waitingBar
+    -- the state bar show in the bottom
     setNormalAttribute statBar (black `on` green)
 
     ui <- centered =<< hFixed 80 =<< vBox lst statBar
+    -- ui consists of a list and a state bar
     chgls <- addToCollection c ui lfg
-
 
     (dlg, dfcg) <- newAskScene
     dui <- centered =<< hFixed 50 (sceneWidget dlg)
     chgdl <- addToCollection c dui dfcg
 
-    dfcg  `onKeyPressed` tryExit
-
-    lfg   `onKeyPressed` tryExit
     
     -- four button in ask scene's action
     onScePlay dlg $ \_ -> do
@@ -67,18 +74,41 @@ main = do
         removeVid itm
 
     ifsfg <- newFocusGroup
+    -- a focus group for information page
+
+    -- this function will show the focused item's information to user
+    let chgInf = do
+          Just (_, (vid, _)) <- getSelected lst
+          inf <- centered =<< plainText (crtInfPg vid)
+          addToFocusGroup ifsfg inf
+          join $ addToCollection c inf ifsfg
+
+    -- the information scene
     onKeyPressed ifsfg $ \_ key _ -> case key of
-        KLeft -> chgls >> return True   
+        KLeft -> do
+            chgls -- return to the list
+            return True
+        KUp   -> do
+            scrollUp lst
+            chgInf
+            return True
+        KDown -> do
+            scrollDown lst
+            chgInf
+            return True
         _     -> return False
-    ifsfg `onKeyPressed` tryExit
+
+
     onKeyPressed lst $ \_ key _ -> case key of
         KRight -> do
-            Just (_, (itm, _)) <- getSelected lst
-            inf <- centered =<< plainText (crtInfPg itm)
-            addToFocusGroup ifsfg inf
-            join $ addToCollection c inf ifsfg
+            chgInf
             return True
         _ -> return False
+
+    ifsfg `onKeyPressed` tryExit
+    dfcg  `onKeyPressed` tryExit
+    lfg   `onKeyPressed` tryExit
+
     schedule $ do
         forkIO $ do
             rd <- prsHtm <$> fetchHtml
@@ -101,9 +131,7 @@ main = do
                 SelectionOn _ itm _ -> setText statBar =<< genStat itm
                 _ -> return ()
 
-            (null <$> getArgs) >>= \case                
-                True -> void . forkIO $ writeVid vdlst
-                _    -> return ()
+            when (null args) $ void . forkIO . writeVid $ vdlst
             return ()
         return ()
 
