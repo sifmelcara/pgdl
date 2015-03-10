@@ -4,6 +4,7 @@ module NameAlgo where
 
 import Video
 
+import Data.Function
 import Data.Array
 import Data.Either
 import qualified Data.Text as T
@@ -69,8 +70,9 @@ isAlike vf1 vf2 = if isLeft e1 || isLeft e2
           lim = (length (T.unpack vn1)) `div` 2
           dis = editDis vn1 vn2
 
-
-search :: [Video] -> [String] -> [Video]
+search :: [Video] ->  -- ^ video list
+          [String] -> -- ^ a list of target string
+          [Video]
 search vids par = filter ok vids
     where ok v = all (\tar -> T.pack tar `ifx` name) par
             where name = if isVid v then vidName v else fldName v
