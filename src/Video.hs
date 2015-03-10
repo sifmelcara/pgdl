@@ -20,7 +20,11 @@ instance Eq Video where
         | isVid x && isVid y = vidName x == vidName y
         | isFld x && isFld y = fldName x == fldName y
         | otherwise = False
-    
+
+getName :: Video -> T.Text
+getName (Video n _ _ _) = n
+getName (Folder n _ _) = n
+
 isVid :: Video -> Bool
 isVid Video {} = True
 isVid _ = False
