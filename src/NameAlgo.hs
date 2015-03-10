@@ -51,7 +51,7 @@ editDis t1 t2 = dp!(len1, len2)
           go i 0 = i
           go 0 j = j
           go i j = minimum [ dp!(i, j-1) + 1
-                           , dp!(j-1, i) + 1
+                           , dp!(i-1, j) + 1
                            , dp!(i-1, j-1) + cost
                            ]
             where cost = if a1!i == a2!j then 0 else 1
