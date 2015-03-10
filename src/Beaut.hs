@@ -1,14 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Beaut where
+module NameAlgo where
 
 import Video
 
+import Data.Array
+import Data.Either
 import qualified Data.Text as T
 
 -- | the video name parsing is only for specific type of videos...( [subtitle][video name][episode].... )
 -- for most filename, the parsing function will just return the video name itself.
-
 beaut :: Video -> T.Text
 beaut (Video str _ _ _) = beautT str
 beaut (Folder str _ _)  = beautT str
@@ -23,6 +24,7 @@ beautT str = case cutName str of
     where apd = T.append
           ws t = T.replicate t " "
 
+-- | cut the name into pisces
 cutName :: T.Text -> Either T.Text [T.Text]
 cutName str
     | length dat < 3 = Left str
@@ -53,5 +55,18 @@ editDis t1 t2 = dp!(len1, len2)
                            ]
             where cost = if a1!i == a2!j then 0 else 1
 
+-- | caculate whether the edit distance of two video
+-- name is less than half of the first video's length
+isAlike :: Video -> Video -> Bool
+isAlike vf1 vf2 = if isLeft e1 || isLeft e2 
+                  then False
+                  else dis <= lim
+    where (n1, n2) = (getName vf1, getName vf2)
+          (e1, e2) = (cutName n1, cutName n2)
+          (Right (_:vn1:_)) = e1
+          (Right (_:vn2:_)) = e2
+          -- vn1 and vn2 are the video name without subtitle or episode, etc.
+          lim = (length (T.unpack vn1)) `div` 2
+          dis = editDis vn1 vn2
 
 
