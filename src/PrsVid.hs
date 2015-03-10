@@ -3,9 +3,9 @@
 module PrsVid where
 
 import Video
-import GenName
 import SortVid
 
+import Network.HTTP.Base
 import Text.HTML.TagSoup
 import qualified Data.Text as T
 
@@ -48,4 +48,5 @@ prsFld = map (mkFld . filter (not . T.null) . map pullText) . filter isFldLn . m
             | isTagText tg = fromTagText tg
             | otherwise = ""
 
-
+genName :: T.Text -> T.Text
+genName = T.pack . urlDecode . T.unpack
