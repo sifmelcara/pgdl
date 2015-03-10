@@ -158,15 +158,26 @@ main = do
             forM_ ctnt $ \v -> addToList lst v =<< plainText (beaut v) 
             return () 
 
-    -- User chose a folder or video !
     onKeyPressed lst $ \_ key _ -> case key of
         KEnter -> do
+        -- User can choose a folder or a video !
             Just (_, (itm, _)) <- getSelected lst
             case itm of
                 Folder _ lnk _ -> openFld lnk
                 v -> fex v >>= \case
                     True -> chgdl
                     False -> playVid itm
+            return True
+        KChar 's' -> do
+            Just (_, (itm, _)) <- getSelected lst
+            size <- getListSize lst
+            let itemIdxs = reverse [0..size-1]
+            isLik <- forM itemIdxs $ \idx -> do
+                Just (now, _) <- getListItem lst idx
+                return $ isAlike itm now
+            forM_ (zip itemIdxs isLik) $ \(idx, lik) -> unless lik $ do
+                removeFromList lst idx
+                return ()
             return True
         _   -> return False
             
