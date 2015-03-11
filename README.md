@@ -20,8 +20,12 @@ all arguments passed to the program become keywords to filter videos.
 ## Shortcut keys
 
 q - quit
+<br>
 s - list files that similar with the highlighted video
+<br>
 Key Right - show the detailed information of the highlighted video
+<br>
 Key Left - go back to the previous page
+<br>
 Enter - play the video
 
