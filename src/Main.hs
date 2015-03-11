@@ -148,58 +148,57 @@ main = do
             when (null args) $ void . forkIO . writeVid $ vdlst
             -- only write cache when user didn't search video
 
+
+            let openFld lnk = do
+                    ctnt <- (map (attcLink lnk) . prsHtm) <$> fetchFld lnk 
+                    -- attach folder link to the videos in the folder
+                    when (null ctnt) $ error "there is no video in the folder!" 
+                    clearList lst 
+                    forM_ ctnt $ \v -> addToList lst v =<< plainText (beaut v) 
+                    return ()
+
+            astr <- newIORef []
+            -- we store ancestors list element in the astr
+            -- (those old list we leaved)
+            let push = do
+                  sz <- getListSize lst
+                  Just (loc, _) <- getSelected lst
+                  lem <- catMaybes <$> forM [0..sz-1] (getListItem lst)
+                  modifyIORef astr ((lem, loc):)
+            let pop = do
+                  ast <- readIORef astr
+                  case ast of
+                    [] -> return ()
+                    ((itms, loc):_) -> do
+                        clearList lst
+                        forM_ itms $ \(v, w) -> addToList lst v w
+                        setSelected lst loc
+                        modifyIORef astr tail
+                    
+            onKeyPressed lst $ \_ key _ -> case key of
+                KEnter -> do
+                -- User can choose a folder or a video !
+                    Just (_, (itm, _)) <- getSelected lst
+                    case itm of
+                        Folder _ lnk _ -> openFld lnk
+                        v -> fex v >>= \case
+                            True -> chgdl
+                            False -> playVid itm
+                    return True
+                KChar 's' -> do
+                    Just (_, (itm, _)) <- getSelected lst
+                    size <- getListSize lst
+                    let itemIdxs = reverse [0..size-1]
+                    isLik <- forM itemIdxs $ \idx -> do
+                        Just (now, _) <- getListItem lst idx
+                        return $ isAlike itm now
+                    forM_ (zip itemIdxs isLik) $ \(idx, lik) -> unless lik $ do
+                        removeFromList lst idx
+                        return ()
+                    return True
+                _   -> return False
             return ()
         return ()
-
-    let openFld lnk = do
-            ctnt <- (map (attcLink lnk) . prsHtm) <$> fetchFld lnk 
-            -- attach folder link to the videos in the folder
-            when (null ctnt) $ error "there is no video in the folder!" 
-            clearList lst 
-            forM_ ctnt $ \v -> addToList lst v =<< plainText (beaut v) 
-            return ()
-
-    astr <- newIORef []
-    -- we store ancestors list element in the astr
-    -- (those old list we leaved)
-    let push = do
-          sz <- getListSize lst
-          Just (loc, _) <- getSelected lst
-          lem <- catMaybes <$> forM [0..sz-1] (getListItem lst)
-          modifyIORef astr ((lem, loc):)
-    let pop = do
-          ast <- readIORef astr
-          case ast of
-            [] -> return ()
-            ((itms, loc):_) -> do
-                clearList lst
-                forM_ itms $ \(v, w) -> addToList lst v w
-                setSelected lst loc
-                modifyIORef astr tail
-            
-    onKeyPressed lst $ \_ key _ -> case key of
-        KEnter -> do
-        -- User can choose a folder or a video !
-            Just (_, (itm, _)) <- getSelected lst
-            case itm of
-                Folder _ lnk _ -> openFld lnk
-                v -> fex v >>= \case
-                    True -> chgdl
-                    False -> playVid itm
-            return True
-        KChar 's' -> do
-            Just (_, (itm, _)) <- getSelected lst
-            size <- getListSize lst
-            let itemIdxs = reverse [0..size-1]
-            isLik <- forM itemIdxs $ \idx -> do
-                Just (now, _) <- getListItem lst idx
-                return $ isAlike itm now
-            forM_ (zip itemIdxs isLik) $ \(idx, lik) -> unless lik $ do
-                removeFromList lst idx
-                return ()
-            return True
-        _   -> return False
-            
 
     runUi c $ defaultContext { normalAttr = white `on` black 
                              , focusAttr  = black `on` blue
