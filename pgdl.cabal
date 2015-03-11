@@ -16,6 +16,8 @@ description:         a terminal user interface program that downloads a video fr
                      Server: Only for nginx's file download page.
                      .
                      The program will sort the video files and folders by date while files in nginx's download page just sort by name.
+                     .
+                     For shortcut keys, please visit https://github.com/sifmelcara/pgdl
 
 synopsis:            pgdownloader
 
