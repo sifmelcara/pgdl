@@ -145,27 +145,17 @@ main = do
                 -- refresh state bar after any scroll
                 _ -> return ()
 
-            when (null args) $ void . forkIO . writeVid $ vdlst
-            -- only write cache when user didn't search video
-
-
-            let openFld lnk = do
-                    ctnt <- (map (attcLink lnk) . prsHtm) <$> fetchFld lnk 
-                    -- attach folder link to the videos in the folder
-                    when (null ctnt) $ error "there is no video in the folder!" 
-                    clearList lst 
-                    forM_ ctnt $ \v -> addToList lst v =<< plainText (beaut v) 
-                    return ()
-
             astr <- newIORef []
             -- we store ancestors list element in the astr
             -- (those old list we leaved)
             let push = do
+            -- store the state into astr
                   sz <- getListSize lst
                   Just (loc, _) <- getSelected lst
                   lem <- catMaybes <$> forM [0..sz-1] (getListItem lst)
                   modifyIORef astr ((lem, loc):)
             let pop = do
+            -- pop a state from astr and give it to lst
                   ast <- readIORef astr
                   case ast of
                     [] -> return ()
@@ -175,6 +165,15 @@ main = do
                         setSelected lst loc
                         modifyIORef astr tail
                     
+            let openFld lnk = do
+                  ctnt <- (map (attcLink lnk) . prsHtm) <$> fetchFld lnk 
+                  -- attach folder link to the videos in the folder
+                  when (null ctnt) $ error "there is no video in the folder!" 
+                  push
+                  clearList lst 
+                  forM_ ctnt $ \v -> addToList lst v =<< plainText (beaut v) 
+                  return ()
+
             onKeyPressed lst $ \_ key _ -> case key of
                 KEnter -> do
                 -- User can choose a folder or a video !
@@ -185,7 +184,12 @@ main = do
                             True -> chgdl
                             False -> playVid itm
                     return True
+                KLeft -> do
+                -- return to the old list
+                    pop
+                    return True
                 KChar 's' -> do
+                    push
                     Just (_, (itm, _)) <- getSelected lst
                     size <- getListSize lst
                     let itemIdxs = reverse [0..size-1]
@@ -197,6 +201,10 @@ main = do
                         return ()
                     return True
                 _   -> return False
+
+            when (null args) $ void . forkIO . writeVid $ vdlst
+            -- only write cache when user didn't search video
+
             return ()
         return ()
 
