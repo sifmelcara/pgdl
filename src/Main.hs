@@ -13,6 +13,8 @@ import GenStat
 import CrtInf
 import AskScene
 
+import Data.IORef
+import Data.Maybe
 import Control.Applicative
 import Control.Concurrent
 import Control.Monad
@@ -155,8 +157,26 @@ main = do
             when (null ctnt) $ error "there is no video in the folder!" 
             clearList lst 
             forM_ ctnt $ \v -> addToList lst v =<< plainText (beaut v) 
-            return () 
+            return ()
 
+    astr <- newIORef []
+    -- we store ancestors list element in the astr
+    -- (those old list we leaved)
+    let push = do
+          sz <- getListSize lst
+          Just (loc, _) <- getSelected lst
+          lem <- catMaybes <$> forM [0..sz-1] (getListItem lst)
+          modifyIORef astr ((lem, loc):)
+    let pop = do
+          ast <- readIORef astr
+          case ast of
+            [] -> return ()
+            ((itms, loc):_) -> do
+                clearList lst
+                forM_ itms $ \(v, w) -> addToList lst v w
+                setSelected lst loc
+                modifyIORef astr tail
+            
     onKeyPressed lst $ \_ key _ -> case key of
         KEnter -> do
         -- User can choose a folder or a video !
