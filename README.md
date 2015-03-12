@@ -30,4 +30,6 @@ Key Left - go back to the previous page
 Enter - play the video
 <br>
 / - open a input box to enter a keyword to search
+<br>
+n - sort the current list by name
 
