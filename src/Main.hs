@@ -199,16 +199,11 @@ main = do
                     pop
                     return True
                 KChar 's' -> do
+                -- filter the videos by the focused video
                     push
                     Just (_, (itm, _)) <- getSelected lst
-                    size <- getListSize lst
-                    let itemIdxs = reverse [0..size-1]
-                    isLik <- forM itemIdxs $ \idx -> do
-                        Just (now, _) <- getListItem lst idx
-                        return $ isAlike itm now
-                    forM_ (zip itemIdxs isLik) $ \(idx, lik) -> unless lik $ do
-                        removeFromList lst idx
-                        return ()
+                    vs <- getListVideos lst
+                    setListVideos lst $ filter (\now -> isAlike itm now) vs
                     return True
                 KChar '/' -> do
                     chgky
