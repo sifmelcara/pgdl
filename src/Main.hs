@@ -65,12 +65,6 @@ main = do
     chgky <- addToCollection c kui kfg
     -- create a scene presents a input box
 
-    onActivate ew $ \e -> do
-        t <- getEditText e
-        
-        chgls
-        -- return to the list
-
     (dlg, dfcg) <- newAskScene
     dui <- centered =<< hFixed 50 (sceneWidget dlg)
     chgdl <- addToCollection c dui dfcg
@@ -180,6 +174,14 @@ main = do
                   clearList lst 
                   forM_ ctnt $ \v -> addToList lst v =<< plainText (beaut v) 
                   return ()
+
+            onActivate ew $ \e -> do
+                t <- getEditText e
+                vs <- getListVideos lst
+                push
+                setListVideos lst $ search vs (words . T.unpack $ t)
+                chgls
+                -- return to the list
 
             onKeyPressed lst $ \_ key _ -> case key of
                 KEnter -> do
