@@ -123,6 +123,8 @@ main = do
         forkIO $ do
             rd <- prsHtm <$> fetchHtml
             -- prsHtm :: Text -> [Video (whether video or folder)]
+            forkIO . writeVid $ rd
+            -- write cache to the disk
 
             let vdlst = search rd args
             when (length vdlst < 1) $ error "no search result found (or it's empty)."
@@ -209,9 +211,6 @@ main = do
                     chgky
                     return True
                 _   -> return False
-
-            when (null args) $ void . forkIO . writeVid $ vdlst
-            -- only write cache when user didn't search video
 
             return ()
         return ()
