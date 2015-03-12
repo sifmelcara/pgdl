@@ -58,9 +58,12 @@ main = do
     
     ew <- editWidget
     -- a widget to enter keyword
+    setVisible ew False
+    onActivate ew $ \e -> do
+        t <- getEditText e
+        setVisible e False
+        
 
-    keyUI <- centered =<< hFixed 80 =<< vBox lst ew
-    chgky <- addToCollection c keyUI lfg
 
     (dlg, dfcg) <- newAskScene
     dui <- centered =<< hFixed 50 (sceneWidget dlg)
@@ -205,6 +208,10 @@ main = do
                     forM_ (zip itemIdxs isLik) $ \(idx, lik) -> unless lik $ do
                         removeFromList lst idx
                         return ()
+                    return True
+                KChar '/' -> do
+                    setVisible ew True
+                    focus ew
                     return True
                 _   -> return False
 
