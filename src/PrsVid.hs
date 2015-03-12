@@ -3,7 +3,7 @@
 module PrsVid where
 
 import Video
-import SortVid
+import NameAlgo
 
 import Network.HTTP.Base
 import Text.HTML.TagSoup

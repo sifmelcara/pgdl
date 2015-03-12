@@ -6,6 +6,8 @@ import Video
 
 import Data.Function
 import Data.Array
+import Data.List
+import Data.Ord
 import qualified Data.Text as T
 
 -- | the video name parsing is only for specific type of videos...( [subtitle][video name][episode].... )
@@ -75,4 +77,31 @@ search vids par = filter ok vids
     where ok v = all (\tar -> T.pack tar `ifx` name) par
             where name = if isVid v then vidName v else fldName v
                   ifx = T.isInfixOf `on` T.toCaseFold
+
+sortVid :: [Video] -> [Video]
+sortVid = sortBy cmpv
+    where cmpv :: Video -> Video -> Ordering
+          cmpv = cmp `on` dt
+            where dt v
+                    | isVid v = vidDate v
+                    | otherwise = fldDate v
+          cmp :: T.Text -> T.Text -> Ordering
+          cmp = flip compare `on` prs
+            where prs tx = [year, tranMon mon, day, time] 
+                    where [day, mon, year, time] = T.splitOn "-" tx
+                          tranMon :: T.Text -> T.Text
+                          tranMon m = case m of
+                            "Jan" -> "A"
+                            "Feb" -> "B"
+                            "Mar" -> "C"
+                            "Apr" -> "D"
+                            "May" -> "E"
+                            "Jun" -> "F"
+                            "Jul" -> "G"
+                            "Aug" -> "H"
+                            "Sep" -> "I"
+                            "Oct" -> "J"
+                            "Nov" -> "K"
+                            "Dec" -> "L"
+                            _     -> " "
 
