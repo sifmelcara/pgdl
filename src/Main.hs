@@ -58,12 +58,17 @@ main = do
     
     ew <- editWidget
     -- a widget to enter keyword
-    setVisible ew False
+    kfg <- newFocusGroup
+    addToFocusGroup kfg ew
+    kui <- centered =<< hFixed 80 =<< vBox lst ew
+    chgky <- addToCollection c kui kfg
+    -- create a scene presents a input box
+
     onActivate ew $ \e -> do
         t <- getEditText e
-        setVisible e False
         
-
+        chgls
+        -- return to the list
 
     (dlg, dfcg) <- newAskScene
     dui <- centered =<< hFixed 50 (sceneWidget dlg)
@@ -210,8 +215,7 @@ main = do
                         return ()
                     return True
                 KChar '/' -> do
-                    setVisible ew True
-                    focus ew
+                    chgky
                     return True
                 _   -> return False
 
