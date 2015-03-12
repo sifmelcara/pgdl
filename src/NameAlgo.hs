@@ -78,6 +78,9 @@ search vids par = filter ok vids
             where name = if isVid v then vidName v else fldName v
                   ifx = T.isInfixOf `on` T.toCaseFold
 
+sortByName :: [Video] -> [Video]
+sortByName = sortBy (comparing getName)
+
 sortVid :: [Video] -> [Video]
 sortVid = sortBy cmpv
     where cmpv :: Video -> Video -> Ordering

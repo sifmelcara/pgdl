@@ -207,6 +207,12 @@ main = do
                     vs <- getListVideos lst
                     setListVideos lst $ filter (\now -> isAlike itm now) vs
                     return True
+                KChar 'n' -> do
+                -- sort videos by their name
+                    push
+                    vs <- getListVideos lst
+                    setListVideos lst $ sortByName vs
+                    return True
                 KChar '/' -> do
                     chgky
                     return True
