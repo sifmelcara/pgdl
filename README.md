@@ -28,4 +28,6 @@ Key Right - show the detailed information of the highlighted video
 Key Left - go back to the previous page
 <br>
 Enter - play the video
+<br>
+/ - open a input box to enter a keyword to search
 
