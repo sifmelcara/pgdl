@@ -55,6 +55,12 @@ main = do
     ui <- centered =<< hFixed 80 =<< vBox lst statBar
     -- ui consists of a list and a state bar
     chgls <- addToCollection c ui lfg
+    
+    ew <- editWidget
+    -- a widget to enter keyword
+
+    keyUI <- centered =<< hFixed 80 =<< vBox lst ew
+    chgky <- addToCollection c keyUI lfg
 
     (dlg, dfcg) <- newAskScene
     dui <- centered =<< hFixed 50 (sceneWidget dlg)
