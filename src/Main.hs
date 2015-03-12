@@ -177,6 +177,7 @@ main = do
 
             onActivate ew $ \e -> do
                 t <- getEditText e
+                setEditText e ""
                 vs <- getListVideos lst
                 push
                 setListVideos lst $ search vs (words . T.unpack $ t)
