@@ -13,6 +13,7 @@ import GenStat
 import CrtInf
 import AskScene
 
+import qualified Data.Text as T
 import Data.IORef
 import Data.Maybe
 import Control.Applicative
@@ -131,17 +132,9 @@ main = do
 
             let vdlst = search rd args
             when (length vdlst < 1) $ error "no search result found (or it's empty)."
-
-            Just (_, (oldItm, _)) <- getSelected lst
-            -- store the location before page refresh
-
-            clearList lst
-            forM_ vdlst $ \v -> addToList lst v =<< plainText (beaut v)
+            
+            setListVideos lst vdlst
             -- show new list
-
-            listFindFirst lst oldItm >>= \case
-                Just ind -> setSelected lst ind
-                Nothing  -> return ()
 
             onSelectionChange lst $ \sle -> case sle of
                 SelectionOn _ itm _ -> case isFld itm of
@@ -235,5 +228,19 @@ main = do
           fex itm
             | isVid itm = downloaded $ vidName itm
             | otherwise = return False
+          -- return the videos in the list
+          getListVideos lst = do
+            sz <- getListSize lst
+            forM [0..sz-1] $ \idx -> do
+                Just (itm, _) <- getListItem lst idx
+                return itm
+          -- set lst content to vs
+          setListVideos lst vs = do
+            Just (_, (oldItm, _)) <- getSelected lst
+            clearList lst 
+            forM_ vs $ \v -> addToList lst v =<< plainText (beaut v)
+            listFindFirst lst oldItm >>= \case
+                Just ind -> setSelected lst ind
+                Nothing  -> return ()
 
 
