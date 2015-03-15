@@ -11,13 +11,21 @@ import NameAlgo
 import System.Exit
 import Graphics.Vty
 import Graphics.Vty.Widgets.All
+import Data.Text (Text)
+import qualified Data.Text as T
+import Data.IORef
+import Video
 
-type WL = Widget (List Text FormattedText)
+type WL = Widget (List Video FormattedText)
 
 data VList = VList WL (IORef [WL])
 
-vidsVList :: IO VList
-newVList vs = do
+vidsVList :: [Video] -> IO VList
+vidsVList vs = do
+    lst <- newList 3
+    forM_ vs $ \v -> addToList lst v =<< plainText (beaut v)
+    ior <- newIORef []
+    return $ VList lst ior
     
 
 tryExit _ key _ = case key of
