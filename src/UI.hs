@@ -40,7 +40,11 @@ setVList (VList wl st) vs = do
 
 backVList :: VList -> IO ()
 backVList (VList wl st) = do
-    
+    readIORef st >>= \case
+        [] -> return ()
+        (blst:_) -> do
+            setListVideos wl =<< getListVideos blst
+            modifyIORef st tail
 
 
 tryExit _ key _ = case key of
