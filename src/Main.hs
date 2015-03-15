@@ -148,26 +148,6 @@ main = do
                 SelectionOn _ itm _ -> setText statBar =<< genStat itm
                 -- refresh state bar after any scroll
                 _ -> return ()
-
-            astr <- newIORef []
-            -- we store ancestors list element in the astr
-            -- (those old list we leaved)
-            let push = do
-            -- store the state into astr
-                  sz <- getListSize lst
-                  Just (loc, _) <- getSelected lst
-                  lem <- catMaybes <$> forM [0..sz-1] (getListItem lst)
-                  modifyIORef astr ((lem, loc):)
-            let pop = do
-            -- pop a state from astr and give it to lst
-                  ast <- readIORef astr
-                  case ast of
-                    [] -> return ()
-                    ((itms, loc):_) -> do
-                        clearList lst
-                        forM_ itms $ \(v, w) -> addToList lst v w
-                        setSelected lst loc
-                        modifyIORef astr tail
                     
             let openFld lnk = do
                   ctnt <- (map (attcLink lnk) . prsHtm) <$> fetchFld lnk 
