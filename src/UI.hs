@@ -33,6 +33,13 @@ filterVList (VList wl st) ok = do
     setListVideos wl . filter ok =<< getListVideos wl
     return ()
 
+setVList :: VList -> [Video] -> IO ()
+setVList (VList wl st) vs = do
+    modifyIORef st (wl:)
+    setListVideos wl vs
+
+backVList :: VList -> IO ()
+backVList (VList wl st) = do
     
 
 
@@ -59,3 +66,4 @@ setListVideos lst vs = do
     listFindFirst lst oldItm >>= \case
         Just ind -> setSelected lst ind
         Nothing  -> return ()
+
