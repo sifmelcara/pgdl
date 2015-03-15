@@ -26,7 +26,15 @@ vidsVList vs = do
     forM_ vs $ \v -> addToList lst v =<< plainText (beaut v)
     ior <- newIORef []
     return $ VList lst ior
+
+filterVList :: VList -> (Video -> Bool) -> IO ()
+filterVList (VList wl st) ok = do
+    modifyIORef st (wl:) 
+    setListVideos wl . filter ok =<< getListVideos wl
+    return ()
+
     
+
 
 tryExit _ key _ = case key of
     KChar 'q' -> exitSuccess
