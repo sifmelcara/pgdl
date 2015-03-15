@@ -12,6 +12,7 @@ import Log
 import GenStat
 import CrtInf
 import AskScene
+import UI
 
 import qualified Data.Text as T
 import Data.IORef
@@ -69,7 +70,7 @@ main = do
     dui <- centered =<< hFixed 50 (sceneWidget dlg)
     chgdl <- addToCollection c dui dfcg
 
-    
+
     -- four button in ask scene's action
     onScePlay dlg $ \_ -> do
         Just (_, (itm, _)) <- getSelected lst
@@ -224,26 +225,4 @@ main = do
     runUi c $ defaultContext { normalAttr = white `on` black 
                              , focusAttr  = black `on` blue
                              }
-
-    where tryExit _ key _ = case key of
-            KChar 'q' -> exitSuccess
-            _         -> return False
-          fex itm
-            | isVid itm = downloaded $ vidName itm
-            | otherwise = return False
-          -- return the videos in the list
-          getListVideos lst = do
-            sz <- getListSize lst
-            forM [0..sz-1] $ \idx -> do
-                Just (itm, _) <- getListItem lst idx
-                return itm
-          -- set lst content to vs
-          setListVideos lst vs = do
-            Just (_, (oldItm, _)) <- getSelected lst
-            clearList lst 
-            forM_ vs $ \v -> addToList lst v =<< plainText (beaut v)
-            listFindFirst lst oldItm >>= \case
-                Just ind -> setSelected lst ind
-                Nothing  -> return ()
-
 

@@ -3,8 +3,22 @@
 
 module UI where
 
+import Video
+import RealWorld
+
+import Control.Monad
+import NameAlgo
+import System.Exit
 import Graphics.Vty
 import Graphics.Vty.Widgets.All
+
+type WL = Widget (List Text FormattedText)
+
+data VList = VList WL (IORef [WL])
+
+vidsVList :: IO VList
+newVList vs = do
+    
 
 tryExit _ key _ = case key of
     KChar 'q' -> exitSuccess
