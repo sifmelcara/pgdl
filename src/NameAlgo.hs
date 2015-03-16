@@ -71,10 +71,12 @@ isAlike vf1 vf2 = dis <= lim
           lim = length (T.unpack vn1) `div` 2
           dis = editDis vn1 vn2
 
+{-
 search :: [Video] ->  -- ^ video list
           [String] -> -- ^ a list of target string
           [Video]
 search vids par = filter (\v -> vidInfx v (map T.pack par)) vids
+-}
 
 vidInfx :: Video -> [Text] -> Bool
 vidInfx _ [] = True
