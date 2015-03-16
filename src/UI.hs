@@ -18,7 +18,7 @@ import Data.List
 
 type WL = Widget (List Video FormattedText)
 
-data VList = VList WL (IORef [WL])
+data VList = VList WL (IORef [[Video]])
 
 listW :: VList -> WL
 listW (VList lw _) = lw
@@ -32,25 +32,29 @@ vidsVList vs = do
 
 filterVList :: VList -> (Video -> Bool) -> IO ()
 filterVList (VList wl st) ok = do
-    modifyIORef st (wl:) 
+    vs <- getListVideos wl
+    modifyIORef st (vs:) 
     setListVideos wl . filter ok =<< getListVideos wl
 
 sortVList :: VList -> (Video -> Video -> Ordering) -> IO ()
 sortVList (VList wl st) cmp = do
-    modifyIORef st (wl:)
+    vs <- getListVideos wl
+    modifyIORef st (vs:)
     setListVideos wl . sortBy cmp =<< getListVideos wl
 
 setVList :: VList -> [Video] -> IO ()
 setVList (VList wl st) vs = do
-    modifyIORef st (wl:)
+    vs <- getListVideos wl
+    modifyIORef st (vs:)
     setListVideos wl vs
 
 backVList :: VList -> IO ()
 backVList (VList wl st) =
     readIORef st >>= \case
-        [] -> return ()
-        (blst:_) -> do
-            setListVideos wl =<< getListVideos blst
+        [] -> 
+            return ()
+        (bvs:_) -> do
+            setListVideos wl bvs
             modifyIORef st tail
 
 
