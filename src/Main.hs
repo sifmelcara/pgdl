@@ -82,10 +82,11 @@ main = do
             -- show new list
             let lst = listW vlst
             lfg <- newFocusGroup
+            lfg `onKeyPressed` tryExit
             addToFocusGroup lfg lst
             lui <- centered =<< hFixed 80 =<< vBox lst statBar
             chgls <- addToCollection c lui lfg 
-
+            chgls
             ew <- editWidget
             -- a widget to enter keyword
             kfg <- newFocusGroup
