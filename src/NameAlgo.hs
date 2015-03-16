@@ -8,6 +8,7 @@ import Data.Function
 import Data.Array
 import Data.List
 import Data.Ord
+import Data.Text (Text)
 import qualified Data.Text as T
 
 -- | the video name parsing is only for specific type of videos...( [subtitle][video name][episode].... )
@@ -73,10 +74,12 @@ isAlike vf1 vf2 = dis <= lim
 search :: [Video] ->  -- ^ video list
           [String] -> -- ^ a list of target string
           [Video]
-search vids par = filter ok vids
-    where ok v = all (\tar -> T.pack tar `ifx` name) par
-            where name = if isVid v then vidName v else fldName v
-                  ifx = T.isInfixOf `on` T.toCaseFold
+search vids par = filter (\v -> vidInfx v (map T.pack par)) vids
+
+vidInfx :: Video -> [Text] -> Bool
+vidInfx _ [] = True
+vidInfx v (x:xs) = (x `ifx` getName v) && vidInfx v xs
+    where ifx = T.isInfixOf `on` T.toCaseFold
 
 sortByName :: [Video] -> [Video]
 sortByName = sortBy (comparing getName)
