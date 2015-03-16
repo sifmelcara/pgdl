@@ -59,8 +59,6 @@ main = do
     dui <- centered =<< hFixed 50 (sceneWidget dlg)
     chgdl <- addToCollection c dui dfcg
 
-
-
     ifsfg <- newFocusGroup
     -- a focus group for information page
 
@@ -96,10 +94,10 @@ main = do
             -- create a scene presents a input box
 
             onSelectionChange lst $ \sle -> case sle of
-                SelectionOn _ itm _ -> case isFld itm of
-                    True -> setFocusAttribute lst (black `on` magenta)
+                SelectionOn _ itm _ -> if isFld itm
+                    then setFocusAttribute lst (black `on` magenta)
                             -- folder's color
-                    _    -> fex itm >>= \case
+                    else fex itm >>= \case
                         True  -> setFocusAttribute lst (black `on` red) 
                                  -- if video have been download, use red color
                         False -> setFocusAttribute lst (black `on` cyan)

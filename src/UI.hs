@@ -14,7 +14,6 @@ import Graphics.Vty.Widgets.All
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.IORef
-import Video
 import Data.List
 
 type WL = Widget (List Video FormattedText)
@@ -46,7 +45,7 @@ setVList (VList wl st) vs = do
     setListVideos wl vs
 
 backVList :: VList -> IO ()
-backVList (VList wl st) = do
+backVList (VList wl st) =
     readIORef st >>= \case
         [] -> return ()
         (blst:_) -> do
