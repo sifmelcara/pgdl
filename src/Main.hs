@@ -33,7 +33,7 @@ main = do
 
     c <- newCollection
 
-    lst <- newList 3
+    tmpLst <- newList 3
     -- the main list will display on screen
 
     diskrd <- readVid
@@ -44,27 +44,20 @@ main = do
                              else dlnVid
     -- if user want to search a video, then don't load cache to the screen 
 
-    forM_ diskV $ \v -> addToList lst v =<< plainText (beaut v)
+    forM_ diskV $ \v -> addToList tmpLst v =<< plainText (beaut v)
     -- add disk videos to list
 
-    lfg <- newFocusGroup
-    addToFocusGroup lfg lst
+    tmpLfg <- newFocusGroup
+    addToFocusGroup tmpLfg tmpLst
 
     statBar <- plainText waitingBar
     -- the state bar show in the bottom
     setNormalAttribute statBar (black `on` green)
 
-    ui <- centered =<< hFixed 80 =<< vBox lst statBar
+    tmpUi <- centered =<< hFixed 80 =<< vBox tmpLst statBar
     -- ui consists of a list and a state bar
-    chgls <- addToCollection c ui lfg
+    chgTmpLs <- addToCollection c tmpUi tmpLfg
     
-    ew <- editWidget
-    -- a widget to enter keyword
-    kfg <- newFocusGroup
-    addToFocusGroup kfg ew
-    kui <- centered =<< hFixed 80 =<< vBox lst ew
-    chgky <- addToCollection c kui kfg
-    -- create a scene presents a input box
 
     (dlg, dfcg) <- newAskScene
     dui <- centered =<< hFixed 50 (sceneWidget dlg)
@@ -87,33 +80,7 @@ main = do
     -- a focus group for information page
 
     -- this function will show the focused item's information to user
-    let chgInf = do
-          Just (_, (vid, _)) <- getSelected lst
-          inf <- centered =<< plainText (crtInfPg vid)
-          addToFocusGroup ifsfg inf
-          join $ addToCollection c inf ifsfg
 
-    -- the information scene
-    onKeyPressed ifsfg $ \_ key _ -> case key of
-        KLeft -> do
-            chgls -- return to the list
-            return True
-        KUp   -> do
-            scrollUp lst
-            chgInf
-            return True
-        KDown -> do
-            scrollDown lst
-            chgInf
-            return True
-        _     -> return False
-
-
-    onKeyPressed lst $ \_ key _ -> case key of
-        KRight -> do
-            chgInf
-            return True
-        _ -> return False
 
     lfg `onKeyPressed` tryExit
     dfcg `onKeyPressed` tryExit
@@ -132,6 +99,14 @@ main = do
             
             setListVideos lst vdlst
             -- show new list
+
+            ew <- editWidget
+            -- a widget to enter keyword
+            kfg <- newFocusGroup
+            addToFocusGroup kfg ew
+            kui <- centered =<< hFixed 80 =<< vBox lst ew
+            chgky <- addToCollection c kui kfg
+            -- create a scene presents a input box
 
             onSelectionChange lst $ \sle -> case sle of
                 SelectionOn _ itm _ -> case isFld itm of
@@ -157,6 +132,34 @@ main = do
                   clearList lst 
                   forM_ ctnt $ \v -> addToList lst v =<< plainText (beaut v) 
                   return ()
+
+            let chgInf = do
+                  Just (_, (vid, _)) <- getSelected lst
+                  inf <- centered =<< plainText (crtInfPg vid)
+                  addToFocusGroup ifsfg inf
+                  join $ addToCollection c inf ifsfg
+
+            -- the information scene
+            onKeyPressed ifsfg $ \_ key _ -> case key of
+                KLeft -> do
+                    chgls -- return to the list
+                    return True
+                KUp   -> do
+                    scrollUp lst
+                    chgInf
+                    return True
+                KDown -> do
+                    scrollDown lst
+                    chgInf
+                    return True
+                _     -> return False
+
+
+            onKeyPressed lst $ \_ key _ -> case key of
+                KRight -> do
+                    chgInf
+                    return True
+                _ -> return False
 
             onActivate ew $ \e -> do
                 t <- getEditText e

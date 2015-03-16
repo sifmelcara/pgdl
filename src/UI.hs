@@ -20,6 +20,8 @@ type WL = Widget (List Video FormattedText)
 
 data VList = VList WL (IORef [WL])
 
+listW (VList lw _) = lw
+
 vidsVList :: [Video] -> IO VList
 vidsVList vs = do
     lst <- newList 3
