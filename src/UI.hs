@@ -15,6 +15,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import Data.IORef
 import Video
+import Data.List
 
 type WL = Widget (List Video FormattedText)
 
@@ -33,7 +34,11 @@ filterVList :: VList -> (Video -> Bool) -> IO ()
 filterVList (VList wl st) ok = do
     modifyIORef st (wl:) 
     setListVideos wl . filter ok =<< getListVideos wl
-    return ()
+
+sortVList :: VList -> (Video -> Video -> Ordering) -> IO ()
+sortVList (VList wl st) cmp = do
+    modifyIORef st (wl:)
+    setListVideos wl . sortBy cmp =<< getListVideos wl
 
 setVList :: VList -> [Video] -> IO ()
 setVList (VList wl st) vs = do
