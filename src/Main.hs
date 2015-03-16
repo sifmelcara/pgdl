@@ -65,6 +65,8 @@ main = do
     dfcg `onKeyPressed` tryExit
     ifsfg `onKeyPressed` tryExit
 
+    -- colorDecide tmpLst
+
     -- let's download video from internet !
     schedule $ do
         forkIO $ do
@@ -90,16 +92,7 @@ main = do
             chgky <- addToCollection c kui kfg
             -- create a scene presents a input box
 
-            onSelectionChange lst $ \sle -> case sle of
-                SelectionOn _ itm _ -> if isFld itm
-                    then setFocusAttribute lst (black `on` magenta)
-                            -- folder's color
-                    else fex itm >>= \case
-                        True  -> setFocusAttribute lst (black `on` red) 
-                                 -- if video have been download, use red color
-                        False -> setFocusAttribute lst (black `on` cyan)
-                                 -- if video haven't been download, use cyan
-                _                   -> return ()
+            colorDecide lst
 
             -- four button in ask scene's action
             onScePlay dlg $ \_ -> do

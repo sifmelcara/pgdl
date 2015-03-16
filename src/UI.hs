@@ -81,3 +81,16 @@ setListVideos lst vs = do
         Just ind -> setSelected lst ind
         Nothing  -> return ()
 
+colorDecide :: WL -> IO ()
+colorDecide lst = 
+    onSelectionChange lst $ \sle -> case sle of
+        SelectionOn _ itm _ -> if isFld itm
+            then setFocusAttribute lst (black `on` magenta)
+                    -- folder's color
+            else fex itm >>= \case
+                True  -> setFocusAttribute lst (black `on` red) 
+                         -- if video have been download, use red color
+                False -> setFocusAttribute lst (black `on` cyan)
+                         -- if video haven't been download, use cyan
+        _                   -> return ()
+
