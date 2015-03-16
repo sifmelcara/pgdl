@@ -13,10 +13,6 @@ The program will sort the video files and folders by date while files in nginx's
 cabal update <br>
 cabal install pgdl
 
-## Command line argument
-
-all arguments passed to the program become keywords to filter videos.
-
 ## Shortcut keys
 
 q - quit

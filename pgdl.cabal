@@ -1,6 +1,6 @@
 
 name:                pgdl
-version:             7.8
+version:             8.0
 license:             PublicDomain
 license-file:        LICENSE
 author:              sifmelcara
@@ -17,7 +17,7 @@ description:         a terminal user interface program that downloads a video fr
                      .
                      The program will sort the video files and folders by date while files in nginx's download page just sort by name.
                      .
-                     For shortcut keys, please visit "https://github.com/sifmelcara/pgdl"
+                     For shortcut keys, please visit <https://github.com/sifmelcara/pgdl>
 
 synopsis:            pgdownloader
 
