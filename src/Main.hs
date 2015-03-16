@@ -15,6 +15,7 @@ import AskScene
 import UI
 
 import qualified Data.Text as T
+import Data.Ord
 import Data.IORef
 import Data.Maybe
 import Control.Applicative
@@ -36,13 +37,8 @@ main = do
     tmpLst <- newList 3
     -- the main list will display on screen
 
-    diskrd <- readVid
+    diskV <- readVid
     -- read cache in the disk, if the cache do not exists, return "downloading"
-
-    args <- getArgs
-    let diskV = if null args then diskrd
-                             else dlnVid
-    -- if user want to search a video, then don't load cache to the screen 
 
     forM_ diskV $ \v -> addToList tmpLst v =<< plainText (beaut v)
     -- add disk videos to list
@@ -64,41 +60,31 @@ main = do
     chgdl <- addToCollection c dui dfcg
 
 
-    -- four button in ask scene's action
-    onScePlay dlg $ \_ -> do
-        Just (_, (itm, _)) <- getSelected lst
-        justPlay itm
-    onSceDown dlg $ \_ -> do
-        Just (_, (itm, _)) <- getSelected lst
-        playVid itm
-    onSceQuit dlg $ const exitSuccess
-    onSceRemv dlg $ \_ -> do
-        Just (_, (itm, _)) <- getSelected lst
-        removeVid itm
 
     ifsfg <- newFocusGroup
     -- a focus group for information page
 
     -- this function will show the focused item's information to user
 
-
-    lfg `onKeyPressed` tryExit
+    tmpLfg `onKeyPressed` tryExit
     dfcg `onKeyPressed` tryExit
     ifsfg `onKeyPressed` tryExit
 
     -- let's download video from internet !
     schedule $ do
         forkIO $ do
-            rd <- prsHtm <$> fetchHtml
+            vdlst <- prsHtm <$> fetchHtml
             -- prsHtm :: Text -> [Video (whether video or folder)]
-            forkIO . writeVid $ rd
+            forkIO . writeVid $ vdlst
             -- write cache to the disk
-
-            let vdlst = search rd args
-            when (length vdlst < 1) $ error "no search result found (or it's empty)."
             
-            setListVideos lst vdlst
+            vlst <- vidsVList vdlst
             -- show new list
+            let lst = listW vlst
+            lfg <- newFocusGroup
+            addToFocusGroup lfg lst
+            lui <- centered =<< hFixed 80 =<< vBox lst statBar
+            chgls <- addToCollection c lui lfg 
 
             ew <- editWidget
             -- a widget to enter keyword
@@ -119,18 +105,28 @@ main = do
                                  -- if video haven't been download, use cyan
                 _                   -> return ()
 
+            -- four button in ask scene's action
+            onScePlay dlg $ \_ -> do
+                Just (_, (itm, _)) <- getSelected lst
+                justPlay itm
+            onSceDown dlg $ \_ -> do
+                Just (_, (itm, _)) <- getSelected lst
+                playVid itm
+            onSceQuit dlg $ const exitSuccess
+            onSceRemv dlg $ \_ -> do
+                Just (_, (itm, _)) <- getSelected lst
+                removeVid itm
+
             onSelectionChange lst $ \sle -> case sle of
                 SelectionOn _ itm _ -> setText statBar =<< genStat itm
                 -- refresh state bar after any scroll
                 _ -> return ()
-                    
+            
             let openFld lnk = do
                   ctnt <- (map (attcLink lnk) . prsHtm) <$> fetchFld lnk 
                   -- attach folder link to the videos in the folder
                   when (null ctnt) $ error "there is no video in the folder!" 
-                  push
-                  clearList lst 
-                  forM_ ctnt $ \v -> addToList lst v =<< plainText (beaut v) 
+                  setVList vlst ctnt
                   return ()
 
             let chgInf = do
@@ -154,7 +150,6 @@ main = do
                     return True
                 _     -> return False
 
-
             onKeyPressed lst $ \_ key _ -> case key of
                 KRight -> do
                     chgInf
@@ -165,8 +160,7 @@ main = do
                 t <- getEditText e
                 setEditText e ""
                 vs <- getListVideos lst
-                push
-                setListVideos lst $ search vs (words . T.unpack $ t)
+                setVList vlst $ search vs (words . T.unpack $ t)
                 chgls
                 -- return to the list
 
@@ -182,20 +176,16 @@ main = do
                     return True
                 KLeft -> do
                 -- return to the old list
-                    pop
+                    backVList vlst
                     return True
                 KChar 's' -> do
                 -- filter the videos by the focused video
-                    push
                     Just (_, (itm, _)) <- getSelected lst
-                    vs <- getListVideos lst
-                    setListVideos lst $ filter (\now -> isAlike itm now) vs
+                    filterVList vlst (isAlike itm)
                     return True
                 KChar 'n' -> do
                 -- sort videos by their name
-                    push
-                    vs <- getListVideos lst
-                    setListVideos lst $ sortByName vs
+                    sortVList vlst (comparing getName) 
                     return True
                 KChar '/' -> do
                     chgky
