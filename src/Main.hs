@@ -16,13 +16,10 @@ import UI
 
 import qualified Data.Text as T
 import Data.Ord
-import Data.IORef
-import Data.Maybe
 import Control.Applicative
 import Control.Concurrent
 import Control.Monad
 import System.Exit
-import System.Environment
 
 import Graphics.Vty
 import Graphics.Vty.Widgets.All

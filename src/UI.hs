@@ -20,6 +20,7 @@ type WL = Widget (List Video FormattedText)
 
 data VList = VList WL (IORef [WL])
 
+listW :: VList -> WL
 listW (VList lw _) = lw
 
 vidsVList :: [Video] -> IO VList
@@ -57,11 +58,13 @@ tryExit _ key _ = case key of
     KChar 'q' -> exitSuccess
     _         -> return False
 
+fex :: Video -> IO Bool
 fex itm
     | isVid itm = downloaded $ vidName itm
     | otherwise = return False
 
 -- return the videos in the list
+getListVideos :: WL -> IO [Video]
 getListVideos lst = do
     sz <- getListSize lst
     forM [0..sz-1] $ \idx -> do
@@ -69,6 +72,7 @@ getListVideos lst = do
         return itm
 
 -- set lst content to vs
+setListVideos :: WL -> [Video] -> IO ()
 setListVideos lst vs = do
     Just (_, (oldItm, _)) <- getSelected lst
     clearList lst 
