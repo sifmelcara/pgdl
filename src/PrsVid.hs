@@ -10,7 +10,9 @@ import Text.HTML.TagSoup
 import qualified Data.Text as T
 
 prsHtm :: T.Text -> [Video]
-prsHtm t = sortVid $ (prsVid t) ++ (prsFld t)
+prsHtm t = if null vs then [noVideo] else vs
+    where vs = sortVid $ (prsVid t) ++ (prsFld t)
+          noVideo = Video "No video in this folder." "" "" ""
 
 prsVid :: T.Text -> [Video]
 prsVid = map (genVid . filter (not . T.null) . map pullText) .

@@ -111,12 +111,6 @@ main = do
                 -- refresh state bar after any scroll
                 _ -> return ()
             
-            let openFld lnk = do
-                  ctnt <- (map (attcLink lnk) . prsHtm) <$> fetchFld lnk 
-                  -- attach folder link to the videos in the folder
-                  when (null ctnt) $ error "there is no video in the folder!" 
-                  setVList vlst ctnt
-                  return ()
 
             let chgInf = do
                   Just (_, (vid, _)) <- getSelected lst
@@ -148,10 +142,16 @@ main = do
             onActivate ew $ \e -> do
                 t <- getEditText e
                 setEditText e ""
-                vs <- getListVideos lst
-                setVList vlst $ search vs (words . T.unpack $ t)
+                filterVList vlst $ \v -> vidInfx v (T.words t)
                 chgls
                 -- return to the list
+
+            let openFld lnk = do
+                  ctnt <- (map (attcLink lnk) . prsHtm) <$> fetchFld lnk 
+                  -- attach folder link to the videos in the folder
+                  when (null ctnt) $ error "there is no video in the folder!" 
+                  setVList vlst ctnt
+                  return ()
 
             onKeyPressed lst $ \_ key _ -> case key of
                 KEnter -> do
