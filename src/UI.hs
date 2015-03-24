@@ -44,16 +44,17 @@ sortVList (VList wl st) cmp = do
 
 setVList :: VList -> [Video] -> IO ()
 setVList (VList wl st) vs = do
-    vs <- getListVideos wl
-    modifyIORef st (vs:)
+    oldVs <- getListVideos wl
+    modifyIORef st (oldVs:)
     setListVideos wl vs
 
 backVList :: VList -> IO ()
-backVList (VList wl st) =
+backVList (VList wl st) = do
     readIORef st >>= \case
         [] -> 
             return ()
         (bvs:_) -> do
+--            putStrLn "something >////<"
             setListVideos wl bvs
             modifyIORef st tail
 
@@ -80,6 +81,8 @@ setListVideos :: WL -> [Video] -> IO ()
 setListVideos lst vs = do
     Just (_, (oldItm, _)) <- getSelected lst
     clearList lst 
+--    putStrLn "setListVideos >/////<"
+--    putStrLn . show . length $ vs
     forM_ vs $ \v -> addToList lst v =<< plainText (beaut v)
     listFindFirst lst oldItm >>= \case
         Just ind -> setSelected lst ind
