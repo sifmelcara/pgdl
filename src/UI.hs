@@ -15,10 +15,13 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import Data.IORef
 import Data.List
+import Control.Applicative
 
 type WL = Widget (List Video FormattedText)
+type VidStat = ([Video], Video)
+--              videos   last select video
 
-data VList = VList WL (IORef [[Video]])
+data VList = VList WL (IORef [VidStat])
 
 listW :: VList -> WL
 listW (VList lw _) = lw
@@ -33,19 +36,22 @@ vidsVList vs = do
 filterVList :: VList -> (Video -> Bool) -> IO ()
 filterVList (VList wl st) ok = do
     vs <- getListVideos wl
-    modifyIORef st (vs:) 
+    idx <- getWLSelected wl
+    modifyIORef st ((vs, idx):) 
     setListVideos wl . filter ok =<< getListVideos wl
 
 sortVList :: VList -> (Video -> Video -> Ordering) -> IO ()
 sortVList (VList wl st) cmp = do
     vs <- getListVideos wl
-    modifyIORef st (vs:)
+    idx <- getWLSelected wl
+    modifyIORef st ((vs, idx):)
     setListVideos wl . sortBy cmp =<< getListVideos wl
 
 setVList :: VList -> [Video] -> IO ()
 setVList (VList wl st) vs = do
     oldVs <- getListVideos wl
-    modifyIORef st (oldVs:)
+    idx <- getWLSelected wl
+    modifyIORef st ((oldVs, idx):)
     setListVideos wl vs
 
 backVList :: VList -> IO ()
@@ -53,9 +59,9 @@ backVList (VList wl st) = do
     readIORef st >>= \case
         [] -> 
             return ()
-        (bvs:_) -> do
+        ((bvs, bloc):_) -> do
 --            putStrLn "something >////<"
-            setListVideos wl bvs
+            setListVideosB wl bvs bloc
             modifyIORef st tail
 
 
@@ -76,17 +82,31 @@ getListVideos lst = do
         Just (itm, _) <- getListItem lst idx
         return itm
 
+getWLSelected :: WL -> IO Video
+getWLSelected ls = do
+    Just (_, (idx, _)) <- getSelected ls
+    return idx
+
 -- set lst content to vs
 setListVideos :: WL -> [Video] -> IO ()
 setListVideos lst vs = do
     Just (_, (oldItm, _)) <- getSelected lst
     clearList lst 
---    putStrLn "setListVideos >/////<"
---    putStrLn . show . length $ vs
     forM_ vs $ \v -> addToList lst v =<< plainText (beaut v)
     listFindFirst lst oldItm >>= \case
         Just ind -> setSelected lst ind
         Nothing  -> return ()
+
+setListVideosB :: WL -> [Video] -> Video -> IO ()
+setListVideosB lst vs bvid = do
+    Just (_, (oldItm, _)) <- getSelected lst
+    clearList lst 
+    forM_ vs $ \v -> addToList lst v =<< plainText (beaut v)
+    listFindFirst lst oldItm >>= \case
+        Just ind -> setSelected lst ind
+        Nothing  -> listFindFirst lst bvid >>= \case
+            Just ind2 -> setSelected lst ind2
+            Nothing -> return ()
 
 colorDecide :: WL -> IO ()
 colorDecide lst = 
