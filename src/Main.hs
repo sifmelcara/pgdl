@@ -76,8 +76,15 @@ main = do
             -- write cache to the disk
             
             vlst <- vidsVList vdlst
-            -- show new list
             let lst = listW vlst
+            
+            -- move to the selected old item
+            Just (_, (oldSeleItm, _)) <- getSelected tmpLst
+            listFindFirst lst oldSeleItm >>= \case
+                Just idx -> setSelected lst idx
+                Nothing -> return ()
+
+            -- show new list
             lfg <- newFocusGroup
             lfg `onKeyPressed` tryExit
             addToFocusGroup lfg lst
