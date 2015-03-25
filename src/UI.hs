@@ -34,18 +34,20 @@ vidsVList vs = do
     return $ VList lst ior
 
 filterVList :: VList -> (Video -> Bool) -> IO ()
-filterVList (VList wl st) ok = do
-    vs <- getListVideos wl
-    idx <- getWLSelected wl
-    modifyIORef st ((vs, idx):) 
+filterVList vl@(VList wl st) ok = do
+    storeState vl
     setListVideos wl . filter ok =<< getListVideos wl
 
 sortVList :: VList -> (Video -> Video -> Ordering) -> IO ()
-sortVList (VList wl st) cmp = do
+sortVList vl@(VList wl st) cmp = do
+    storeState vl
+    setListVideos wl . sortBy cmp =<< getListVideos wl
+
+storeState :: VList -> IO ()
+storeState (VList wl st) = do
     vs <- getListVideos wl
     idx <- getWLSelected wl
     modifyIORef st ((vs, idx):)
-    setListVideos wl . sortBy cmp =<< getListVideos wl
 
 setVList :: VList -> [Video] -> IO ()
 setVList (VList wl st) vs = do
@@ -55,7 +57,7 @@ setVList (VList wl st) vs = do
     setListVideos wl vs
 
 backVList :: VList -> IO ()
-backVList (VList wl st) = do
+backVList (VList wl st) = 
     readIORef st >>= \case
         [] -> 
             return ()
@@ -90,7 +92,7 @@ getWLSelected ls = do
 -- set lst content to vs
 setListVideos :: WL -> [Video] -> IO ()
 setListVideos lst vs = do
-    Just (_, (oldItm, _)) <- getSelected lst
+    oldItm <- getWLSelected lst
     clearList lst 
     forM_ vs $ \v -> addToList lst v =<< plainText (beaut v)
     listFindFirst lst oldItm >>= \case
