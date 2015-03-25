@@ -5,17 +5,14 @@ module UI where
 
 import Video
 import RealWorld
+import NameAlgo
 
 import Control.Monad
-import NameAlgo
 import System.Exit
 import Graphics.Vty
 import Graphics.Vty.Widgets.All
-import Data.Text (Text)
-import qualified Data.Text as T
 import Data.IORef
 import Data.List
-import Control.Applicative
 
 type WL = Widget (List Video FormattedText)
 type VidStat = ([Video], Video)
@@ -34,12 +31,12 @@ vidsVList vs = do
     return $ VList lst ior
 
 filterVList :: VList -> (Video -> Bool) -> IO ()
-filterVList vl@(VList wl st) ok = do
+filterVList vl@(VList wl _) ok = do
     storeState vl
     setListVideos wl . filter ok =<< getListVideos wl
 
 sortVList :: VList -> (Video -> Video -> Ordering) -> IO ()
-sortVList vl@(VList wl st) cmp = do
+sortVList vl@(VList wl _) cmp = do
     storeState vl
     setListVideos wl . sortBy cmp =<< getListVideos wl
 
@@ -66,7 +63,7 @@ backVList (VList wl st) =
             setListVideosB wl bvs bloc
             modifyIORef st tail
 
-
+tryExit :: Widget FocusGroup -> Key -> [Modifier] -> IO Bool
 tryExit _ key _ = case key of
     KChar 'q' -> exitSuccess
     _         -> return False

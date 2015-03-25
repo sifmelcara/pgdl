@@ -49,7 +49,7 @@ main = do
 
     tmpUi <- centered =<< hFixed 80 =<< vBox tmpLst statBar
     -- ui consists of a list and a state bar
-    chgTmpLs <- addToCollection c tmpUi tmpLfg
+    addToCollection c tmpUi tmpLfg
     
 
     (dlg, dfcg) <- newAskScene
