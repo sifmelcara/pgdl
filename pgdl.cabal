@@ -30,7 +30,7 @@ executable pgdl
   main-is:             Main.hs
   other-modules:       NameAlgo, Chkcfg, FetchHtml, Getconfig,
                        Log, RealWorld, PrsVid, Video, GenStat, 
-                       CrtInf, AskScene
+                       CrtInf, AskScene, UI
   build-depends:       base == 4.*, process, 
                        directory, bytestring,
                        tagsoup, network-uri, 
