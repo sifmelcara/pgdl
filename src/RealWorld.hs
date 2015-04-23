@@ -11,7 +11,6 @@ import Distribution.System
 import System.Process
 import System.Directory
 import System.FilePath.Posix
-import System.Exit
 import qualified Data.Text as T
 
 -- play a video
