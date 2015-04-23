@@ -13,6 +13,7 @@ import Graphics.Vty
 import Graphics.Vty.Widgets.All
 import Data.IORef
 import Data.List
+import Control.Concurrent
 
 type WL = Widget (List Video FormattedText)
 type VidStat = ([Video], Video)
@@ -113,15 +114,18 @@ setListVideosB lst vs bvid = do
             Nothing -> return ()
 
 colorDecide :: WL -> IO ()
-colorDecide lst = 
-    onSelectionChange lst $ \sle -> case sle of
-        SelectionOn _ itm _ -> if isFld itm
-            then setFocusAttribute lst (black `on` magenta)
-                    -- folder's color
+colorDecide lst = do
+    forkIO . forever $ do
+        schedule $ do
+            Just (_, (itm, _)) <- getSelected lst
+            if isFld itm then
+                setFocusAttribute lst (black `on` magenta)
+                        -- folder's color
             else fex itm >>= \case
-                True  -> setFocusAttribute lst (black `on` red) 
-                         -- if video have been download, use red color
-                False -> setFocusAttribute lst (black `on` cyan)
-                         -- if video haven't been download, use cyan
-        _                   -> return ()
+                    True  -> setFocusAttribute lst (black `on` red) 
+                             -- if video have been download, use red color
+                    False -> setFocusAttribute lst (black `on` cyan)
+                             -- if video haven't been download, use cyan
+        threadDelay 50000 -- 0.05 second
+    return ()
 
