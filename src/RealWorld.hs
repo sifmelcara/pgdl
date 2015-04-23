@@ -43,6 +43,7 @@ playVid vid = do
     exitSuccess
   where vn = T.unpack . vidName $ vid
         vu = T.unpack . vidLink $ vid
+        addq :: String -> String
         addq s = "\"" ++ s ++ "\""
 
 justPlay :: Video -> IO ()
@@ -55,6 +56,7 @@ justPlay vid = do
         _     -> error "OS unsupported!"
     exitSuccess
   where vn = T.unpack . vidName $ vid
+        addq :: String -> String
         addq s = "\"" ++ s ++ "\""
     
 -- | remove a video 
