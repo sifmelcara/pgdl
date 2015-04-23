@@ -20,9 +20,9 @@ newAskScene = do
     downB <- newButton "Yes"
     quitB <- newButton "Quit"
     remvB <- newButton "Remov"
-    buttonBox <- (mkwIO playB) <++> (mkwIO downB) <++> (mkwIO quitB) <++> (mkwIO remvB)
+    buttonBox <- mkwIO playB <++> mkwIO downB <++> mkwIO quitB <++> mkwIO remvB
     b <- do
-        bx <- (plainText "    Download it again?") <--> (return buttonBox)
+        bx <- plainText "    Download it again?" <--> return buttonBox
         setBoxSpacing bx 1
         withPadding (padAll 1) bx
     fg <- newFocusGroup

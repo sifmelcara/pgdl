@@ -11,7 +11,7 @@ import qualified Data.Text as T
 
 prsHtm :: T.Text -> [Video]
 prsHtm t = if null vs then [noVideo] else vs
-    where vs = sortVid $ (prsVid t) ++ (prsFld t)
+    where vs = sortVid $ prsVid t ++ prsFld t
           noVideo = Video "No video in this folder." "" "" ""
 
 prsVid :: T.Text -> [Video]
