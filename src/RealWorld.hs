@@ -40,7 +40,8 @@ playVid vid = do
         OSX   -> runCommand $ "open " ++ addq localloc ++ " -a vlc"
         Linux -> runCommand $ "nohup vlc -f " ++ addq localloc ++ " &>/dev/null &"
         _     -> error "OS unsupported!"
-    exitSuccess
+    return ()
+    -- exitSuccess
   where vn = T.unpack . vidName $ vid
         vu = T.unpack . vidLink $ vid
         addq :: String -> String
@@ -54,7 +55,8 @@ justPlay vid = do
         OSX   -> runCommand $ "open " ++ addq localloc ++ " -a vlc"
         Linux -> runCommand $ "nohup vlc -f " ++ addq localloc ++ " &>/dev/null &"
         _     -> error "OS unsupported!"
-    exitSuccess
+    return ()
+    -- exitSuccess
   where vn = T.unpack . vidName $ vid
         addq :: String -> String
         addq s = "\"" ++ s ++ "\""
@@ -64,7 +66,8 @@ removeVid :: Video -> IO ()
 removeVid vid = do
     localDir <- getLocaldir
     removeFile $ localDir </> vn
-    exitSuccess
+    return ()
+    -- exitSuccess
     where vn = T.unpack . vidName $ vid
 
 -- | determine whether a video is downloaded

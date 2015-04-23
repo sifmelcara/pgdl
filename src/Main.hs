@@ -105,13 +105,16 @@ main = do
             onScePlay dlg $ \_ -> do
                 Just (_, (itm, _)) <- getSelected lst
                 justPlay itm
+                chgls
             onSceDown dlg $ \_ -> do
                 Just (_, (itm, _)) <- getSelected lst
                 playVid itm
+                chgls
             onSceQuit dlg $ const exitSuccess
             onSceRemv dlg $ \_ -> do
                 Just (_, (itm, _)) <- getSelected lst
                 removeVid itm
+                chgls
 
             onSelectionChange lst $ \sle -> case sle of
                 SelectionOn _ itm _ -> setText statBar =<< genStat itm
