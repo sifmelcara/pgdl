@@ -70,6 +70,7 @@ backVList (VList wl st) =
 tryExit :: Widget FocusGroup -> Key -> [Modifier] -> IO Bool
 tryExit _ key _ = case key of
     KChar 'q' -> exitSuccess
+    KEsc      -> exitSuccess
     _         -> return False
 
 fex :: Video -> IO Bool
