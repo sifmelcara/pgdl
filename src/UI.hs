@@ -40,6 +40,16 @@ filterVList vl@(VList wl _) ok = do
             storeState vl
             setListVideos wl res
 
+filterVListIO :: VList -> (Video -> IO Bool) -> IO ()
+filterVListIO vl@(VList wl _) ok = do
+    origVids <- getListVideos wl
+    newVids <- filterM ok origVids
+    case newVids of
+        [] -> return ()
+        res -> do
+            storeState vl
+            setListVideos wl res
+
 sortVList :: VList -> (Video -> Video -> Ordering) -> IO ()
 sortVList vl@(VList wl _) cmp = do
     storeState vl
