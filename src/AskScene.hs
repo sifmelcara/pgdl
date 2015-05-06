@@ -18,7 +18,7 @@ newAskScene :: IO (AskScene, Widget FocusGroup)
 newAskScene = do
     playB <- newButton "No"
     downB <- newButton "Yes"
-    quitB <- newButton "Quit"
+    quitB <- newButton "Cancel"
     remvB <- newButton "Remov"
     buttonBox <- mkwIO playB <++> mkwIO downB <++> mkwIO quitB <++> mkwIO remvB
     b <- do

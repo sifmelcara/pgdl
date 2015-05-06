@@ -110,7 +110,7 @@ main = do
                 Just (_, (itm, _)) <- getSelected lst
                 playVid itm
                 chgls
-            onSceQuit dlg $ const exitSuccess
+            onSceQuit dlg $ const chgls
             onSceRemv dlg $ \_ -> do
                 Just (_, (itm, _)) <- getSelected lst
                 removeVid itm
