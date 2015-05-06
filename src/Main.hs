@@ -186,6 +186,10 @@ main = do
                 -- sort videos by their name
                     sortVList vlst (comparing getName) 
                     return True
+                KChar 'v' -> do
+                    filterVListIO vlst $ \obj -> if isVid obj then downloaded obj
+                                                 else return False 
+                    return True
                 KChar '/' -> do
                     chgky
                     return True
