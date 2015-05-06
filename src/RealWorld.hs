@@ -70,8 +70,10 @@ removeVid vid = do
     where vn = T.unpack . vidName $ vid
 
 -- | determine whether a video is downloaded
-downloaded :: T.Text -> IO Bool
-downloaded t = do
+downloaded :: Video -> IO Bool
+downloaded v = do
     lcd <- getLocaldir
     doesFileExist $ lcd </> T.unpack t
+    where t = if isVid v then vidName v
+              else error "try to consider a folder downloaded or not" 
 

@@ -76,7 +76,7 @@ tryExit _ key _ = case key of
 
 fex :: Video -> IO Bool
 fex itm
-    | isVid itm = downloaded $ vidName itm
+    | isVid itm = downloaded $ itm
     | otherwise = return False
 
 -- return the videos in the list
