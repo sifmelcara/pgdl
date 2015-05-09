@@ -27,7 +27,7 @@ source-repository head
 
 executable pgdl
   hs-source-dirs:      src
-  main-is:             Main.hs
+  main-is:             Pgdl.hs
   other-modules:       NameAlgo, Chkcfg, FetchHtml, Getconfig,
                        Log, RealWorld, PrsVid, Video, GenStat, 
                        CrtInf, AskScene, UI
