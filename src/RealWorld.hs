@@ -17,7 +17,10 @@ import qualified Data.Text as T
 playVid :: Video -> IO ()
 playVid vid = do
     when (isFld vid) $ error "give playVid a folder."
-                 
+
+    -- don't download a video whoose name is empty
+    when ("/" `T.isSuffixOf` (vidLink vid)) $ error "maybe this is not a video?"
+
     username <- getUsername
     password <- getPassword
     servpath <- getServpath
@@ -40,7 +43,6 @@ playVid vid = do
         Linux -> runCommand $ "xdg-open " ++ addq localloc ++ " &>/dev/null &"
         _     -> error "OS unsupported!"
     return ()
-    -- exitSuccess
   where vn = T.unpack . vidName $ vid
         vu = T.unpack . vidLink $ vid
         addq :: String -> String
@@ -48,6 +50,8 @@ playVid vid = do
 
 justPlay :: Video -> IO ()
 justPlay vid = do
+    when (isFld vid) $ error "give playVid a folder."
+
     localdir <- getLocaldir
     let localloc = localdir </> vn
     case buildOS of
