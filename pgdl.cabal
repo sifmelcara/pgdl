@@ -1,6 +1,6 @@
 
 name:                pgdl
-version:             8.1
+version:             8.2
 license:             PublicDomain
 license-file:        LICENSE
 author:              sifmelcara
@@ -9,8 +9,8 @@ category:            Network
 build-type:          Simple
 extra-source-files:  README.md
 cabal-version:       >=1.10
-description:         a terminal user interface program that downloads a video from html and call vlc to play it immediately.
-                     (Linux: vlc -f "video.mp4", MACOSX: open "video.mp4" -a vlc)
+description:         a terminal user interface program downloads video from nginx file index page and play it.
+                     (Linux: xdg-open "video.mp4", MACOSX: open "video.mp4")
                      .
                      Client: Only for Linux and MACOSX.
                      Server: Only for nginx's file download page.
@@ -19,7 +19,7 @@ description:         a terminal user interface program that downloads a video fr
                      .
                      For shortcut keys, please visit <https://github.com/sifmelcara/pgdl>
 
-synopsis:            pgdownloader
+synopsis:            simply download a video from webpage and play it.
 
 source-repository head
   type:     git
