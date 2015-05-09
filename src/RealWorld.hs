@@ -19,7 +19,7 @@ playVid vid = do
     when (isFld vid) $ error "give playVid a folder."
 
     -- don't download a video whoose name is empty
-    when ("/" `T.isSuffixOf` (vidLink vid)) $ error "maybe this is not a video?"
+    when ("/" `T.isSuffixOf` vidLink vid) $ error "maybe this is not a video?"
 
     username <- getUsername
     password <- getPassword
