@@ -28,4 +28,6 @@ Enter - play the video
 / - open a input box to enter a keyword to search
 <br>
 n - sort the current list by name
+<br>
+v - show the videos already in the disk
 
