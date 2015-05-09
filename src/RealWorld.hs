@@ -36,8 +36,8 @@ playVid vid = do
     let checkFile = doesFileExist localloc >>= \ready -> unless ready checkFile
     checkFile
     case buildOS of
-        OSX   -> runCommand $ "open " ++ addq localloc ++ " -a vlc"
-        Linux -> runCommand $ "nohup vlc -f " ++ addq localloc ++ " &>/dev/null &"
+        OSX   -> runCommand $ "open " ++ addq localloc ++ " "
+        Linux -> runCommand $ "xdg-open " ++ addq localloc ++ " &>/dev/null &"
         _     -> error "OS unsupported!"
     return ()
     -- exitSuccess
@@ -51,8 +51,8 @@ justPlay vid = do
     localdir <- getLocaldir
     let localloc = localdir </> vn
     case buildOS of
-        OSX   -> runCommand $ "open " ++ addq localloc ++ " -a vlc"
-        Linux -> runCommand $ "nohup vlc -f " ++ addq localloc ++ " &>/dev/null &"
+        OSX   -> runCommand $ "open " ++ addq localloc ++ " "
+        Linux -> runCommand $ "xdg-open " ++ addq localloc ++ " &>/dev/null &"
         _     -> error "OS unsupported!"
     return ()
     -- exitSuccess
