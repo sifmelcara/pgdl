@@ -9,7 +9,7 @@ import RealWorld
 import qualified Data.Text as T
 
 genStat :: Video -> IO T.Text
-genStat vid@(Video name _ size date) = do
+genStat vid@(Video _ _ size date) = do
     st <- toStr $ downloaded vid
     return $ T.concat [ spc 3 , date
                       , spc 5 , size

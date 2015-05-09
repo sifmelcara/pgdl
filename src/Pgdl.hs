@@ -19,7 +19,6 @@ import Data.Ord
 import Control.Applicative
 import Control.Concurrent
 import Control.Monad
-import System.Exit
 
 import Graphics.Vty
 import Graphics.Vty.Widgets.All
