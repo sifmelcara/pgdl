@@ -40,7 +40,7 @@ playVid vid = do
     checkFile
     case buildOS of
         OSX   -> runCommand $ "open " ++ addq localloc ++ " "
-        Linux -> runCommand $ "xdg-open " ++ addq localloc ++ " &>/dev/null &"
+        Linux -> runCommand $ "nohup xdg-open " ++ addq localloc ++ " &>/dev/null &"
         _     -> error "OS unsupported!"
     return ()
   where vn = T.unpack . vidName $ vid
@@ -56,7 +56,7 @@ justPlay vid = do
     let localloc = localdir </> vn
     case buildOS of
         OSX   -> runCommand $ "open " ++ addq localloc ++ " "
-        Linux -> runCommand $ "xdg-open " ++ addq localloc ++ " &>/dev/null &"
+        Linux -> runCommand $ "nohup xdg-open " ++ addq localloc ++ " &>/dev/null &"
         _     -> error "OS unsupported!"
     return ()
     -- exitSuccess
