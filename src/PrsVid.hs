@@ -19,7 +19,7 @@ prsVid = map (genVid . filter (not . T.null) . map pullText) .
          filter isVidLn . map parseTags . T.lines
     where isVidLn = any isVidLnk
           isVidLnk tg
-            | isTagOpen tg = any (`T.isSuffixOf` fromAttrib "href" tg) fmts
+            | isTagOpen tg = (not $ "/" `T.isSuffixOf` fromAttrib "href" tg) && (not . T.null $ fromAttrib "href" tg)
             | otherwise = False
           pullText tg
             | isTagOpen tg = fromAttrib "href" tg
