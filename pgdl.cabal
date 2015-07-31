@@ -17,7 +17,7 @@ description:         a terminal user interface program downloads video (or a fil
                      .
                      The program will sort the files and folders by date while files in nginx's download page just sort by name.
                      .
-                     For shortcut keys, please visit <https://github.com/sifmelcara/pgdl>
+                     For shortcut keys, please visit <https://github.com/sifmelcara/pgdl> or press h in the program.
 
 synopsis:            simply download a video (or a file) from a webpage and xdg-open it.
 
