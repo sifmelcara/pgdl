@@ -1,6 +1,6 @@
 
 name:                pgdl
-version:             8.2
+version:             8.3
 license:             PublicDomain
 license-file:        LICENSE
 author:              sifmelcara
@@ -15,11 +15,11 @@ description:         a terminal user interface program downloads video from ngin
                      Client: Only for Linux and MACOSX.
                      Server: Only for nginx's file download page.
                      .
-                     The program will sort the video files and folders by date while files in nginx's download page just sort by name.
+                     The program will sort the files and folders by date while files in nginx's download page just sort by name.
                      .
                      For shortcut keys, please visit <https://github.com/sifmelcara/pgdl>
 
-synopsis:            simply download a video from webpage and play it.
+synopsis:            simply download a video (or a file) from a webpage and xdg-open it.
 
 source-repository head
   type:     git
