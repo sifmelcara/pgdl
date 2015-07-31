@@ -57,12 +57,16 @@ main = do
 
     ifsfg <- newFocusGroup
     -- a focus group for information page
+    
+    helpfg <- newFocusGroup
+    -- a focus group of help page
 
     -- this function will show the focused item's information to user
 
     tmpLfg `onKeyPressed` tryExit
     dfcg `onKeyPressed` tryExit
     ifsfg `onKeyPressed` tryExit
+    helpfg `onKeyPressed` tryExit
 
     -- colorDecide tmpLst
 
@@ -142,6 +146,12 @@ main = do
                     return True
                 _     -> return False
 
+            let chgHelp = do
+                  hp <- centered =<< plainText helpPage
+                  addToFocusGroup helpfg hp
+                  join $ addToCollection c hp helpfg
+            onKeyPressed helpfg $ \_ _ _ -> (chgls >> return True)
+
             onKeyPressed lst $ \_ key _ -> case key of
                 KRight -> do
                     chgInf
@@ -196,6 +206,10 @@ main = do
                 KChar '/' -> do
                     chgky
                     return True
+                KChar 'h' -> do
+                    chgHelp
+                    return True
+
                 _   -> return False
 
             return ()
@@ -204,4 +218,10 @@ main = do
     runUi c $ defaultContext { normalAttr = white `on` black 
                              , focusAttr  = black `on` blue
                              }
+
+helpPage :: T.Text
+helpPage = T.unlines [ "i love davy"
+                     , "illusion conducter"
+                     ]
+
 
