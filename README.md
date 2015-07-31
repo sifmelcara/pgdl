@@ -10,8 +10,17 @@ The program will sort the video files and folders by date while files in nginx's
 
 ## Installing
 
+```shell
 cabal update  
 cabal install pgdl
+```
+
+If there is an error occured when installing vty-ui, you may need 
+```shell
+cabal install vty-ui -f no-tests 
+```
+
+to skip build of testing executable.
 
 ## Shortcut keys
 
