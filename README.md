@@ -10,24 +10,25 @@ The program will sort the video files and folders by date while files in nginx's
 
 ## Installing
 
-cabal update <br>
+cabal update 
+
 cabal install pgdl
 
 ## Shortcut keys
 
 q - quit
-<br>
+
 s - list files that similar with the highlighted video
-<br>
+
 Key Right - show the detailed information of the highlighted video
-<br>
+
 Key Left - go back to the previous page
-<br>
+
 Enter - play the video
-<br>
+
 / - open a input box to enter a keyword to search
-<br>
+
 n - sort the current list by name
-<br>
+
 v - show the videos already in the disk
 
