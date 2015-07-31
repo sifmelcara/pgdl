@@ -9,7 +9,7 @@ category:            Network
 build-type:          Simple
 extra-source-files:  README.md
 cabal-version:       >=1.10
-description:         a terminal user interface program downloads video from nginx file index page and play it.
+description:         a terminal user interface program downloads video (or a file) from nginx file index page and xdg-open it.
                      (Linux: xdg-open "video.mp4", MACOSX: open "video.mp4")
                      .
                      Client: Only for Linux and MACOSX.
