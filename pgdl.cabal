@@ -34,7 +34,7 @@ executable pgdl
   build-depends:       base == 4.*, process, 
                        directory, bytestring,
                        tagsoup, network-uri, 
-                       vty, text, vty-ui >= 1.8,
+                       vty, text, vty-ui >= 1.9,
                        configurator >= 0.3.0.0, HTTP,
                        filepath, Cabal, array
   ghc-options:         -threaded -O2
