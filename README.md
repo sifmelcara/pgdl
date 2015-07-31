@@ -32,5 +32,6 @@ Enter - play the video
 / - open a input box to enter a keyword to search  
 n - sort the current list by name  
 v - show the videos already in the disk  
-u - show the videos not in the disk
+u - show the videos not in the disk  
+h - shortcut keys' help page
 
