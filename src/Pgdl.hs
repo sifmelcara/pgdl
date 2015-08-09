@@ -119,11 +119,11 @@ main = do
                 removeVid itm
                 chgls
 
-            onSelectionChange lst $ \sle -> case sle of
-                SelectionOn _ itm _ -> setText statBar =<< genStat itm
-                -- refresh state bar after any scroll
-                _ -> return ()
-            
+          --  onSelectionChange lst $ \sle -> case sle of
+           --     SelectionOn _ itm _ -> setText statBar =<< genStat itm
+            --    -- refresh state bar after any scroll
+            --    _ -> return ()
+            refreshStatusBar lst statBar
 
             let chgInf = do
                   Just (_, (vid, _)) <- getSelected lst

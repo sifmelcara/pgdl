@@ -7,6 +7,7 @@ module UI where
 import Video
 import RealWorld
 import NameAlgo
+import GenStat
 
 import Control.Monad
 import System.Exit
@@ -137,6 +138,15 @@ colorDecide lst = do
                              -- if video have been download, use red color
                     False -> setFocusAttribute lst (black `on` cyan)
                              -- if video haven't been download, use cyan
+        threadDelay 50000 -- 0.05 second
+    return ()
+
+refreshStatusBar :: WL -> (Widget FormattedText)-> IO ()
+refreshStatusBar lst statBar = do
+    forkIO . forever $ do
+        schedule $ do
+            Just (_, (itm, _)) <- getSelected lst
+            setText statBar =<< genStat itm
         threadDelay 50000 -- 0.05 second
     return ()
 
