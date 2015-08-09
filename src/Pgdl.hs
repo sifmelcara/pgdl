@@ -200,7 +200,7 @@ main = do
                                                  else return False 
                     return True
                 KChar 'u' -> do
-                    filterVListIO vlst $ \obj -> if isVid obj then not <$> (downloaded obj)
+                    filterVListIO vlst $ \obj -> if isVid obj then not <$> downloaded obj
                                                  else return False 
                     return True
                 KChar '/' -> do

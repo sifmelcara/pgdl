@@ -141,7 +141,7 @@ colorDecide lst = do
         threadDelay 50000 -- 0.05 second
     return ()
 
-refreshStatusBar :: WL -> (Widget FormattedText)-> IO ()
+refreshStatusBar :: WL -> Widget FormattedText-> IO ()
 refreshStatusBar lst statBar = do
     forkIO . forever $ do
         schedule $ do
