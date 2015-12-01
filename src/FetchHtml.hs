@@ -4,13 +4,15 @@ module FetchHtml where
   
 import Getconfig
 
-import Network.HTTP
 import Network.URI
 import Data.Text.Encoding
 import Data.Maybe
 import System.FilePath
 import Control.Applicative
 import qualified Data.Text as T
+import Network.HTTP.Conduit
+import Data.ByteString.Lazy
+--import bytestring?
 
 fetchHtml :: IO T.Text
 fetchHtml = getTextContent =<< genURI
@@ -30,8 +32,8 @@ genURI = do
 
 getTextContent :: String -> IO T.Text
 getTextContent u = do
-    res <- simpleHTTP . mkRequest GET . fromJust . parseURI $ u
-    cnt <- getResponseBody res
-    return $ decodeUtf8 cnt
+    bs <- simpleHttp u
+    let t = decodeUtf8 . toStrict $ bs
+    return t
     
 
