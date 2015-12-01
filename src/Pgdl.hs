@@ -209,14 +209,6 @@ main = do
                 KChar 'h' -> do
                     chgHelp
                     return True
-                KChar 'd' -> do
-                    Just (_, (itm, _)) <- getSelected lst
-                    case itm of
-                        Folder _ _ _ -> return ()
-                        v -> fex v >>= \case
-                            True -> askForDeletion v
-                            False -> return ()
-                    return True
 
                 _   -> return False
 
@@ -234,7 +226,6 @@ helpPage = T.unlines [
                      ,"Key Right - show the detailed information of the highlighted file"
                      ,"Key Left - go back to the previous page"
                      ,"Enter - xdg-open the file"
-                     ,"d - delete the file that had been downloaded in the disk"
                      ,"/ - open a input box to enter a keyword to search"
                      ,"n - sort the current list by name"
                      ,"v - show all the files already in the disk"
