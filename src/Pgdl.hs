@@ -209,6 +209,14 @@ main = do
                 KChar 'h' -> do
                     chgHelp
                     return True
+                KChar 'd' -> do
+                    Just (_, (itm, _)) <- getSelected lst
+                    case itm of
+                        Folder _ _ _ -> return ()
+                        v -> fex v >>= \case
+                            True -> askForDeletion v
+                            False -> return ()
+                    return True
 
                 _   -> return False
 
@@ -222,14 +230,15 @@ main = do
 helpPage :: T.Text
 helpPage = T.unlines [ 
                       "q - quit"
-                     ,"s - list files that similar with the highlighted video"
-                     ,"Key Right - show the detailed information of the highlighted video"
+                     ,"s - list files that similar with the highlighted file"
+                     ,"Key Right - show the detailed information of the highlighted file"
                      ,"Key Left - go back to the previous page"
-                     ,"Enter - play the video"
+                     ,"Enter - xdg-open the file"
+                     ,"d - delete the file that had been downloaded in the disk"
                      ,"/ - open a input box to enter a keyword to search"
                      ,"n - sort the current list by name"
-                     ,"v - show the videos already in the disk"
-                     ,"u - show the videos not in the disk"
+                     ,"v - show all the files already in the disk"
+                     ,"u - show all the files not in the disk"
                      ]
 
 
