@@ -33,7 +33,7 @@ playVid vid = do
     let purepath = reverse . dropWhile (/= '/') . reverse $ servpath
     let url = "http://" ++ purepath ++ vu
     case username of
-        ""  -> runCommand $ "nohup curl " ++ addq url ++ " -o " ++ addq localloc ++ "&>/dev/null &"
+        ""  -> runCommand $ "nohup curl -L "                                          ++ addq url ++ " -o " ++ addq localloc ++ "&>/dev/null &"
         _   -> runCommand $ "nohup curl -L -u " ++ username ++ ":" ++ password ++ " " ++ addq url ++ " -o " ++ addq localloc ++ "&>/dev/null &"
     let checkFile = doesFileExist localloc >>= \ready -> unless ready checkFile
     checkFile
