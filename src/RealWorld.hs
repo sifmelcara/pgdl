@@ -12,7 +12,6 @@ import System.Process
 import System.Directory
 import System.FilePath.Posix
 import qualified Data.Text as T
-import Debug.Trace
 
 -- play a video
 playVid :: Video -> IO ()
@@ -31,7 +30,7 @@ playVid vid = do
     fex <- doesFileExist localdir
     when fex $ removeFile localloc
 
-    let purepath = reverse . dropWhile (/= '/') . reverse . traceId $ servpath
+    let purepath = reverse . dropWhile (/= '/') . reverse $ servpath
     let url = "http://" ++ purepath ++ vu
     case username of
         ""  -> runCommand $ "nohup curl " ++ addq url ++ " -o " ++ addq localloc ++ "&>/dev/null &"
