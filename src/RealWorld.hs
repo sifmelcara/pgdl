@@ -12,6 +12,7 @@ import System.Process
 import System.Directory
 import System.FilePath.Posix
 import qualified Data.Text as T
+import Debug.Trace
 
 -- play a video
 playVid :: Video -> IO ()
@@ -30,12 +31,11 @@ playVid vid = do
     fex <- doesFileExist localdir
     when fex $ removeFile localloc
 
-    let purepath = reverse . dropWhile (/= '/') . reverse $ servpath
+    let purepath = reverse . dropWhile (/= '/') . reverse . traceId $ servpath
+    let url = "http://" ++ purepath ++ vu
     case username of
-        ""  -> let url = "http://" ++                                       purepath ++ vu
-               in runCommand $ "nohup curl " ++ addq url ++ " -o " ++ addq localloc ++ "&>/dev/null &"
-        _   -> let url = "http://" ++ username ++ ":" ++ password ++ "@" ++ purepath ++ vu
-               in runCommand $ "nohup curl " ++ addq url ++ " -o " ++ addq localloc ++ "&>/dev/null &"
+        ""  -> runCommand $ "nohup curl " ++ addq url ++ " -o " ++ addq localloc ++ "&>/dev/null &"
+        _   -> runCommand $ "nohup curl -L -u " ++ username ++ ":" ++ password ++ " " ++ addq url ++ " -o " ++ addq localloc ++ "&>/dev/null &"
     let checkFile = doesFileExist localloc >>= \ready -> unless ready checkFile
     checkFile
     case buildOS of
