@@ -7,10 +7,28 @@ import Networking
 import Text.HTML.DirectoryListing.Type
 import Text.HTML.DirectoryListing.Parser
 import qualified Data.Text as T
+import Data.Text (Text)
 
-fetchRoot :: IO [Entry]
-fetchRoot = do
+data DNode = Directory Entry [DNode] | File Entry
+
+fetch :: IO [DNode]
+fetch = do
     root <- getServpath
-    html <- getWebpage $ "http://" `T.append` root
-    return $ parseDirectoryListing html
+    let rootUrl = "http://" `T.append` root
+    html <- getWebpage rootUrl
+    let
+        entries = parseDirectoryListing html
+        toDNode :: Text -> Entry -> IO DNode
+        toDNode url e
+            | isDirectory e = Directory e <$> childs
+            | otherwise = return $ File e
+            where
+            childs :: IO [DNode]
+            childs = do
+                html' <- getWebpage newUrl
+                mapM (toDNode newUrl) $ parseDirectoryListing html'
+                where
+                newUrl = url `T.append` href e 
+    rootNodes <- mapM (toDNode rootUrl) entries
+    return rootNodes
 
