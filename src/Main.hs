@@ -7,6 +7,7 @@ import Fetcher
 import qualified Data.Text as T
 import Networking
 import Control.Monad
+import Control.Monad.IO.Class
 
 import qualified Graphics.Vty as V
 import qualified Brick.Main as M
@@ -65,7 +66,9 @@ main = do
         appEvent ls@(LState father lst) e = case e of
             V.EvKey V.KEsc [] -> M.halt ls
             V.EvKey V.KEnter [] -> case child of
-                                    Directory entry dns -> M.continue $ LState ls $ L.list (T.Name "asdf") (V.fromList dns) 1
+                                    Directory entry dnsOp -> do
+                                        dns <- liftIO dnsOp -- grab the subdirectory
+                                        M.continue $ LState ls $ L.list (T.Name "root") (V.fromList dns) 1
                                     _ -> M.continue ls
             ev -> M.continue =<< (LState father <$> (T.handleEvent ev lst))
             where
