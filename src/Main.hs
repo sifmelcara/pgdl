@@ -2,6 +2,7 @@
 module Main
 where
 
+import Debug.Trace
 import Fetcher
 import qualified Data.Text as T
 import Networking
@@ -30,23 +31,28 @@ import Brick.Util (fg, on)
 
 import Text.HTML.DirectoryListing.Type
 
-drawUI :: L.List Entry -> [Widget]
-drawUI l = [ui]
+drawUI :: LState -> [Widget]
+drawUI (LState _ l) = [ui]
     where
         cur = case (L.listSelectedElement l) of
                 Nothing -> str "-"
                 Just (i, _) -> str (show (i + 1))
         ui = C.vCenter box
         box = B.border . hLimit 25 . vLimit 25 $ L.renderList l listDrawElement
-        listDrawElement False a = str . T.unpack $ visibleName a 
-        listDrawElement True a = str . T.unpack $ visibleName a
+        listDrawElement _ (Directory a _) = str . T.unpack $ visibleName a 
+        listDrawElement _ (File a) = str . T.unpack $ visibleName a 
+
+data LState = LState LState (L.List DNode) | TerminalLState
 
 main = do
-    -- mapM_ print =<< fetchRoot
-    flst <- fetchRoot
+    trace "starting fetch in main" $ return ()
+    dNodes <- fetch
+    trace "finish fetch in main" $ return ()
     let
-        initialState :: L.List Entry
-        initialState = L.list (T.Name "root") (V.fromList flst) 1
+        initialState :: LState
+        initialState = LState TerminalLState lst
+            where
+            lst = L.list (T.Name "root") (V.fromList dNodes) 1
         theApp =
             M.App { M.appDraw = drawUI
                   , M.appChooseCursor = M.neverShowCursor
@@ -55,10 +61,15 @@ main = do
                   , M.appAttrMap = const theMap 
                   , M.appLiftVtyEvent = id
                   }
-        appEvent :: L.List Entry -> V.Event -> T.EventM (T.Next (L.List Entry))
-        appEvent l e = case e of
-            V.EvKey V.KEsc [] -> M.halt l
-            ev -> M.continue =<< T.handleEvent ev l 
+        appEvent :: LState -> V.Event -> T.EventM (T.Next LState)
+        appEvent ls@(LState father lst) e = case e of
+            V.EvKey V.KEsc [] -> M.halt ls
+            V.EvKey V.KEnter [] -> case child of
+                                    Directory entry dns -> M.continue $ LState ls $ L.list (T.Name "asdf") (V.fromList dns) 1
+                                    _ -> M.continue ls
+            ev -> M.continue =<< (LState father <$> (T.handleEvent ev lst))
+            where
+            Just (_, child) = L.listSelectedElement lst
         theMap = A.attrMap V.defAttr [ (L.listAttr, V.white `on` V.black)
                                      , (L.listSelectedAttr, V.black `on` V.cyan)
                                      ]

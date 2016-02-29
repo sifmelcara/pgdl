@@ -11,7 +11,7 @@ getPassword :: IO T.Text
 getPassword = undefined
 
 getServpath :: IO T.Text
-getServpath = return "www.kernel.org/pub/linux/kernel/v4.x/"
+getServpath = return "www.kernel.org/pub/"
 
 getLocaldir :: IO T.Text
 getLocaldir = undefined
