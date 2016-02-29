@@ -18,6 +18,10 @@ fetch = do
     html <- getWebpage rootUrl
     let
         entries = parseDirectoryListing html
+        -- | TODO: reuse network connection manager to avoid
+        -- TlsExceptionHostPort (HandshakeFailed (Error_Packet_unexpected "Alert [(AlertLevel_Fatal,BadRecordMac)]" " expected: change cipher")) "www.kernel.org" 80
+        -- (Maybe reuse network connection manager can avoid this error)
+        -- However, pgdl-rewrite will definitely use http instead of simpleHTTP after UI design
         toDNode :: Text -> Entry -> IO DNode
         toDNode url e
             | isDirectory e = return $ Directory e childs

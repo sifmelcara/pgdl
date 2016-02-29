@@ -43,7 +43,8 @@ drawUI (LState _ l) = [ui]
         listDrawElement _ (Directory a _) = str . T.unpack $ visibleName a 
         listDrawElement _ (File a) = str . T.unpack $ visibleName a 
 
-data LState = LState LState (L.List DNode) | TerminalLState
+-- |                 father  contents
+data LState = LState LState (L.List DNode)
 
 main = do
     trace "starting fetch in main" $ return ()
@@ -51,7 +52,7 @@ main = do
     trace "finish fetch in main" $ return ()
     let
         initialState :: LState
-        initialState = LState TerminalLState lst
+        initialState = LState initialState lst
             where
             lst = L.list (T.Name "root") (V.fromList dNodes) 1
         theApp =
@@ -70,6 +71,7 @@ main = do
                                         dns <- liftIO dnsOp -- grab the subdirectory
                                         M.continue $ LState ls $ L.list (T.Name "root") (V.fromList dns) 1
                                     _ -> M.continue ls
+            V.EvKey V.KLeft [] -> M.continue father
             ev -> M.continue =<< (LState father <$> (T.handleEvent ev lst))
             where
             Just (_, child) = L.listSelectedElement lst
