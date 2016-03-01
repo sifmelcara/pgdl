@@ -9,7 +9,7 @@ import Text.HTML.DirectoryListing.Parser
 import qualified Data.Text as T
 import Data.Text (Text)
 
-data DNode = Directory Entry (IO [DNode]) | File Entry
+data DNode = Directory Entry (IO [DNode]) | File Entry Text
 
 fetch :: IO [DNode]
 fetch = do
@@ -25,7 +25,7 @@ fetch = do
         toDNode :: Text -> Entry -> IO DNode
         toDNode url e
             | isDirectory e = return $ Directory e childs
-            | otherwise = return $ File e
+            | otherwise = return $ File e (url `T.append` href e)
             where
             childs :: IO [DNode]
             childs = do

@@ -35,21 +35,16 @@ import Text.HTML.DirectoryListing.Type
 drawUI :: LState -> [Widget]
 drawUI (LState _ l) = [ui]
     where
-        cur = case (L.listSelectedElement l) of
-                Nothing -> str "-"
-                Just (i, _) -> str (show (i + 1))
         ui = C.vCenter box
         box = B.border . hLimit 25 . vLimit 25 $ L.renderList l listDrawElement
         listDrawElement _ (Directory a _) = str . T.unpack $ visibleName a 
-        listDrawElement _ (File a) = str . T.unpack $ visibleName a 
+        listDrawElement _ (File a _) = str . T.unpack $ visibleName a 
 
 -- |                 father  contents
 data LState = LState LState (L.List DNode)
 
 main = do
-    trace "starting fetch in main" $ return ()
     dNodes <- fetch
-    trace "finish fetch in main" $ return ()
     let
         initialState :: LState
         initialState = LState initialState lst
