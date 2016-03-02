@@ -37,8 +37,10 @@ drawUI (LState _ l) = [ui]
     where
         ui = C.vCenter box
         box = B.border . hLimit 25 . vLimit 25 $ L.renderList l listDrawElement
-        listDrawElement _ (Directory a _) = str . T.unpack $ visibleName a 
-        listDrawElement _ (File a _) = str . T.unpack $ visibleName a 
+        listDrawElement _ (Directory a _) = str . mid . T.unpack $ visibleName a 
+        listDrawElement _ (File a _) = str . mid . T.unpack $ visibleName a 
+        mid :: String -> String
+        mid s = "\n" ++ s ++ "\n"
 
 -- |                 father  contents
 data LState = LState LState (L.List DNode)
@@ -49,7 +51,7 @@ main = do
         initialState :: LState
         initialState = LState initialState lst
             where
-            lst = L.list (T.Name "root") (V.fromList dNodes) 1
+            lst = L.list (T.Name "root") (V.fromList dNodes) 3
         theApp =
             M.App { M.appDraw = drawUI
                   , M.appChooseCursor = M.neverShowCursor
@@ -64,7 +66,7 @@ main = do
             V.EvKey V.KEnter [] -> case child of
                                     Directory entry dnsOp -> do
                                         dns <- liftIO dnsOp -- grab the subdirectory
-                                        M.continue $ LState ls $ L.list (T.Name "root") (V.fromList dns) 1
+                                        M.continue $ LState ls $ L.list (T.Name "root") (V.fromList dns) 3
                                     _ -> M.continue ls
             V.EvKey V.KLeft [] -> M.continue father
             ev -> M.continue =<< (LState father <$> (T.handleEvent ev lst))
