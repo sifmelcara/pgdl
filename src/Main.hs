@@ -35,12 +35,12 @@ import Text.HTML.DirectoryListing.Type
 drawUI :: LState -> [Widget]
 drawUI (LState _ l) = [ui]
     where
-        ui = C.vCenter box
-        box = B.border . hLimit 25 . vLimit 25 $ L.renderList l listDrawElement
-        listDrawElement _ (Directory a _) = str . mid . T.unpack $ visibleName a 
-        listDrawElement _ (File a _) = str . mid . T.unpack $ visibleName a 
+        ui = C.vCenter . C.hCenter $ box
+        box = B.border . hLimit 30 . vLimit 30 $ L.renderList l listDrawElement
+        listDrawElement _ (Directory a _) = C.hCenter . str . mid . T.unpack $ visibleName a 
+        listDrawElement _ (File a _) = C.hCenter . str . mid . T.unpack $ visibleName a 
         mid :: String -> String
-        mid s = "\n" ++ s ++ "\n"
+        mid s = unlines $ ["", s, ""]
 
 -- |                 father  contents
 data LState = LState LState (L.List DNode)
