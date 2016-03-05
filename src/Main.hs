@@ -6,6 +6,7 @@ import Debug.Trace
 import Fetcher
 import qualified Data.Text as T
 import Networking
+import DownloadInterface
 import Control.Monad
 import Control.Monad.IO.Class
 
@@ -67,7 +68,7 @@ main = do
                                     Directory entry dnsOp -> do
                                         dns <- liftIO dnsOp -- grab the subdirectory
                                         M.continue $ LState ls $ L.list (T.Name "root") (V.fromList dns) 3
-                                    _ -> M.continue ls
+                                    File entry url -> M.suspendAndResume $ downloadInterface url >> return ls
             V.EvKey V.KLeft [] -> M.continue father
             ev -> M.continue =<< (LState father <$> (T.handleEvent ev lst))
             where
