@@ -64,15 +64,15 @@ main = do
         appEvent :: LState -> V.Event -> T.EventM (T.Next LState)
         appEvent ls@(LState father lst) e = case e of
             V.EvKey V.KEsc [] -> M.halt ls
-            V.EvKey V.KEnter [] -> case child of
-                                    Directory entry dnsOp -> do
-                                        dns <- liftIO dnsOp -- grab the subdirectory
-                                        M.continue $ LState ls $ L.list (T.Name "root") (V.fromList dns) 3
-                                    File entry url -> M.suspendAndResume $ downloadInterface url ({-fromJust $ filesize entry-}777) >> return ls
+            V.EvKey V.KEnter [] -> case L.listSelectedElement lst of
+                                    Nothing -> M.continue $ ls
+                                    Just (_, child) -> case child of
+                                        Directory entry dnsOp -> do
+                                            dns <- liftIO dnsOp -- grab the subdirectory
+                                            M.continue $ LState ls $ L.list (T.Name "root") (V.fromList dns) 3
+                                        File entry url -> M.suspendAndResume $ downloadInterface url ({-fromJust $ filesize entry-}777) >> return ls
             V.EvKey V.KLeft [] -> M.continue father
             ev -> M.continue =<< (LState father <$> (T.handleEvent ev lst))
-            where
-            Just (_, child) = L.listSelectedElement lst
         theMap = A.attrMap V.defAttr [ (L.listAttr, V.white `on` V.black)
                                      , (L.listSelectedAttr, V.black `on` V.cyan)
                                      ]
