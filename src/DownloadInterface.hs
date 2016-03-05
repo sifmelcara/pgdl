@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module DownloadInterface
+module DownloadInterface (downloadInterface)
 where
 
 import Debug.Trace
@@ -13,7 +13,7 @@ import qualified Graphics.Vty as V
 import qualified Brick.Main as M
 import qualified Brick.Types as T
 import qualified Brick.Widgets.Border as B
-import qualified Brick.Widgets.List as L
+import qualified Brick.Widgets.ProgressBar as P
 import qualified Brick.Widgets.Center as C
 import qualified Brick.AttrMap as A
 import qualified Data.Vector as V
@@ -30,7 +30,36 @@ import Brick.Widgets.Core
   )
 import Brick.Util (fg, on)
 
-downloadInterface :: Text -> IO ()
-downloadInterface url = undefined
+--                                 bytes already downloaded
+data DownloadState = DownloadState Integer
 
+
+-- | Maybe we should try to get file size by other method,
+-- that would be more accurate and reliable.
+downloadInterface :: Text -> -- ^ url
+                     Integer -> -- ^ filesize in bytes
+                     IO ()
+downloadInterface url filesize = do
+    let
+        initialState :: DownloadState 
+        initialState = DownloadState 333
+        theApp =
+            M.App { M.appDraw = drawUI
+                  , M.appChooseCursor = M.neverShowCursor
+                  , M.appHandleEvent = appEvent
+                  , M.appStartEvent = return
+                  , M.appAttrMap = const theMap 
+                  , M.appLiftVtyEvent = id
+                  }
+        appEvent :: DownloadState -> V.Event -> T.EventM (T.Next DownloadState)
+        appEvent ds e = case e of
+            V.EvKey V.KEsc [] -> M.halt ds
+            ev -> M.continue ds
+        theMap = A.attrMap V.defAttr [] 
+        drawUI :: DownloadState -> [Widget]
+        drawUI (DownloadState bytes) = [ui]
+            where
+            ui = C.vCenter . C.hCenter $ P.progressBar (Just "I'm a progress bar") (fromIntegral bytes / fromIntegral filesize)
+    M.defaultMain theApp initialState
+    return ()
 
