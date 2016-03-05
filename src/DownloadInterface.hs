@@ -55,11 +55,13 @@ downloadInterface url filesize = do
         appEvent ds e = case e of
             V.EvKey V.KEsc [] -> M.halt ds
             ev -> M.continue ds
-        theMap = A.attrMap V.defAttr [] 
+        theMap = A.attrMap V.defAttr [ (P.progressCompleteAttr, V.black `on` V.cyan)
+                                     , (P.progressIncompleteAttr, V.black `on` V.white)
+                                     ]
         drawUI :: DownloadState -> [Widget]
         drawUI (DownloadState bytes) = [ui]
             where
-            ui = C.vCenter . C.hCenter $ P.progressBar (Just "I'm a progress bar") (fromIntegral bytes / fromIntegral filesize)
+            ui = C.vCenter . C.hCenter $ P.progressBar Nothing 0.7--(fromIntegral bytes / fromIntegral filesize)
     M.defaultMain theApp initialState
     return ()
 
