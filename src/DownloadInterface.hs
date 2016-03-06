@@ -39,11 +39,12 @@ import Control.Monad.Trans.Resource
 import Data.Conduit
 import Control.Monad.IO.Class
 import Data.Conduit.Binary
+import System.Posix.Files
 
 --                                 bytes already downloaded
 data DownloadState = DownloadState Integer
 
-data DEvent = VtyEvent V.Event | MoreBytesDownloaded Integer | DownloadFinish
+data DEvent = VtyEvent V.Event | UpdateFinishedSize Integer | DownloadFinish
 
 -- | Maybe we should try to get file size by other method,
 -- that would be more accurate and reliable.
@@ -52,7 +53,7 @@ downloadInterface :: Text -> -- ^ url
                      IO ()
 downloadInterface url filesize = do
     eventChan <- C.newChan 
-    forkIO $ download url (C.writeChan eventChan . MoreBytesDownloaded)
+    forkIO $ download url (C.writeChan eventChan)
     let
         initialState :: DownloadState 
         initialState = DownloadState 0
@@ -69,7 +70,7 @@ downloadInterface url filesize = do
             VtyEvent e -> case e of
                 V.EvKey V.KEsc [] -> M.halt ds
                 ev -> M.continue ds
-            MoreBytesDownloaded b -> M.continue . DownloadState $ doneB+b
+            UpdateFinishedSize b -> M.continue . DownloadState $ b
             DownloadFinish -> M.halt ds
         theMap = A.attrMap V.defAttr [ (P.progressCompleteAttr, V.black `on` V.cyan)
                                      , (P.progressIncompleteAttr, V.black `on` V.white)
@@ -82,14 +83,26 @@ downloadInterface url filesize = do
     return ()
 
 
-download :: Text -> (Integer -> IO ()) -> IO ()
-download url acc = do
+download :: Text -> (DEvent -> IO ()) -> IO ()
+download url tell = do
+    -- this implementation needs to be change
+    -- since some filename contains characters that cannot be represented by String
+    let
+        filepath = "testFile"
+        checkFile :: IO ()
+        checkFile = forever $ do
+            s <- fileSize <$> getFileStatus filepath
+            tell . UpdateFinishedSize . fromIntegral $ s
+    checkerThreadID <- forkIO checkFile
     req <- parseUrl (T.unpack url)
     -- let authReq = applyBasicAuth username password req
     manager <- newManager tlsManagerSettings
     runResourceT $ do
         response <- http req manager
         let body = responseBody response
-        body $$+- sinkFile "testFile"
+        body $$+- sinkFile filepath
+        liftIO $ do
+            killThread checkerThreadID
+            tell DownloadFinish
     return ()
 
