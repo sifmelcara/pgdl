@@ -8,6 +8,8 @@ import Data.Text (Text)
 import Networking
 import Control.Monad
 import Control.Monad.IO.Class
+import Data.Default
+import qualified Control.Concurrent.Chan as C
 
 import qualified Graphics.Vty as V
 import qualified Brick.Main as M
@@ -30,9 +32,18 @@ import Brick.Widgets.Core
   )
 import Brick.Util (fg, on)
 
+import Network.HTTP.Conduit
+import Control.Concurrent
+
+import Control.Monad.Trans.Resource 
+import Data.Conduit
+import Control.Monad.IO.Class
+import Data.Conduit.Binary
+
 --                                 bytes already downloaded
 data DownloadState = DownloadState Integer
 
+data DEvent = VtyEvent V.Event | MoreBytesDownloaded Integer | DownloadFinish
 
 -- | Maybe we should try to get file size by other method,
 -- that would be more accurate and reliable.
@@ -40,28 +51,45 @@ downloadInterface :: Text -> -- ^ url
                      Integer -> -- ^ filesize in bytes
                      IO ()
 downloadInterface url filesize = do
+    eventChan <- C.newChan 
+    forkIO $ download url (C.writeChan eventChan . MoreBytesDownloaded)
     let
         initialState :: DownloadState 
-        initialState = DownloadState 333
+        initialState = DownloadState 0
         theApp =
             M.App { M.appDraw = drawUI
                   , M.appChooseCursor = M.neverShowCursor
                   , M.appHandleEvent = appEvent
                   , M.appStartEvent = return
                   , M.appAttrMap = const theMap 
-                  , M.appLiftVtyEvent = id
+                  , M.appLiftVtyEvent = VtyEvent
                   }
-        appEvent :: DownloadState -> V.Event -> T.EventM (T.Next DownloadState)
-        appEvent ds e = case e of
-            V.EvKey V.KEsc [] -> M.halt ds
-            ev -> M.continue ds
+        appEvent :: DownloadState -> DEvent -> T.EventM (T.Next DownloadState)
+        appEvent ds@(DownloadState doneB) de = case de of
+            VtyEvent e -> case e of
+                V.EvKey V.KEsc [] -> M.halt ds
+                ev -> M.continue ds
+            MoreBytesDownloaded b -> M.continue . DownloadState $ doneB+b
+            DownloadFinish -> M.halt ds
         theMap = A.attrMap V.defAttr [ (P.progressCompleteAttr, V.black `on` V.cyan)
                                      , (P.progressIncompleteAttr, V.black `on` V.white)
                                      ]
         drawUI :: DownloadState -> [Widget]
         drawUI (DownloadState bytes) = [ui]
             where
-            ui = C.vCenter . C.hCenter $ P.progressBar Nothing 0.7--(fromIntegral bytes / fromIntegral filesize)
-    M.defaultMain theApp initialState
+            ui = C.vCenter . C.hCenter $ P.progressBar Nothing (fromIntegral bytes / fromIntegral filesize)
+    M.customMain (V.mkVty Data.Default.def) eventChan theApp initialState
+    return ()
+
+
+download :: Text -> (Integer -> IO ()) -> IO ()
+download url acc = do
+    req <- parseUrl (T.unpack url)
+    -- let authReq = applyBasicAuth username password req
+    manager <- newManager tlsManagerSettings
+    runResourceT $ do
+        response <- http req manager
+        let body = responseBody response
+        body $$+- sinkFile "testFile"
     return ()
 
