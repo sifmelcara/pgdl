@@ -91,8 +91,11 @@ download url tell = do
         filepath = "testFile"
         checkFile :: IO ()
         checkFile = forever $ do
-            s <- fileSize <$> getFileStatus filepath
-            tell . UpdateFinishedSize . fromIntegral $ s
+            threadDelay $ 1000000 * 1
+            exist <- fileExist filepath
+            when exist $ do
+                s <- fileSize <$> getFileStatus filepath
+                tell . UpdateFinishedSize . fromIntegral $ s
     checkerThreadID <- forkIO checkFile
     req <- parseUrl (T.unpack url)
     -- let authReq = applyBasicAuth username password req
