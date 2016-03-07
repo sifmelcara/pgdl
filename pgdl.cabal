@@ -23,7 +23,9 @@ executable pgdl
   build-depends:       base == 4.*,
                        http-conduit,
                        directory-listing-webpage-parser,
-                       brick
+                       brick,
+                       configurator >= 0.3
+
   ghc-options:         -threaded -O2
   default-language:    Haskell2010
 
