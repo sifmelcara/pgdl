@@ -97,6 +97,7 @@ download url tell = do
                 s <- fileSize <$> getFileStatus filepath
                 tell . UpdateFinishedSize . fromIntegral $ s
     checkerThreadID <- forkIO checkFile
+    -- note: this usage of parseUrl is dangerous, exception need to be catch in the future
     req <- parseUrl (T.unpack url)
     -- let authReq = applyBasicAuth username password req
     manager <- newManager tlsManagerSettings
