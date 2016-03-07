@@ -74,6 +74,6 @@ fileAttrViewer (File entry url) = do
     info = T.unlines [ "visible name: " `T.append` visibleName entry
                      , "decoded name: " `T.append` decodedName entry
                      , "url: " `T.append` url
-                     , "file size" `T.append` (T.pack . show $ fileSize entry)
+                     , "file size: " `T.append` (T.pack . show $ fileSize entry) `T.append` " bytes"
                      ]
 
