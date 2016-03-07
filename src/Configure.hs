@@ -1,19 +1,37 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Configure
+{-# LANGUAGE LambdaCase #-}
+
+module Configure 
 where
 
 import qualified Data.Text as T
+import Data.Text (Text)
 
-getUsername :: IO T.Text
-getUsername = undefined
+import qualified Data.Configurator as C
+import qualified Data.Configurator.Types as C
 
-getPassword :: IO T.Text
-getPassword = undefined
+getConfig :: IO C.Config
+getConfig = C.load [C.Required "$(HOME)/.pgdl"]
 
-getServpath :: IO T.Text
-getServpath = return "www.kernel.org/pub/"
+getUsername :: IO (Maybe Text)
+getUsername = do
+    cfg <- getConfig
+    C.lookup cfg "username" 
 
-getLocaldir :: IO T.Text
-getLocaldir = undefined
+getPassword :: IO (Maybe Text)
+getPassword = do 
+    cfg <- getConfig
+    C.lookup cfg "password"
 
+getServpath :: IO (Maybe Text)
+getServpath = do
+    cfg <- getConfig
+    C.lookup cfg "servpath"
+
+getLocaldir :: IO (Maybe Text)
+getLocaldir = do
+    cfg <- getConfig
+    C.lookup cfg "localdir" 
+
+somethingWrong = error "Oops, it seems the config file (~/.pgdl) has something wrong."
 
