@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE LambdaCase #-}
 module Fetcher
 where
 
@@ -13,7 +14,9 @@ data DNode = Directory Entry (IO [DNode]) | File Entry Text
 
 fetch :: IO [DNode]
 fetch = do
-    root <- getServpath
+    root <- getServpath >>= \case 
+                Nothing -> error "no server path configured in ~/.pgdl"
+                Just p -> return p
     let rootUrl = "http://" `T.append` root
     html <- getWebpage rootUrl
     let
