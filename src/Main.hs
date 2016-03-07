@@ -38,9 +38,9 @@ drawUI :: LState -> [Widget]
 drawUI (LState _ l) = [ui]
     where
         ui = C.vCenter . C.hCenter $ box
-        box = B.border . hLimit 30 . vLimit 30 $ L.renderList l listDrawElement
-        listDrawElement _ (Directory a _) = C.hCenter . str . mid . T.unpack $ visibleName a 
-        listDrawElement _ (File a _) = C.hCenter . str . mid . T.unpack $ visibleName a 
+        box = hLimit 60 . vLimit 30 $ L.renderList l listDrawElement
+        listDrawElement _ (Directory a _) = C.hCenter . str . mid . T.unpack $ decodedName a 
+        listDrawElement _ (File a _) = C.hCenter . str . mid . T.unpack $ decodedName a 
         mid :: String -> String
         mid s = unlines $ ["", s, ""]
 
