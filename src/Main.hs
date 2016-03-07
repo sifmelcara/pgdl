@@ -33,6 +33,7 @@ import Brick.Util (fg, on)
 
 import Text.HTML.DirectoryListing.Type
 import Data.Maybe
+import FileAttrViewer
 
 drawUI :: LState -> [Widget]
 drawUI (LState _ l) = [ui]
@@ -74,6 +75,9 @@ main = do
                                         File entry url -> M.suspendAndResume $ downloadInterface url (fromJust $ fileSize entry) >> return ls
                                         --                                                           ^ this fromJust need to be eliminated
             V.EvKey V.KLeft [] -> M.continue father
+            V.EvKey V.KRight [] -> case L.listSelectedElement lst of
+                                    Nothing -> M.continue $ ls
+                                    Just (_, entry) -> M.suspendAndResume $ fileAttrViewer entry >> return ls
             ev -> M.continue =<< (LState father <$> (T.handleEvent ev lst))
         theMap = A.attrMap V.defAttr [ (L.listAttr, V.white `on` V.black)
                                      , (L.listSelectedAttr, V.black `on` V.cyan)
