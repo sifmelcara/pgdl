@@ -18,12 +18,17 @@ source-repository head
 
 executable pgdl
   hs-source-dirs:      src
-  main-is:             Pgdl.hs
+  main-is:             Main.hs
   other-modules:       
   build-depends:       base == 4.*,
-                       http-conduit,
+                       tagsoup,
                        directory-listing-webpage-parser,
-                       brick,
+                       brick, vty, data-default,
+                       vector,
+                       text, bytestring,
+                       unix,
+                       conduit, conduit-extra,
+                       http-conduit, resourcet,
                        configurator >= 0.3
 
   ghc-options:         -threaded -O2
