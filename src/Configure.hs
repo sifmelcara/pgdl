@@ -40,7 +40,16 @@ getServpath = do
     cfg <- getConfig
     case cfg of
         Nothing -> return Nothing
-        Just c -> C.lookup c "servpath"
+        Just c -> fmap unify <$> C.lookup c "servpath"
+    where
+    -- this is not a good approach, improve it later
+    unify :: Text -> Text
+    unify p
+        | "http://" `T.isPrefixOf` p = p
+        | "https://" `T.isPrefixOf` p = p
+        | otherwise = "http://" `T.append` p
+
+
 {-
 getLocaldir :: IO (Maybe Text)
 getLocaldir = do
