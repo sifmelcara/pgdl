@@ -67,6 +67,11 @@ drawUI (LState _ l) = [C.hCenter . hLimit 80 $ vBox [entryList, statusBar]]
 data LState = LState LState (L.List DNode)
 
 main = do
+    getArgs >>= \case
+        ["--offline"] -> error "not implemented"
+        _ -> return ()
+    putStrLn "loading webpage..."
+    putStrLn "(you can use --offline to browse the webpages you load last time)"
     let askUserServpath = undefined
     rootUrl <- getArgs >>= \case
                 [url] -> return . T.pack $ url
