@@ -10,28 +10,42 @@ import Data.Text (Text)
 import qualified Data.Configurator as C
 import qualified Data.Configurator.Types as C
 
-getConfig :: IO C.Config
-getConfig = C.load [C.Required "$(HOME)/.pgdl"]
+import System.FilePath.Posix
+import System.Directory
 
+getConfig :: IO (Maybe C.Config)
+getConfig = do
+    home <- getUserDocumentsDirectory
+    let cfgFile = home </> ".pgdl"
+    doesFileExist cfgFile >>= \case
+        False -> return Nothing
+        True -> Just <$> C.load [C.Required cfgFile]
+
+{-
 getUsername :: IO (Maybe Text)
 getUsername = do
     cfg <- getConfig
     C.lookup cfg "username" 
-
+-}
+{-
 getPassword :: IO (Maybe Text)
 getPassword = do 
     cfg <- getConfig
     C.lookup cfg "password"
+-}
 
+-- | return Nothing if there are no servpath or config file do not exist
 getServpath :: IO (Maybe Text)
 getServpath = do
     cfg <- getConfig
-    C.lookup cfg "servpath"
-
+    case cfg of
+        Nothing -> return Nothing
+        Just c -> C.lookup c "servpath"
+{-
 getLocaldir :: IO (Maybe Text)
 getLocaldir = do
     cfg <- getConfig
     C.lookup cfg "localdir" 
-
+-}
 somethingWrong = error "Oops, it seems the config file (~/.pgdl) has something wrong."
 
