@@ -34,6 +34,7 @@ import Brick.Util (fg, on)
 import Text.HTML.DirectoryListing.Type
 import Data.Maybe
 import FileAttrViewer
+import Utils
 
 drawUI :: LState -> [Widget]
 drawUI (LState _ l) = [C.hCenter . hLimit 80 $ vBox [entryList, statusBar]]
@@ -52,9 +53,12 @@ drawUI (LState _ l) = [C.hCenter . hLimit 80 $ vBox [entryList, statusBar]]
     expand s = s ++ replicate 88 ' '
     info = case L.listSelectedElement l of
             Nothing -> "Nothing selected by user"
-            Just (_, sel) -> case sel of
-                Directory entry _ -> "  " ++ show (lastModified entry) ++ "    "
-                File entry _ -> "  " ++ show (lastModified entry) ++ "    " ++ show (fileSize entry)
+            Just (_, sel) -> "  " ++ show (lastModified entry) ++ "    " ++ maybe "Nothing" friendlySize (fileSize entry)
+                where
+                entry = case sel of
+                            Directory entry _ -> entry
+                            File entry _ -> entry
+    
 
 -- |                 father  contents
 data LState = LState LState (L.List DNode)
