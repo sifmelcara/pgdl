@@ -77,7 +77,11 @@ main = do
             V.EvKey V.KLeft [] -> M.continue father
             V.EvKey V.KRight [] -> case L.listSelectedElement lst of
                                     Nothing -> M.continue $ ls
-                                    Just (_, entry) -> M.suspendAndResume $ fileAttrViewer entry >> return ls
+                                    Just (_, sel) -> case sel of
+                                        File _ _ -> M.suspendAndResume $ fileAttrViewer sel >> return ls
+                                        Directory entry dnsOp -> do
+                                            dns <- liftIO dnsOp -- grab the subdirectory
+                                            M.continue $ LState ls $ L.list (T.Name "root") (V.fromList dns) 3
             ev -> M.continue =<< (LState father <$> (T.handleEvent ev lst))
         theMap = A.attrMap V.defAttr [ (L.listAttr, V.white `on` V.black)
                                      , (L.listSelectedAttr, V.black `on` V.cyan)
