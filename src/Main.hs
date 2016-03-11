@@ -39,9 +39,11 @@ drawUI :: LState -> [Widget]
 drawUI (LState _ l) = [ui]
     where
         ui = C.vCenter . C.hCenter $ box
-        box = hLimit 60 . vLimit 30 $ L.renderList l listDrawElement
-        listDrawElement _ (Directory a _) = C.hCenter . str . mid . T.unpack $ decodedName a 
-        listDrawElement _ (File a _) = C.hCenter . str . mid . T.unpack $ decodedName a 
+        box = hLimit 60 $ L.renderList l listDrawElement
+        listDrawElement False (Directory a _) = C.hCenter . str . mid . T.unpack $ decodedName a 
+        listDrawElement False (File a _) = C.hCenter . str . mid . T.unpack $ decodedName a 
+        listDrawElement True d@(Directory _ _) = withAttr "directory" $ listDrawElement False d
+        listDrawElement True f@(File _ _) = withAttr "file" $ listDrawElement False f
         mid :: String -> String
         mid s = unlines $ ["", s, ""]
 
@@ -84,7 +86,9 @@ main = do
                                             M.continue $ LState ls $ L.list (T.Name "root") (V.fromList dns) 3
             ev -> M.continue =<< (LState father <$> (T.handleEvent ev lst))
         theMap = A.attrMap V.defAttr [ (L.listAttr, V.white `on` V.black)
-                                     , (L.listSelectedAttr, V.black `on` V.cyan)
+--                                     , (L.listSelectedAttr, V.black `on` V.cyan)
+                                     , ("directory", V.black `on` V.magenta)
+                                     , ("file", V.black `on` V.cyan)
                                      ]
     M.defaultMain theApp initialState
     return ()
