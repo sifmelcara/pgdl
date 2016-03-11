@@ -36,16 +36,23 @@ import Data.Maybe
 import FileAttrViewer
 
 drawUI :: LState -> [Widget]
-drawUI (LState _ l) = [ui]
+drawUI (LState _ l) = [C.hCenter . hLimit 60 $ vBox [entryList, statusBar]]
     where
-        ui = C.vCenter . C.hCenter $ box
-        box = hLimit 60 $ L.renderList l listDrawElement
-        listDrawElement False (Directory a _) = C.hCenter . str . mid . T.unpack $ decodedName a 
-        listDrawElement False (File a _) = C.hCenter . str . mid . T.unpack $ decodedName a 
-        listDrawElement True d@(Directory _ _) = withAttr "directory" $ listDrawElement False d
-        listDrawElement True f@(File _ _) = withAttr "file" $ listDrawElement False f
-        mid :: String -> String
-        mid s = unlines $ ["", s, ""]
+    entryList = L.renderList l listDrawElement
+    listDrawElement False (Directory a _) = C.hCenter . str . mid . T.unpack $ decodedName a 
+    listDrawElement False (File a _) = C.hCenter . str . mid . T.unpack $ decodedName a 
+    listDrawElement True d@(Directory _ _) = withAttr "directory" $ listDrawElement False d
+    listDrawElement True f@(File _ _) = withAttr "file" $ listDrawElement False f
+    mid :: String -> String
+    mid s = unlines $ ["", s, ""]
+
+    statusBar = withAttr "statusBar" . str . expand $ info
+    expand s = s ++ replicate 88 ' '
+    info = case L.listSelectedElement l of
+            Nothing -> "Nothing selected by user"
+            Just (_, sel) -> case sel of
+                Directory entry _ -> "  " ++ show (lastModified entry) ++ "    "
+                File entry _ -> "  " ++ show (lastModified entry) ++ "    " ++ show (fileSize entry)
 
 -- |                 father  contents
 data LState = LState LState (L.List DNode)
@@ -89,6 +96,7 @@ main = do
 --                                     , (L.listSelectedAttr, V.black `on` V.cyan)
                                      , ("directory", V.black `on` V.magenta)
                                      , ("file", V.black `on` V.cyan)
+                                     , ("statusBar", V.black `on` V.green)
                                      ]
     M.defaultMain theApp initialState
     return ()
