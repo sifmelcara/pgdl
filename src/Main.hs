@@ -36,8 +36,10 @@ import Data.Maybe
 import FileAttrViewer
 
 drawUI :: LState -> [Widget]
-drawUI (LState _ l) = [C.hCenter . hLimit 60 $ vBox [entryList, statusBar]]
+drawUI (LState _ l) = [C.hCenter . hLimit 80 $ vBox [entryList, statusBar]]
     where
+    -- note: the vertical size of the list is somewhat strange when the hroizontal size limit
+    -- is not the multiple of its element size (it is 3)
     entryList = L.renderList l listDrawElement
     listDrawElement False (Directory a _) = C.hCenter . str . mid . T.unpack $ decodedName a 
     listDrawElement False (File a _) = C.hCenter . str . mid . T.unpack $ decodedName a 
