@@ -12,12 +12,9 @@ import Data.Text (Text)
 
 data DNode = Directory Entry (IO [DNode]) | File Entry Text
 
-fetch :: IO [DNode]
-fetch = do
-    root <- getServpath >>= \case 
-                Nothing -> error "no server path configured in ~/.pgdl"
-                Just p -> return p
-    let rootUrl = "http://" `T.append` root
+fetch :: Text -> -- ^ root url
+         IO [DNode]
+fetch rootUrl = do
     html <- getWebpage rootUrl
     let
         entries = parseDirectoryListing html

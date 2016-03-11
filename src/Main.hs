@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE LambdaCase #-}
 module Main
 where
 
@@ -35,6 +36,8 @@ import Text.HTML.DirectoryListing.Type
 import Data.Maybe
 import FileAttrViewer
 import Utils
+import Configure
+import System.Environment
 
 drawUI :: LState -> [Widget]
 drawUI (LState _ l) = [C.hCenter . hLimit 80 $ vBox [entryList, statusBar]]
@@ -64,7 +67,13 @@ drawUI (LState _ l) = [C.hCenter . hLimit 80 $ vBox [entryList, statusBar]]
 data LState = LState LState (L.List DNode)
 
 main = do
-    dNodes <- fetch
+    let askUserServpath = undefined
+    rootUrl <- getArgs >>= \case
+                [url] -> return . T.pack $ url
+                _ -> getServpath >>= \case
+                        Nothing -> askUserServpath
+                        Just p -> return p
+    dNodes <- fetch rootUrl
     let
         initialState :: LState
         initialState = LState initialState lst
