@@ -12,6 +12,7 @@ import Text.HTML.DirectoryListing.Type
 import Data.Binary
 import Data.Time.LocalTime
 import Data.Time.Clock.POSIX
+import System.Directory
 
 import Fetcher
 
@@ -45,9 +46,12 @@ writeCache es = do
 readCache :: IO (Maybe [DNode])
 readCache = do
     p <- getCacheFileLocation
-    decodeFileOrFail p >>= \case
-        Right d -> return . Just . map toDNode $ d
-        Left _ -> return Nothing
+    doesFileExist p >>= \case
+        False -> return Nothing
+        True -> do
+            decodeFileOrFail p >>= \case
+                Right d -> return . Just . map toDNode $ d
+                Left _ -> return Nothing
     where
     toDNode :: Entry -> DNode
     toDNode e
