@@ -106,8 +106,12 @@ main = do
                                         Directory entry dnsOp -> do
                                             dns <- liftIO dnsOp -- grab the subdirectory
                                             M.continue $ LState ls $ L.list (T.Name "root") (V.fromList dns) 3
-                                        File entry url -> M.suspendAndResume $ downloadInterface url (fromJust $ fileSize entry) >> return ls
-                                        --                                                           ^ this fromJust need to be eliminated
+                                        File entry url -> do
+                                            let
+                                                fp = decodedName entry
+                                                dui = downloadInterface url fp (fromJust $ fileSize entry)
+                                                --                             ^ this fromJust need to be eliminated
+                                            M.suspendAndResume $ dui >> return ls
             V.EvKey V.KLeft [] -> M.continue father
             V.EvKey V.KRight [] -> case L.listSelectedElement lst of
                                     Nothing -> M.continue $ ls
