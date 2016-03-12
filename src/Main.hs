@@ -39,6 +39,7 @@ import Utils
 import Configure
 import System.Environment
 import Cache
+import Types
 
 drawUI :: LState -> [Widget]
 drawUI (LState _ l) = [C.hCenter . hLimit 80 $ vBox [entryList, statusBar]]

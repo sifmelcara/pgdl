@@ -9,8 +9,10 @@ import Text.HTML.DirectoryListing.Type
 import Text.HTML.DirectoryListing.Parser
 import qualified Data.Text as T
 import Data.Text (Text)
+import Cache
+import Types
+import Control.Concurrent
 
-data DNode = Directory Entry (IO [DNode]) | File Entry Text
 
 fetch :: Text -> -- ^ root url
          IO [DNode]
@@ -33,6 +35,7 @@ fetch rootUrl = do
                 mapM (toDNode newUrl) $ parseDirectoryListing html'
                 where
                 newUrl = url `T.append` href e 
+    forkIO $ writeCache entries
     rootNodes <- mapM (toDNode rootUrl) entries
     return rootNodes
 

@@ -14,7 +14,7 @@ import Data.Time.LocalTime
 import Data.Time.Clock.POSIX
 import System.Directory
 
-import Fetcher
+import Types 
 
 -- | this conversion may lose accuracy?
 instance Binary LocalTime where

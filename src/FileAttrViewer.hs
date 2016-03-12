@@ -40,6 +40,7 @@ import Data.Conduit
 import Control.Monad.IO.Class
 
 import Fetcher
+import Types
 import Text.HTML.DirectoryListing.Type
 
 fileAttrViewer :: DNode -> IO ()
