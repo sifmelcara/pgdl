@@ -21,6 +21,15 @@ getConfig = do
         False -> return Nothing
         True -> Just <$> C.load [C.Required cfgFile]
 
+-- | This function also creates the cache directory
+-- if it doesn't exists.
+getCacheFileLocation :: IO FilePath
+getCacheFileLocation = do
+    cdir <- getXdgDirectory XdgCache ""
+    createDirectoryIfMissing True cdir
+    let cacheFile = cdir </> "pgdl"
+    return cacheFile
+    
 {-
 getUsername :: IO (Maybe Text)
 getUsername = do
