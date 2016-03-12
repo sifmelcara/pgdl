@@ -38,6 +38,7 @@ import FileAttrViewer
 import Utils
 import Configure
 import System.Environment
+import Cache
 
 drawUI :: LState -> [Widget]
 drawUI (LState _ l) = [C.hCenter . hLimit 80 $ vBox [entryList, statusBar]]
@@ -67,18 +68,21 @@ drawUI (LState _ l) = [C.hCenter . hLimit 80 $ vBox [entryList, statusBar]]
 data LState = LState LState (L.List DNode)
 
 main = do
-    getArgs >>= \case
-        ["--offline"] -> error "not implemented"
-        _ -> return ()
-    putStrLn "loading webpage..."
-    putStrLn "(you can use --offline to browse the webpages you load last time)"
     let askUserServpath = undefined
     rootUrl <- getArgs >>= \case
                 [url] -> return . T.pack $ url
                 _ -> getServpath >>= \case
                         Nothing -> askUserServpath
                         Just p -> return p
-    dNodes <- fetch rootUrl
+    dNodes <- do
+        getArgs >>= \case
+            ["--offline"] -> readCache >>= \case
+                Nothing -> error "no offline data or data corrupted."
+                Just dlst -> return dlst
+            _ -> do
+                putStrLn "loading webpage..."
+                putStrLn "(you can use --offline to browse the webpages you load last time)"
+                fetch rootUrl
     let
         initialState :: LState
         initialState = LState initialState lst
