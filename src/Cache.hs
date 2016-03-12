@@ -42,8 +42,8 @@ writeCache es = do
     p <- getCacheFileLocation
     encodeFile p es
 
-readCache :: Text -> IO (Maybe [DNode])
-readCache rootUrl = do
+readCache :: IO (Maybe [DNode])
+readCache = do
     p <- getCacheFileLocation
     decodeFileOrFail p >>= \case
         Right d -> return . Just . map toDNode $ d
@@ -52,6 +52,6 @@ readCache rootUrl = do
     toDNode :: Entry -> DNode
     toDNode e
         | isDirectory e = Directory e noData
-        | otherwise = File e (rootUrl `T.append` href e)
+        | otherwise = File e "offline mode"
     noData = error "offline mode"
     
