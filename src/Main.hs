@@ -6,6 +6,9 @@ where
 import Debug.Trace
 import Fetcher
 import qualified Data.Text as T
+import Data.Text (Text)
+import qualified Data.ByteString as B
+import Data.Text.Encoding
 import Networking
 import DownloadInterface
 import Control.Monad
@@ -29,6 +32,7 @@ import Brick.Widgets.Core
   , hLimit
   , vBox
   , withAttr
+  , txt
   )
 import Brick.Util (fg, on)
 
@@ -47,12 +51,17 @@ drawUI (LState _ l) = [C.hCenter . hLimit 80 $ vBox [entryList, statusBar]]
     -- note: the vertical size of the list is somewhat strange when the hroizontal size limit
     -- is not the multiple of its element size (it is 3)
     entryList = L.renderList l listDrawElement
-    listDrawElement False (Directory a _) = C.hCenter . str . mid . T.unpack $ decodedName a 
-    listDrawElement False (File a _) = C.hCenter . str . mid . T.unpack $ decodedName a 
+    listDrawElement False (Directory a _) = C.hCenter . txt . mid . strip80 $ decodedName a 
+    listDrawElement False (File a _) = C.hCenter . txt . mid . strip80 $ decodedName a 
     listDrawElement True d@(Directory _ _) = withAttr "directory" $ listDrawElement False d
     listDrawElement True f@(File _ _) = withAttr "file" $ listDrawElement False f
-    mid :: String -> String
-    mid s = unlines $ ["", s, ""]
+    mid s = T.unlines $ ["", s, ""]
+    strip80 :: Text -> Text
+    strip80 s
+        | T.length s > 35 = T.take 35 s `T.append` "..."
+        | otherwise = s
+        where
+        b = encodeUtf8 s
 
     statusBar = withAttr "statusBar" . str . expand $ info
     expand s = s ++ replicate 88 ' '
