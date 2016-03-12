@@ -13,11 +13,18 @@ import qualified Data.ByteString.Lazy as BL
 import Debug.Trace
 getWebpage :: T.Text -> IO T.Text
 getWebpage url = do
---    traceShow url $ return ()
-    res <- simpleHttp (T.unpack url)
-    case decodeUtf8' . B.concat . BL.toChunks $ res of
+    user <- getUsername
+    pass <- getPassword
+    req <- case (user, pass) of
+            (Just u, Just p) -> applyBasicAuth bu bp <$> (parseUrl $ T.unpack url)
+                where
+                [bu, bp] = map encodeUtf8 [u, p]
+            _ -> parseUrl $ T.unpack url
+    manager <- newManager tlsManagerSettings
+    response <- httpLbs req manager
+    let body = responseBody response
+    case decodeUtf8' . B.concat . BL.toChunks $ body of
         Left unicodeException -> error . show $ unicodeException
         Right t -> return t
-
 
 
