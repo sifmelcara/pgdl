@@ -40,20 +40,23 @@ import Data.Conduit
 import Control.Monad.IO.Class
 import Data.Conduit.Binary
 import System.Posix.Files
+import System.Process
+import Distribution.System
 
 --                                 bytes already downloaded
-data DownloadState = DownloadState Integer
+data DownloadState = DownloadState Integer | FinishedState
 
 data DEvent = VtyEvent V.Event | UpdateFinishedSize Integer | DownloadFinish
 
 -- | Maybe we should try to get file size by other method,
 -- that would be more accurate and reliable.
 downloadInterface :: Text -> -- ^ url
+                     Text -> -- ^ file path
                      Integer -> -- ^ filesize in bytes
                      IO ()
-downloadInterface url filesize = do
+downloadInterface url filepath filesize = do
     eventChan <- C.newChan 
-    forkIO $ download url (C.writeChan eventChan)
+    forkIO $ download url filepath (C.writeChan eventChan)
     let
         initialState :: DownloadState 
         initialState = DownloadState 0
@@ -69,26 +72,50 @@ downloadInterface url filesize = do
         appEvent ds@(DownloadState doneB) de = case de of
             VtyEvent e -> case e of
                 V.EvKey V.KEsc [] -> M.halt ds
+                V.EvKey (V.KChar 'q') _ -> M.halt ds
+                V.EvKey V.KEnter [] -> do
+                    liftIO $ xdgOpen filepath
+                    M.continue ds
                 ev -> M.continue ds
             UpdateFinishedSize b -> M.continue . DownloadState $ b
-            DownloadFinish -> M.halt ds
+            DownloadFinish -> M.continue FinishedState
         theMap = A.attrMap V.defAttr [ (P.progressCompleteAttr, V.black `on` V.cyan)
                                      , (P.progressIncompleteAttr, V.black `on` V.white)
                                      ]
         drawUI :: DownloadState -> [Widget]
-        drawUI (DownloadState bytes) = [ui]
+        drawUI (DownloadState bytes) = [vBox [bar, note]]
             where
-            ui = C.vCenter . C.hCenter $ P.progressBar Nothing (fromIntegral bytes / fromIntegral filesize)
+            bar = C.vCenter . C.hCenter $ P.progressBar Nothing (fromIntegral bytes / fromIntegral filesize)
+            note = C.vCenter . C.hCenter . str $ unlines ["press Enter to open the file (even if its download has not finished)"]
+        drawUI FinishedState = [ui]
+            where
+            ui = C.vCenter . C.hCenter . str $ unlines [ "Download Finished"
+                                                       , "press Enter to open the file, or press 'q' to return to the file listing"
+                                                       ]
     M.customMain (V.mkVty Data.Default.def) eventChan theApp initialState
     return ()
 
+xdgOpen :: Text -> -- ^ filepath
+           IO ()
+xdgOpen tFilepath = do
+    -- how to deal with file name that contains '\"'  ?
+    case buildOS of
+        OSX   -> runCommand $ "open " ++ addq filepath ++ " "
+        Linux -> runCommand $ "nohup xdg-open " ++ addq filepath ++ " &>/dev/null &"
+        _     -> error "don't know how to open file in this OS"
+    return ()
+    where
+    filepath = T.unpack tFilepath
+    addq s = "\"" ++ s ++ "\""
 
-download :: Text -> (DEvent -> IO ()) -> IO ()
-download url tell = do
+download :: Text -> -- ^ url
+            Text -> -- ^ filepath
+            (DEvent -> IO ()) -> IO ()
+download url tFilepath tell = do
     -- this implementation needs to be change
     -- since some filename contains characters that cannot be represented by String
     let
-        filepath = "testFile"
+        filepath = T.unpack tFilepath
         checkFile :: IO ()
         checkFile = forever $ do
             threadDelay $ 1000000 * 1
