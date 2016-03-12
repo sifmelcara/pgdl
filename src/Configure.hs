@@ -20,28 +20,25 @@ getConfig = do
     doesFileExist cfgFile >>= \case
         False -> return Nothing
         True -> Just <$> C.load [C.Required cfgFile]
-
--- | This function also creates the cache directory
--- if it doesn't exists.
-getCacheFileLocation :: IO FilePath
-getCacheFileLocation = do
-    cdir <- getXdgDirectory XdgCache ""
-    createDirectoryIfMissing True cdir
-    let cacheFile = cdir </> "pgdl"
-    return cacheFile
     
-{-
 getUsername :: IO (Maybe Text)
 getUsername = do
-    cfg <- getConfig
-    C.lookup cfg "username" 
--}
-{-
+    getConfig >>= \case
+        Nothing -> return Nothing
+        Just cfg -> C.lookup cfg "username" 
+
+
 getPassword :: IO (Maybe Text)
 getPassword = do 
-    cfg <- getConfig
-    C.lookup cfg "password"
--}
+    getConfig >>= \case
+        Nothing -> return Nothing
+        Just cfg -> C.lookup cfg "password" 
+
+getLocaldir :: IO (Maybe Text)
+getLocaldir = do
+    getConfig >>= \case
+        Nothing -> return Nothing
+        Just cfg -> C.lookup cfg "localdir" 
 
 -- | return Nothing if there are no servpath or config file do not exist
 getServpath :: IO (Maybe Text)
@@ -58,12 +55,12 @@ getServpath = do
         | "https://" `T.isPrefixOf` p = p
         | otherwise = "http://" `T.append` p
 
-
-{-
-getLocaldir :: IO (Maybe Text)
-getLocaldir = do
-    cfg <- getConfig
-    C.lookup cfg "localdir" 
--}
-somethingWrong = error "Oops, it seems the config file (~/.pgdl) has something wrong."
+-- | This function also creates the cache directory
+-- if it doesn't exists.
+getCacheFileLocation :: IO FilePath
+getCacheFileLocation = do
+    cdir <- getXdgDirectory XdgCache ""
+    createDirectoryIfMissing True cdir
+    let cacheFile = cdir </> "pgdl"
+    return cacheFile
 
