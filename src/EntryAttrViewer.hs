@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module FileAttrViewer (fileAttrViewer)
+module EntryAttrViewer (entryAttrViewer)
 where
 
 import Debug.Trace
@@ -43,9 +43,10 @@ import Fetcher
 import Types
 import Text.HTML.DirectoryListing.Type
 
-fileAttrViewer :: DNode -> IO ()
-fileAttrViewer (Directory _ _) = return ()
-fileAttrViewer (File entry url) = do
+entryAttrViewer :: DNode -> IO ()
+-- | Temporary use File to process Directory...
+entryAttrViewer (Directory entry _) = entryAttrViewer (File entry "directory no link.")
+entryAttrViewer (File entry url) = do
     let
         initialState :: () 
         initialState = ()

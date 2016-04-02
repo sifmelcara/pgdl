@@ -38,7 +38,7 @@ import Brick.Util (fg, on)
 
 import Text.HTML.DirectoryListing.Type
 import Data.Maybe
-import FileAttrViewer
+import EntryAttrViewer
 import Utils
 import Configure
 import System.Environment
@@ -122,6 +122,7 @@ main = do
         appEvent :: LState -> V.Event -> T.EventM (T.Next LState)
         appEvent ls@(LState father lst) e = case e of
             V.EvKey V.KEsc [] -> M.halt ls
+            V.EvKey (V.KChar 'q') [] -> M.halt ls
             V.EvKey V.KEnter [] -> case L.listSelectedElement lst of
                                     Nothing -> M.continue $ ls
                                     Just (_, child) -> case child of
@@ -137,11 +138,7 @@ main = do
             V.EvKey V.KLeft [] -> M.continue father
             V.EvKey V.KRight [] -> case L.listSelectedElement lst of
                                     Nothing -> M.continue $ ls
-                                    Just (_, sel) -> case sel of
-                                        File _ _ -> M.suspendAndResume $ fileAttrViewer sel >> return ls
-                                        Directory entry dnsOp -> do
-                                            dns <- liftIO dnsOp -- grab the subdirectory
-                                            M.continue $ LState ls $ L.list (T.Name "root") (V.fromList dns) 3
+                                    Just (_, sel) -> M.suspendAndResume $ entryAttrViewer sel >> return ls
             ev -> M.continue =<< (LState father <$> (T.handleEvent ev lst))
         theMap = A.attrMap V.defAttr [ (L.listAttr, V.white `on` V.black)
 --                                     , (L.listSelectedAttr, V.black `on` V.cyan)
