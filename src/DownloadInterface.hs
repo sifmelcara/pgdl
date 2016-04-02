@@ -106,6 +106,7 @@ xdgOpen tFilepath = do
     return ()
     where
     filepath = T.unpack tFilepath
+    addq :: String -> String
     addq s = "\"" ++ s ++ "\""
 
 download :: Text -> -- ^ url
