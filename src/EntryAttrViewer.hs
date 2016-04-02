@@ -61,6 +61,7 @@ entryAttrViewer (File entry url) = do
         appEvent :: () -> V.Event -> T.EventM (T.Next ())
         appEvent () e = case e of
             V.EvKey V.KEsc [] -> M.halt ()
+            V.EvKey (V.KChar 'q') [] -> M.halt ()
             V.EvKey V.KLeft [] -> M.halt ()
             ev -> M.continue ()
         theMap = A.attrMap V.defAttr [ (P.progressCompleteAttr, V.black `on` V.cyan)
