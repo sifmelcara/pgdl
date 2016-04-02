@@ -12,14 +12,15 @@ import Data.Text (Text)
 import Cache
 import Types
 import Control.Concurrent
-
+import Data.Ord
+import Data.List
 
 fetch :: Text -> -- ^ root url
          IO [DNode]
 fetch rootUrl = do
     html <- getWebpage rootUrl
     let
-        entries = parseDirectoryListing html
+        entries = sortBy (flip $ comparing lastModified) $ parseDirectoryListing html
         -- | TODO: reuse network connection manager to avoid
         -- TlsExceptionHostPort (HandshakeFailed (Error_Packet_unexpected "Alert [(AlertLevel_Fatal,BadRecordMac)]" " expected: change cipher")) "www.kernel.org" 80
         -- (Maybe reuse network connection manager can avoid this error)
@@ -32,7 +33,7 @@ fetch rootUrl = do
             childs :: IO [DNode]
             childs = do
                 html' <- getWebpage newUrl
-                mapM (toDNode newUrl) $ parseDirectoryListing html'
+                mapM (toDNode newUrl) . sortBy (flip $ comparing lastModified) $ parseDirectoryListing html'
                 where
                 newUrl = url `T.append` href e 
     forkIO $ writeCache entries
