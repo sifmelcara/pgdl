@@ -57,11 +57,24 @@ drawUI (LState _ l) = [C.hCenter . hLimit 80 $ vBox [entryList, statusBar]]
     listDrawElement True f@(File _ _) = withAttr "file" $ listDrawElement False f
     mid s = T.unlines $ ["", s, ""]
     strip80 :: Text -> Text
-    strip80 s
-        | T.length s > 35 = T.take 35 s `T.append` "..."
-        | otherwise = s
+    strip80 t
+        | displayLength t > 75 = takeDLength 75 t `T.append` "..."
+        | otherwise = t
         where
-        b = encodeUtf8 s
+        displayLength = sum . map charDisplayLen . T.unpack
+        -- | charDisplayLen determine a unicode character is a wide character or not
+        -- (a wide character occupy 2 space in the terminal)
+        -- this method may seem unreliable, but have no better idea.
+        charDisplayLen :: Char -> Int
+        charDisplayLen c
+            | (B.length . encodeUtf8 . T.pack $ [c]) > 1 = 2
+            | otherwise = 1
+        takeDLength len t = T.pack . map snd .
+                            takeWhile ((<len).fst) . accumFst .
+                            T.unpack $ t
+            where
+            accumFst = scanl (\(l, _) r -> (l + charDisplayLen r, r)) (0, ' ')
+
 
     statusBar = withAttr "statusBar" . str . expand $ info
     expand s = s ++ replicate 88 ' '
