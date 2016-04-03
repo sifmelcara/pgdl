@@ -81,6 +81,7 @@ downloadInterface url filepath filesize = do
                 V.EvKey V.KEnter [] -> do
                     liftIO $ xdgOpen filepath
                     M.continue ds
+                V.EvKey (V.KChar 'o') [] -> error "unimplemented feature"
                 ev -> M.continue ds
             UpdateFinishedSize b -> M.continue . DownloadState $ b
             DownloadFinish -> M.continue FinishedState
@@ -91,7 +92,9 @@ downloadInterface url filepath filesize = do
         drawUI (DownloadState bytes) = [vBox [bar, note]]
             where
             bar = C.vCenter . C.hCenter $ P.progressBar Nothing (fromIntegral bytes / fromIntegral filesize)
-            note = C.vCenter . C.hCenter . str $ unlines ["press Enter to open the file (even if its download has not finished)"]
+            note = C.vCenter . C.hCenter . str $ unlines [ "press Enter to open the file (even if its download has not finished)"
+                                                         , "press 'o' to open the file by user specified command"
+                                                         ]
         drawUI FinishedState = [ui]
             where
             ui = C.vCenter . C.hCenter . str $ unlines [ "Download Finished"
