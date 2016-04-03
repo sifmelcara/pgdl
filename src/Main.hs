@@ -31,8 +31,9 @@ import Brick.Widgets.Core
   , str
   , vLimit
   , hLimit
-  , vBox
+  , vBox, hBox
   , withAttr
+  , forceAttr
   , txt
   )
 import Brick.Util (fg, on)
@@ -50,7 +51,7 @@ import Types
 drawUI :: MainState -> [Widget]
 drawUI mainState = case mainState of
         (LState _ l) -> [C.hCenter . hLimit 80 $ vBox [entryList l, statusBar l]]
-        (SearchState _ l e) -> [C.hCenter . hLimit 80 $ vBox [entryList l, undefined]]
+        (SearchState _ l e) -> [C.hCenter . hLimit 80 $ vBox [entryList l, searchBar e]]
     where
     -- note: the vertical size of the list is somewhat strange when the hroizontal size limit
     -- is not the multiple of its element size (it is 3)
@@ -79,6 +80,7 @@ drawUI mainState = case mainState of
             where
             accumFst = scanl (\(l, _) r -> (l + charDisplayLen r, r)) (0, ' ')
 
+    searchBar ed = forceAttr "searchBar" $ hBox [txt "search: ", E.renderEditor ed]
 
     statusBar lst = withAttr "statusBar" . str . expand $ info lst
     expand s = s ++ replicate 88 ' '
@@ -145,7 +147,7 @@ main = do
             V.EvKey V.KRight [] -> case L.listSelectedElement lst of
                                     Nothing -> M.continue $ ls
                                     Just (_, sel) -> M.suspendAndResume $ entryAttrViewer sel >> return ls
-            V.EvKey (V.KChar '/') [] -> M.continue $ SearchState ls lst (E.editor "keyword" (str.unlines) (Just 1) "")
+            V.EvKey (V.KChar '/') [] -> M.continue $ SearchState ls lst (E.editor "searchBar" (str.unlines) (Just 1) "")
             --                                                      ^ current list which reactively change with editor
             ev -> M.continue =<< (LState father <$> (T.handleEvent ev lst))
         appEvent ss@(SearchState ms@(LState _ origLst) lst ed) e = case e of
@@ -172,6 +174,7 @@ main = do
                                      , ("directory", V.black `on` V.magenta)
                                      , ("file", V.black `on` V.cyan)
                                      , ("statusBar", V.black `on` V.green)
+                                     , ("searchBar", V.black `on` V.blue)
                                      ]
     M.defaultMain theApp initialState
     return ()
