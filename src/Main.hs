@@ -153,7 +153,7 @@ main = do
         appEvent ss@(SearchState ms@(LState _ origLst) lst ed) e = case e of
             V.EvKey V.KEsc [] -> M.halt ss
             V.EvKey V.KEnter [] -> M.continue $ LState ms lst
-            ev@(V.EvKey (V.KChar _) []) -> do
+            ev -> do
                 newEd <- T.handleEvent ev ed
                 -- | update the list, lst
                 let 
@@ -169,7 +169,6 @@ main = do
                     getDNText (File e _) = decodedName e 
                     isKeyWordOf t1 t2 = T.toCaseFold t1 `T.isInfixOf` T.toCaseFold t2
                 M.continue $ SearchState ms (applyFilter (T.pack . linesToALine $ E.getEditContents newEd) origLst) newEd
-            ev -> M.continue ss
         theMap = A.attrMap V.defAttr [ (L.listAttr, V.white `on` V.black)
 --                                     , (L.listSelectedAttr, V.black `on` V.cyan)
                                      , ("directory", V.black `on` V.magenta)
