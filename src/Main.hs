@@ -163,7 +163,8 @@ main = do
                     applyFilter kw lst = replaceList newElms lst
                         where
                         newElms = V.filter (\dn -> kw `isKeyWordOf` (getDNText dn)) $ L.listElements lst
-                        replaceList es l = l {L.listElements = es}
+                        -- | sometime this will crash? how?
+                        replaceList es l = l {L.listElements = es, L.listSelected = Just 0}
                     getDNText (Directory e _) = decodedName e
                     getDNText (File e _) = decodedName e 
                     isKeyWordOf t1 t2 = T.toCaseFold t1 `T.isInfixOf` T.toCaseFold t2
