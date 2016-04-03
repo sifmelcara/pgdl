@@ -152,7 +152,9 @@ main = do
             ev -> M.continue =<< (LState father <$> (T.handleEvent ev lst))
         appEvent ss@(SearchState ms@(LState _ origLst) lst ed) e = case e of
             V.EvKey V.KEsc [] -> M.halt ss
-            V.EvKey V.KEnter [] -> M.continue $ LState ms lst
+            V.EvKey V.KEnter [] -> case E.getEditContents ed of
+                [""] -> M.continue ms -- ^ do nothing if the editor is empty
+                _ -> M.continue $ LState ms lst
             ev -> do
                 newEd <- T.handleEvent ev ed
                 -- | update the list, lst
