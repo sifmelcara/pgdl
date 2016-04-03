@@ -1,4 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE LambdaCase#-}
+
 module DownloadInterface (downloadInterface)
 where
 
@@ -42,6 +44,9 @@ import Data.Conduit.Binary
 import System.Posix.Files
 import System.Process
 import Distribution.System
+import Data.Text.Encoding
+
+import Configure
 
 --                                 bytes already downloaded
 data DownloadState = DownloadState Integer | FinishedState
@@ -126,7 +131,11 @@ download url tFilepath tell = do
                 tell . UpdateFinishedSize . fromIntegral $ s
     checkerThreadID <- forkIO checkFile
     -- note: this usage of parseUrl is dangerous, exception need to be catch in the future
-    req <- parseUrl (T.unpack url)
+    req <- getUsername >>= \case
+            Nothing -> parseUrl (T.unpack url)
+            Just name -> getPassword >>= \case
+                Nothing -> error "no password."
+                Just pw -> applyBasicAuth (encodeUtf8 name) (encodeUtf8 pw) <$> parseUrl (T.unpack url)
     -- let authReq = applyBasicAuth username password req
     manager <- newManager tlsManagerSettings
     runResourceT $ do
