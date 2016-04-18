@@ -93,8 +93,8 @@ drawUI mainState = case mainState of
                             File entry _ -> entry
     
 
--- |                 father  contents                 
-data MainState = LState MainState (L.List DNode)
+-- |                    father            contents                 
+data MainState = LState (Maybe MainState) (L.List DNode)
                | SearchState MainState (L.List DNode) E.Editor
                | SortSelectionState MainState
 
@@ -116,7 +116,7 @@ main = do
                 fetch rootUrl
     let
         initialState :: MainState
-        initialState = LState initialState lst
+        initialState = LState Nothing lst
             where
             lst = L.list (T.Name "root") (V.fromList dNodes) 3
         theApp =
@@ -136,14 +136,14 @@ main = do
                                     Just (_, child) -> case child of
                                         Directory entry dnsOp -> do
                                             dns <- liftIO dnsOp -- grab the subdirectory
-                                            M.continue $ LState ls $ L.list (T.Name "root") (V.fromList dns) 3
+                                            M.continue $ LState (Just ls) $ L.list (T.Name "root") (V.fromList dns) 3
                                         File entry url -> do
                                             let
                                                 fp = decodedName entry
                                                 dui = downloadInterface url fp (fromJust $ fileSize entry)
                                                 --                             ^ this fromJust need to be eliminated
                                             M.suspendAndResume $ dui >> return ls
-            V.EvKey V.KLeft [] -> M.continue father
+            V.EvKey V.KLeft [] -> M.continue $ fromMaybe ls father
             V.EvKey V.KRight [] -> case L.listSelectedElement lst of
                                     Nothing -> M.continue $ ls
                                     Just (_, sel) -> M.suspendAndResume $ entryAttrViewer sel >> return ls
@@ -154,7 +154,7 @@ main = do
             V.EvKey V.KEsc [] -> M.halt ss
             V.EvKey V.KEnter [] -> case E.getEditContents ed of
                 [""] -> M.continue ms -- ^ do nothing if the editor is empty
-                _ -> M.continue $ LState ms lst
+                _ -> M.continue $ LState (Just ms) lst
             ev -> do
                 newEd <- T.handleEvent ev ed
                 -- | update the list, lst
