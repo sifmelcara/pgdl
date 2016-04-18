@@ -88,6 +88,10 @@ downloadInterface url filepath filesize = do
         appEvent FinishedState de = case de of
             VtyEvent e -> case e of
                 V.EvKey (V.KChar 'q') _ -> M.halt FinishedState
+                V.EvKey (V.KChar 'o') [] -> error "unimplemented feature"
+                V.EvKey V.KEnter [] -> do
+                    liftIO $ xdgOpen filepath
+                    M.continue FinishedState
                 _ -> M.continue FinishedState
             _ -> error "received non vty event after FinishedState is reached."
         theMap = A.attrMap V.defAttr [ (P.progressCompleteAttr, V.black `on` V.cyan)
@@ -104,6 +108,7 @@ downloadInterface url filepath filesize = do
             where
             ui = C.vCenter . C.hCenter . str $ unlines [ "Download Finished"
                                                        , "press Enter to open the file, or press 'q' to return to the file listing"
+                                                       , "press 'o' to open the file by user specified command"
                                                        ]
     M.customMain (V.mkVty Data.Default.def) eventChan theApp initialState
     return ()
