@@ -85,6 +85,11 @@ downloadInterface url filepath filesize = do
                 ev -> M.continue ds
             UpdateFinishedSize b -> M.continue . DownloadState $ b
             DownloadFinish -> M.continue FinishedState
+        appEvent FinishedState de = case de of
+            VtyEvent e -> case e of
+                V.EvKey (V.KChar 'q') _ -> M.halt FinishedState
+                _ -> M.continue FinishedState
+            _ -> error "received non vty event after FinishedState is reached."
         theMap = A.attrMap V.defAttr [ (P.progressCompleteAttr, V.black `on` V.cyan)
                                      , (P.progressIncompleteAttr, V.black `on` V.white)
                                      ]
