@@ -13,6 +13,7 @@ import Networking
 import DownloadInterface
 import Control.Monad
 import Control.Monad.IO.Class
+import System.FilePath
 
 import qualified Graphics.Vty as V
 import qualified Brick.Main as M
@@ -138,10 +139,13 @@ main = do
                                             dns <- liftIO dnsOp -- grab the subdirectory
                                             M.continue $ LState (Just ls) $ L.list (T.Name "root") (V.fromList dns) 3
                                         File entry url -> do
+                                            let fn = decodedName entry
+                                            path <- liftIO $ getLocaldir >>= \case
+                                                                Nothing -> return fn 
+                                                                Just pre -> return $ T.pack ((T.unpack pre) </> (T.unpack fn))
                                             let
-                                                fp = decodedName entry
-                                                dui = downloadInterface url fp (fromJust $ fileSize entry)
-                                                --                             ^ this fromJust need to be eliminated
+                                                dui = downloadInterface url path (fromJust $ fileSize entry)
+                                                --                                ^ this fromJust need to be eliminated
                                             M.suspendAndResume $ dui >> return ls
             V.EvKey V.KLeft [] -> M.continue $ fromMaybe ls father
             V.EvKey V.KRight [] -> case L.listSelectedElement lst of
