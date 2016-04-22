@@ -72,13 +72,24 @@ entryAttrViewer (File entry url) = do
         drawUI :: () -> [Widget]
         drawUI _ = [ui]
             where
-            ui = C.vCenter . C.hCenter . hLimit U.terminalWidth . C.txt $ info
+            ui = C.vCenter . C.hCenter .
+                 C.hLimit U.terminalWidth . C.txt $ info
     M.defaultMain theApp initialState
     return ()
     where
-    info = T.unlines [ "visible name: " `T.append` visibleName entry
-                     , "decoded name: " `T.append` decodedName entry
-                     , "url: " `T.append` url
-                     , "file size: " `T.append` (T.pack . show $ fileSize entry) `T.append` " bytes"
-                     ]
+    info = T.unlines $
+           zipWith (\describ str -> T.intercalate "\n" . 
+                                    U.cutTextByDisplayLength U.terminalWidth $
+                                    describ `T.append` ": " `T.append` str
+                   )
+           [ "visible name" 
+           , "decoded name" 
+           , "url" 
+           , "file size" 
+           ]
+           [ visibleName entry
+           , decodedName entry
+           , url
+           , (T.pack . show $ fileSize entry) `T.append` " bytes"
+           ]
 
