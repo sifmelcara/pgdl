@@ -47,39 +47,32 @@ import Configure
 import System.Environment
 import Cache
 import Types
+import qualified Utils as U
 
 -- | use cropping to draw UI in the future?
 drawUI :: MainState -> [Widget]
 drawUI mainState = case mainState of
-        (LState _ l) -> [C.hCenter . hLimit 80 $ vBox [entryList l, statusBar l]]
-        (SearchState _ l e) -> [C.hCenter . hLimit 80 $ vBox [entryList l, searchBar e]]
+        (LState _ l) -> [ C.hCenter . hLimit U.terminalWidth $
+                          vBox [entryList l, statusBar l]
+                        ]
+        (SearchState _ l e) -> [ C.hCenter . hLimit U.terminalWidth $
+                                 vBox [entryList l, searchBar e]
+                               ]
     where
-    -- note: the vertical size of the list is somewhat strange when the hroizontal size limit
+    -- fixme (brick bug?): the vertical size of the list 
+    -- is somewhat strange when the hroizontal size limit
     -- is not the multiple of its element size (it is 3)
+    -- This strange behavior do not occur in vty-ui
     entryList lst = L.renderList lst listDrawElement
-    listDrawElement False (Directory a _) = C.hCenter . txt . mid . strip80 $ decodedName a 
-    listDrawElement False (File a _) = C.hCenter . txt . mid . strip80 $ decodedName a 
+    listDrawElement False (Directory a _) = C.hCenter . txt . mid . stripWidth $ decodedName a 
+    listDrawElement False (File a _) = C.hCenter . txt . mid . stripWidth $ decodedName a 
     listDrawElement True d@(Directory _ _) = withAttr "directory" $ listDrawElement False d
     listDrawElement True f@(File _ _) = withAttr "file" $ listDrawElement False f
     mid s = T.unlines $ ["", s, ""]
-    strip80 :: Text -> Text
-    strip80 t
-        | displayLength t > 75 = takeDLength 75 t `T.append` "..."
-        | otherwise = t
-        where
-        displayLength = sum . map charDisplayLen . T.unpack
-        -- | charDisplayLen determine a unicode character is a wide character or not
-        -- (a wide character occupy 2 space in the terminal)
-        -- this method may seem unreliable, but have no better idea.
-        charDisplayLen :: Char -> Int
-        charDisplayLen c
-            | (B.length . encodeUtf8 . T.pack $ [c]) > 1 = 2
-            | otherwise = 1
-        takeDLength len t = T.pack . map snd .
-                            takeWhile ((<len).fst) . accumFst .
-                            T.unpack $ t
-            where
-            accumFst = scanl (\(l, _) r -> (l + charDisplayLen r, r)) (0, ' ')
+    stripWidth :: Text -> Text
+    stripWidth t = case U.cutTextByDisplayLength (U.terminalWidth-5) t of
+                    [singleLine] -> singleLine
+                    (x:xs) -> x `T.append` "..."
 
     searchBar ed = forceAttr "searchBar" $ hBox [txt "search: ", E.renderEditor ed]
 
