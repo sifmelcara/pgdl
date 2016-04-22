@@ -43,6 +43,8 @@ import Fetcher
 import Types
 import Text.HTML.DirectoryListing.Type
 
+import qualified Utils as U
+
 entryAttrViewer :: DNode -> IO ()
 -- | Temporary use File to process Directory...
 entryAttrViewer (Directory entry _) = entryAttrViewer (File entry "directory no link.")
@@ -70,7 +72,7 @@ entryAttrViewer (File entry url) = do
         drawUI :: () -> [Widget]
         drawUI _ = [ui]
             where
-            ui = C.vCenter . C.hCenter . C.txt $ info
+            ui = C.vCenter . C.hCenter . hLimit U.terminalWidth . C.txt $ info
     M.defaultMain theApp initialState
     return ()
     where
