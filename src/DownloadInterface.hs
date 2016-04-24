@@ -16,6 +16,7 @@ import qualified Control.Concurrent.Chan as C
 import qualified Graphics.Vty as V
 import qualified Brick.Main as M
 import qualified Brick.Types as T
+import qualified Brick.Widgets.Edit as E
 import qualified Brick.Widgets.Border as B
 import qualified Brick.Widgets.ProgressBar as P
 import qualified Brick.Widgets.Center as C
@@ -27,9 +28,11 @@ import Brick.Types
 import Brick.Widgets.Core
   ( (<+>)
   , str
+  , txt
   , vLimit
   , hLimit
   , vBox
+  , hBox
   , withAttr
   )
 import Brick.Util (fg, on)
@@ -50,8 +53,14 @@ import Configure
 
 --                                 bytes already downloaded
 data DownloadState = DownloadState Integer | FinishedState
+                   | UserInput DownloadState E.Editor
+                   --          ^ download progress
 
-data DEvent = VtyEvent V.Event | UpdateFinishedSize Integer | DownloadFinish
+data DEvent = VtyEvent V.Event
+            | UpdateFinishedSize Integer
+            | DownloadFinish
+            | OpenFileAsk
+            | OpenBy String
 
 -- | Maybe we should try to get file size by other method,
 -- that would be more accurate and reliable.
@@ -74,26 +83,40 @@ downloadInterface url filepath filesize = do
                   , M.appLiftVtyEvent = VtyEvent
                   }
         appEvent :: DownloadState -> DEvent -> T.EventM (T.Next DownloadState)
+        appEvent downloadState (OpenBy str) = do
+            error $ "open " ++ (T.unpack filepath) ++ " by " ++ str
+            M.continue downloadState
         appEvent ds@(DownloadState doneB) de = case de of
             VtyEvent e -> case e of
                 V.EvKey V.KEsc [] -> M.halt ds
                 V.EvKey (V.KChar 'q') _ -> M.halt ds
+                V.EvKey (V.KChar 'o') [] -> M.continue $ UserInput ds (E.editor "command" (str.unlines) (Just 1) "")
                 V.EvKey V.KEnter [] -> do
-                    liftIO $ xdgOpen filepath
+                    liftIO $ C.writeChan eventChan (OpenBy "")
                     M.continue ds
-                V.EvKey (V.KChar 'o') [] -> error "unimplemented feature"
                 ev -> M.continue ds
             UpdateFinishedSize b -> M.continue . DownloadState $ b
             DownloadFinish -> M.continue FinishedState
         appEvent FinishedState de = case de of
             VtyEvent e -> case e of
                 V.EvKey (V.KChar 'q') _ -> M.halt FinishedState
-                V.EvKey (V.KChar 'o') [] -> error "unimplemented feature"
+                V.EvKey (V.KChar 'o') [] -> M.continue $ UserInput FinishedState (E.editor "command" (str.unlines) (Just 1) "")
                 V.EvKey V.KEnter [] -> do
-                    liftIO $ xdgOpen filepath
-                    M.continue FinishedState
-                _ -> M.continue FinishedState
+                    liftIO $ C.writeChan eventChan (OpenBy "")
+                    M.halt FinishedState
+                    -- ^ file opened, we can quit download interface now
             _ -> error "received non vty event after FinishedState is reached."
+        appEvent (UserInput st ed) de = case de of
+            VtyEvent e -> case e of
+                V.EvKey V.KEsc [] -> M.continue st
+                V.EvKey V.KEnter [] -> do
+                    liftIO $ C.writeChan eventChan (OpenBy . concat $ E.getEditContents ed)
+                    M.continue st
+                ev -> do
+                    newEd <- T.handleEvent ev ed
+                    M.continue $ UserInput st newEd
+            UpdateFinishedSize b -> M.continue (UserInput (DownloadState b) ed)
+            DownloadFinish -> M.continue (UserInput FinishedState ed)
         theMap = A.attrMap V.defAttr [ (P.progressCompleteAttr, V.black `on` V.cyan)
                                      , (P.progressIncompleteAttr, V.black `on` V.white)
                                      ]
@@ -110,6 +133,16 @@ downloadInterface url filepath filesize = do
                                                        , "press Enter to open the file, or press 'q' to return to the file listing"
                                                        , "press 'o' to open the file by user specified command"
                                                        ]
+        drawUI (UserInput (DownloadState bytes) ed) = [vBox [ask, bar, note]]
+            where
+            bar = C.vCenter . C.hCenter $ P.progressBar Nothing (fromIntegral bytes / fromIntegral filesize)
+            note = C.vCenter . C.hCenter . txt $ "hello, world"
+            ask = hBox [txt "command: ", E.renderEditor ed]
+        drawUI (UserInput FinishedState ed) = [vBox [ask, note]]
+            where
+            note = C.vCenter . C.hCenter . txt $ "this is a note."
+            ask = hBox [txt "command: ", E.renderEditor ed]
+
     M.customMain (V.mkVty Data.Default.def) eventChan theApp initialState
     return ()
 
