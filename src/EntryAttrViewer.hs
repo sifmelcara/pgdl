@@ -47,8 +47,8 @@ import qualified Utils as U
 
 entryAttrViewer :: DNode -> IO ()
 -- | Temporary use File to process Directory...
-entryAttrViewer (Directory entry _) = entryAttrViewer (File entry "directory no link.")
-entryAttrViewer (File entry url) = do
+entryAttrViewer (Directory entry _) = entryAttrViewer (File entry "directory no link." False)
+entryAttrViewer (File entry url downloaded) = do
     let
         initialState :: () 
         initialState = ()
@@ -86,10 +86,12 @@ entryAttrViewer (File entry url) = do
            , "decoded name" 
            , "url" 
            , "file size" 
+           , "downloaded"
            ]
            [ visibleName entry
            , decodedName entry
            , url
            , maybe "directory" (T.pack . U.friendlySize) . fileSize $ entry
+           , if downloaded then "Yes" else "No"
            ]
 

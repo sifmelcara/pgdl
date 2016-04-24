@@ -13,8 +13,10 @@ import Data.Binary
 import Data.Time.LocalTime
 import Data.Time.Clock.POSIX
 import System.Directory
+import Data.Maybe
 
 import Types 
+import Local
 
 -- | this conversion may lose accuracy?
 instance Binary LocalTime where
@@ -46,16 +48,21 @@ writeCache es = do
 readCache :: IO (Maybe [DNode])
 readCache = do
     p <- getCacheFileLocation
+    lcd <- T.unpack . fromMaybe "" <$> getLocaldir
     doesFileExist p >>= \case
         False -> return Nothing
         True -> do
             decodeFileOrFail p >>= \case
-                Right d -> return . Just . map toDNode $ d
+                Right d -> do
+                    dnodes <- mapM (toDNode lcd) d
+                    return $ Just dnodes
                 Left _ -> return Nothing
     where
-    toDNode :: Entry -> DNode
-    toDNode e
-        | isDirectory e = Directory e noData
-        | otherwise = File e "offline mode"
+    toDNode :: String -> Entry -> IO DNode
+    toDNode lcd e
+        | isDirectory e = return $ Directory e noData
+        | otherwise = do
+            downloaded <- isFileDownloaded (decodedName e) lcd
+            return $ File e "offline mode" downloaded
     noData = error "offline mode"
     

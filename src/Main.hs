@@ -47,6 +47,7 @@ import Configure
 import System.Environment
 import Cache
 import Types
+import Local
 import qualified Utils as U
 
 -- | use cropping to draw UI in the future?
@@ -65,9 +66,10 @@ drawUI mainState = case mainState of
     -- This strange behavior do not occur in vty-ui
     entryList lst = L.renderList lst listDrawElement
     listDrawElement False (Directory a _) = C.hCenter . txt . mid . stripWidth $ decodedName a 
-    listDrawElement False (File a _) = C.hCenter . txt . mid . stripWidth $ decodedName a 
+    listDrawElement False (File a _ _) = C.hCenter . txt . mid . stripWidth $ decodedName a 
     listDrawElement True d@(Directory _ _) = withAttr "directory" $ listDrawElement False d
-    listDrawElement True f@(File _ _) = withAttr "file" $ listDrawElement False f
+    listDrawElement True f@(File _ _ False) = withAttr "file" $ listDrawElement False f
+    listDrawElement True f@(File _ _ True) = withAttr "downloaded file" $ listDrawElement False f
     mid s = T.unlines $ ["", s, ""]
     stripWidth :: Text -> Text
     stripWidth t = case U.cutTextByDisplayLength (U.terminalWidth-5) t of
@@ -83,8 +85,8 @@ drawUI mainState = case mainState of
             Just (_, sel) -> "  " ++ show (lastModified entry) ++ "    " ++ maybe "Nothing" friendlySize (fileSize entry)
                 where
                 entry = case sel of
-                            Directory entry _ -> entry
-                            File entry _ -> entry
+                            Directory e _ -> e
+                            File e _ _ -> e
     
 
 -- |                    father            contents                 
@@ -131,7 +133,7 @@ main = do
                                         Directory entry dnsOp -> do
                                             dns <- liftIO dnsOp -- grab the subdirectory
                                             M.continue $ LState (Just ls) $ L.list (T.Name "root") (V.fromList dns) 3
-                                        File entry url -> do
+                                        File entry url False -> do
                                             let fn = decodedName entry
                                             path <- liftIO $ getLocaldir >>= \case
                                                                 Nothing -> return fn 
@@ -140,6 +142,7 @@ main = do
                                                 dui = downloadInterface url path (fromJust $ fileSize entry)
                                                 --                                ^ this fromJust need to be eliminated
                                             M.suspendAndResume $ dui >> return ls
+                                        File entry url True -> error "downloaded file"
             V.EvKey V.KLeft [] -> M.continue $ fromMaybe ls father
             V.EvKey V.KRight [] -> case L.listSelectedElement lst of
                                     Nothing -> M.continue $ ls
@@ -165,13 +168,14 @@ main = do
                         -- | sometime this will crash? how?
                         replaceList es l = l {L.listElements = es, L.listSelected = Just 0}
                     getDNText (Directory e _) = decodedName e
-                    getDNText (File e _) = decodedName e 
+                    getDNText (File e _ _) = decodedName e 
                     isKeyWordOf t1 t2 = T.toCaseFold t1 `T.isInfixOf` T.toCaseFold t2
                 M.continue $ SearchState ms (applyFilter (T.pack . linesToALine $ E.getEditContents newEd) origLst) newEd
         theMap = A.attrMap V.defAttr [ (L.listAttr, V.white `on` V.black)
 --                                     , (L.listSelectedAttr, V.black `on` V.cyan)
                                      , ("directory", V.black `on` V.magenta)
                                      , ("file", V.black `on` V.cyan)
+                                     , ("downloaded file", V.black `on` V.red)
                                      , ("statusBar", V.black `on` V.green)
                                      , ("searchBar", V.black `on` V.blue)
                                      ]

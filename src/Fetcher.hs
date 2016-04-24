@@ -14,11 +14,14 @@ import Types
 import Control.Concurrent
 import Data.Ord
 import Data.List
+import Data.Maybe
+import Local
 
 fetch :: Text -> -- ^ root url
          IO [DNode]
 fetch rootUrl = do
     html <- getWebpage rootUrl
+    lcd <- T.unpack . fromMaybe "" <$> getLocaldir
     let
         entries = sortBy (flip $ comparing lastModified) $ parseDirectoryListing html
         -- | TODO: reuse network connection manager to avoid
@@ -28,7 +31,9 @@ fetch rootUrl = do
         toDNode :: Text -> Entry -> IO DNode
         toDNode url e
             | isDirectory e = return $ Directory e childs
-            | otherwise = return $ File e (url `T.append` href e)
+            | otherwise = do
+                downloaded <- isFileDownloaded (decodedName e) lcd
+                return $ File e (url `T.append` href e) downloaded
             where
             childs :: IO [DNode]
             childs = do
