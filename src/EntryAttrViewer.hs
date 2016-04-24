@@ -90,6 +90,6 @@ entryAttrViewer (File entry url) = do
            [ visibleName entry
            , decodedName entry
            , url
-           , (T.pack . show $ fileSize entry) `T.append` " bytes"
+           , maybe "directory" (T.pack . U.friendlySize) . fileSize $ entry
            ]
 
