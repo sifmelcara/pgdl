@@ -129,7 +129,7 @@ main = do
             V.EvKey (V.KChar 'q') [] -> M.halt ls
             V.EvKey V.KEnter [] -> case L.listSelectedElement lst of
                                     Nothing -> M.continue $ ls
-                                    Just (_, child) -> case child of
+                                    Just (rowNum, child) -> case child of
                                         Directory entry dnsOp -> do
                                             dns <- liftIO dnsOp -- grab the subdirectory
                                             M.continue $ LState (Just ls) $ L.list (T.Name "root") (V.fromList dns) 3
@@ -141,7 +141,11 @@ main = do
                                             let
                                                 dui = downloadInterface url path (fromJust $ fileSize entry)
                                                 --                                ^ this fromJust need to be eliminated
-                                            M.suspendAndResume $ dui >> return ls
+                                                -- | construct a newList, modify the downloaded
+                                                -- file's *downloaded state* to True.
+                                                -- Maybe this is not a good approach?
+                                                newList = L.listMoveTo rowNum . L.listInsert rowNum (File entry url True) . L.listRemove rowNum $ lst
+                                            M.suspendAndResume $ dui >> return (LState father newList)
                                         File entry url True -> error "downloaded file"
             V.EvKey V.KLeft [] -> M.continue $ fromMaybe ls father
             V.EvKey V.KRight [] -> case L.listSelectedElement lst of
