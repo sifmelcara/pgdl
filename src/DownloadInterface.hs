@@ -59,13 +59,11 @@ data DownloadState = DownloadState Integer | FinishedState
 data DEvent = VtyEvent V.Event
             | UpdateFinishedSize Integer
             | DownloadFinish
-            | OpenFileAsk
-            | OpenBy String
 
 -- | Maybe we should try to get file size by other method,
 -- that would be more accurate and reliable.
 downloadInterface :: Text -> -- ^ url
-                     Text -> -- ^ file path
+                     Text -> -- ^ file path (may be a absolute path)
                      Integer -> -- ^ filesize in bytes
                      IO ()
 downloadInterface url filepath filesize = do
@@ -83,16 +81,13 @@ downloadInterface url filepath filesize = do
                   , M.appLiftVtyEvent = VtyEvent
                   }
         appEvent :: DownloadState -> DEvent -> T.EventM (T.Next DownloadState)
-        appEvent downloadState (OpenBy str) = do
-            error $ "open " ++ (T.unpack filepath) ++ " by " ++ str
-            M.continue downloadState
         appEvent ds@(DownloadState doneB) de = case de of
             VtyEvent e -> case e of
                 V.EvKey V.KEsc [] -> M.halt ds
                 V.EvKey (V.KChar 'q') _ -> M.halt ds
                 V.EvKey (V.KChar 'o') [] -> M.continue $ UserInput ds (E.editor "command" (str.unlines) (Just 1) "")
                 V.EvKey V.KEnter [] -> do
-                    liftIO $ C.writeChan eventChan (OpenBy "")
+                    liftIO $ filepath `openBy` ""
                     M.continue ds
                 ev -> M.continue ds
             UpdateFinishedSize b -> M.continue . DownloadState $ b
@@ -102,7 +97,7 @@ downloadInterface url filepath filesize = do
                 V.EvKey (V.KChar 'q') _ -> M.halt FinishedState
                 V.EvKey (V.KChar 'o') [] -> M.continue $ UserInput FinishedState (E.editor "command" (str.unlines) (Just 1) "")
                 V.EvKey V.KEnter [] -> do
-                    liftIO $ C.writeChan eventChan (OpenBy "")
+                    liftIO $ filepath `openBy` ""
                     M.halt FinishedState
                     -- ^ file opened, we can quit download interface now
             _ -> error "received non vty event after FinishedState is reached."
@@ -110,7 +105,7 @@ downloadInterface url filepath filesize = do
             VtyEvent e -> case e of
                 V.EvKey V.KEsc [] -> M.continue st
                 V.EvKey V.KEnter [] -> do
-                    liftIO $ C.writeChan eventChan (OpenBy . concat $ E.getEditContents ed)
+                    liftIO $ filepath `openBy` (concat $ E.getEditContents ed)
                     M.continue st
                 ev -> do
                     newEd <- T.handleEvent ev ed
@@ -145,6 +140,20 @@ downloadInterface url filepath filesize = do
 
     M.customMain (V.mkVty Data.Default.def) eventChan theApp initialState
     return ()
+
+openBy :: Text -> String -> IO ()
+openBy file "" = xdgOpen file
+openBy file cmd = do
+    case buildOS of
+        OSX   -> runCommand $ cmd ++ " " ++ addq filepath ++ " "
+        Linux -> runCommand $ "nohup " ++ cmd ++ " " ++ addq filepath ++ " &>/dev/null &"
+        _     -> error "don't know how to open file in this OS"
+    return ()
+    where
+    filepath = T.unpack file
+    addq :: String -> String
+    addq s = "\"" ++ s ++ "\""
+    
 
 xdgOpen :: Text -> -- ^ filepath
            IO ()
