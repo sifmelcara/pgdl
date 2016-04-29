@@ -26,15 +26,6 @@ import Brick.Types
   ( Widget
   )
 import Brick.Widgets.Core
-  ( (<+>)
-  , str
-  , txt
-  , vLimit
-  , hLimit
-  , vBox
-  , hBox
-  , withAttr
-  )
 import Brick.Util (fg, on)
 
 import Network.HTTP.Conduit
@@ -115,6 +106,7 @@ downloadInterface url filepath filesize = do
             DownloadFinish -> M.continue (UserInput FinishedState ed)
         theMap = A.attrMap V.defAttr [ (P.progressCompleteAttr, V.black `on` V.cyan)
                                      , (P.progressIncompleteAttr, V.black `on` V.white)
+                                     , ("input box", V.black `on` V.blue)
                                      ]
         drawUI :: DownloadState -> [Widget]
         drawUI (DownloadState bytes) = [vBox [bar, note]]
@@ -129,16 +121,36 @@ downloadInterface url filepath filesize = do
                                                        , "press Enter to open the file, or press 'q' to return to the file listing"
                                                        , "press 'o' to open the file by user specified command"
                                                        ]
+        drawUI (UserInput (UserInput _ _) _) = error "unexpected state in UserInput state."
+        drawUI (UserInput s ed) = (padTop (T.Pad 1) . vLimit 5 $ ask) : drawUI s
+            where
+            ask = C.vCenter . C.hCenter . 
+                  hLimit 50 . vLimit 5 . 
+                  B.borderWithLabel (str "please input a program name") .
+                  forceAttr "input box" . 
+                  hLimit 40 $
+                  E.renderEditor ed
+        {-
         drawUI (UserInput (DownloadState bytes) ed) = [vBox [ask, bar, note]]
             where
             bar = C.vCenter . C.hCenter $ P.progressBar Nothing (fromIntegral bytes / fromIntegral filesize)
-            note = C.vCenter . C.hCenter . txt $ "hello, world"
-            ask = hBox [txt "command: ", E.renderEditor ed]
+            note = C.vCenter . C.hCenter . txt $ ""
+            ask = C.vCenter . C.hCenter . 
+                  hLimit 50 . vLimit 5 . 
+                  B.borderWithLabel (str "please input a program name") .
+                  forceAttr "input box" . 
+                  hLimit 40 $
+                  E.renderEditor ed
         drawUI (UserInput FinishedState ed) = [vBox [ask, note]]
             where
-            note = C.vCenter . C.hCenter . txt $ "this is a note."
-            ask = hBox [txt "command: ", E.renderEditor ed]
-        drawUI (UserInput _ _) = error "unexpected state in UserInput state."
+            note = C.vCenter . C.hCenter . txt $ ""
+            ask = C.vCenter . C.hCenter . 
+                  hLimit 50 . vLimit 5 . 
+                  B.borderWithLabel (str "please input a program name") .
+                  forceAttr "input box" . 
+                  hLimit 40 $
+                  E.renderEditor ed
+        -}
 
     M.customMain (V.mkVty Data.Default.def) eventChan theApp initialState
     return ()
