@@ -100,7 +100,8 @@ downloadInterface url filepath filesize = do
                     liftIO $ filepath `openBy` ""
                     M.halt FinishedState
                     -- ^ file opened, we can quit download interface now
-            _ -> error "received non vty event after FinishedState is reached."
+                ev -> M.continue FinishedState
+            _ -> error "received non vty event after FinishedState was reached."
         appEvent (UserInput st ed) de = case de of
             VtyEvent e -> case e of
                 V.EvKey V.KEsc [] -> M.continue st
@@ -137,6 +138,7 @@ downloadInterface url filepath filesize = do
             where
             note = C.vCenter . C.hCenter . txt $ "this is a note."
             ask = hBox [txt "command: ", E.renderEditor ed]
+        drawUI (UserInput _ _) = error "unexpected state in UserInput state."
 
     M.customMain (V.mkVty Data.Default.def) eventChan theApp initialState
     return ()
