@@ -56,13 +56,16 @@ data DEvent = VtyEvent V.Event
 downloadInterface :: Text -> -- ^ url
                      Text -> -- ^ file path (may be a absolute path)
                      Integer -> -- ^ filesize in bytes
+                     Bool -> -- ^ is the download already finished?
                      IO ()
-downloadInterface url filepath filesize = do
+downloadInterface url filepath filesize alreadyFinished = do
     eventChan <- C.newChan 
-    forkIO $ download url filepath (C.writeChan eventChan)
+    when (not alreadyFinished) . void . forkIO $ download url filepath (C.writeChan eventChan)
     let
         initialState :: DownloadState 
-        initialState = DownloadState 0
+        initialState = if alreadyFinished
+                       then FinishedState
+                       else DownloadState 0
         theApp =
             M.App { M.appDraw = drawUI
                   , M.appChooseCursor = M.neverShowCursor
@@ -117,7 +120,7 @@ downloadInterface url filepath filesize = do
                                                          ]
         drawUI FinishedState = [ui]
             where
-            ui = C.vCenter . C.hCenter . str $ unlines [ "Download Finished"
+            ui = C.vCenter . C.hCenter . str $ unlines [ "The file is ready for open."
                                                        , "press Enter to open the file, or press 'q' to return to the file listing"
                                                        , "press 'o' to open the file by user specified command"
                                                        ]
