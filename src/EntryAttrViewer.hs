@@ -1,45 +1,23 @@
 {-# LANGUAGE OverloadedStrings #-}
+
 module EntryAttrViewer (entryAttrViewer)
 where
 
-import Debug.Trace
-import qualified Data.Text as T
 import Data.Text (Text)
-import Networking
+import qualified Data.Text as T
 import Control.Monad
-import Control.Monad.IO.Class
-import Data.Default
-import qualified Control.Concurrent.Chan as C
 
 import qualified Graphics.Vty as V
 import qualified Brick.Main as M
 import qualified Brick.Types as T
-import qualified Brick.Widgets.Border as B
 import qualified Brick.Widgets.ProgressBar as P
 import qualified Brick.Widgets.Center as C
 import qualified Brick.Widgets.Core as C
 import qualified Brick.AttrMap as A
-import qualified Data.Vector as V
-import Brick.Types
-  ( Widget
-  )
+import Brick.Types (Widget)
 import Brick.Widgets.Core
-  ( (<+>)
-  , str
-  , vLimit
-  , hLimit
-  , vBox
-  , withAttr
-  )
-import Brick.Util (fg, on)
+import Brick.Util (on)
 
-import Control.Concurrent
-
-import Control.Monad.Trans.Resource 
-import Data.Conduit
-import Control.Monad.IO.Class
-
-import Fetcher
 import Types
 import Text.HTML.DirectoryListing.Type
 
@@ -78,9 +56,9 @@ entryAttrViewer (File entry url downloaded) = do
     return ()
     where
     info = T.unlines $
-           zipWith (\describ str -> T.intercalate "\n" . 
-                                    U.cutTextByDisplayLength U.terminalWidth $
-                                    describ `T.append` ": " `T.append` str
+           zipWith (\describ s -> T.intercalate "\n" . 
+                                  U.cutTextByDisplayLength U.terminalWidth $
+                                  describ `T.append` ": " `T.append` s
                    )
            [ "visible name" 
            , "decoded name" 
