@@ -139,14 +139,21 @@ main = do
                                                                 Nothing -> return fn 
                                                                 Just pre -> return $ T.pack ((T.unpack pre) </> (T.unpack fn))
                                             let
-                                                dui = downloadInterface url path (fromJust $ fileSize entry)
-                                                --                                ^ this fromJust need to be eliminated
+                                                dui = downloadInterface url path (fromJust $ fileSize entry) False
+                                                --                                ^ not good, unsafe
                                                 -- | construct a newList, modify the downloaded
                                                 -- file's *downloaded state* to True.
                                                 -- Maybe this is not a good approach?
                                                 newList = L.listMoveTo rowNum . L.listInsert rowNum (File entry url True) . L.listRemove rowNum $ lst
                                             M.suspendAndResume $ dui >> return (LState father newList)
-                                        File entry url True -> error "downloaded file"
+                                        File entry url True -> do
+                                            let fn = decodedName entry
+                                            path <- liftIO $ getLocaldir >>= \case
+                                                                Nothing -> return fn 
+                                                                Just pre -> return $ T.pack ((T.unpack pre) </> (T.unpack fn))
+                                            let dui = downloadInterface url path (fromJust $ fileSize entry) True
+                                            --                                    ^ not good, unsafe
+                                            M.suspendAndResume $ dui >> return ls
             V.EvKey V.KLeft [] -> M.continue $ fromMaybe ls father
             V.EvKey V.KRight [] -> case L.listSelectedElement lst of
                                     Nothing -> M.continue $ ls
