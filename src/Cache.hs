@@ -1,20 +1,19 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 module Cache
 where
 
-import Configure
 import qualified Data.Text as T
 import Data.Text (Text)
-import Text.HTML.DirectoryListing.Type
 import Data.Binary
+import Data.Maybe
 import Data.Time.LocalTime
 import Data.Time.Clock.POSIX
 import System.Directory
-import Data.Maybe
+import Text.HTML.DirectoryListing.Type
 
+import Configure
 import Types 
 import Local
 

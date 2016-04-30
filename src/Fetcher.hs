@@ -1,21 +1,24 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE LambdaCase #-}
+{-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
+
 module Fetcher
 where
 
-import Configure
-import Networking
+import Data.Text (Text)
+import qualified Data.Text as T
 import Text.HTML.DirectoryListing.Type
 import Text.HTML.DirectoryListing.Parser
-import qualified Data.Text as T
-import Data.Text (Text)
-import Cache
-import Types
-import Control.Concurrent
 import Data.Ord
 import Data.List
 import Data.Maybe
+import Control.Concurrent
+
+import Cache
+import Configure
 import Local
+import Types
+import Networking
 
 fetch :: Text -> -- ^ root url
          IO [DNode]
@@ -42,6 +45,5 @@ fetch rootUrl = do
                 where
                 newUrl = url `T.append` href e 
     forkIO $ writeCache entries
-    rootNodes <- mapM (toDNode rootUrl) entries
-    return rootNodes
+    mapM (toDNode rootUrl) entries
 

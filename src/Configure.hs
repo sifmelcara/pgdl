@@ -22,20 +22,20 @@ getConfig = do
         True -> Just <$> C.load [C.Required cfgFile]
     
 getUsername :: IO (Maybe Text)
-getUsername = do
+getUsername =
     getConfig >>= \case
         Nothing -> return Nothing
         Just cfg -> C.lookup cfg "username" 
 
 
 getPassword :: IO (Maybe Text)
-getPassword = do 
+getPassword = 
     getConfig >>= \case
         Nothing -> return Nothing
         Just cfg -> C.lookup cfg "password" 
 
 getLocaldir :: IO (Maybe Text)
-getLocaldir = do
+getLocaldir =
     getConfig >>= \case
         Nothing -> return Nothing
         Just cfg -> C.lookup cfg "localdir" 
