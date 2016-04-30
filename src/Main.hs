@@ -33,6 +33,7 @@ import Configure
 import Cache
 import Types
 import Fetcher
+import Local
 import qualified Utils as U
 
 -- |                    father            contents                 
@@ -131,7 +132,7 @@ main = do
                                                 -- Maybe this is not a good approach?
                                                 newList = L.listMoveTo rowNum . L.listInsert rowNum (File entry url True) . L.listRemove rowNum $ lst
                                             M.suspendAndResume $ dui >> return (LState father newList)
-                                        File entry url True -> do
+                                        File entry url True -> do -- already downloaded file
                                             let fn = decodedName entry
                                             path <- liftIO $ getLocaldir >>= \case
                                                                 Nothing -> return fn 
@@ -144,6 +145,21 @@ main = do
                                     Nothing -> M.continue ls
                                     Just (_, sel) -> M.suspendAndResume $ entryAttrViewer sel >> return ls
             V.EvKey (V.KChar '/') [] -> M.continue $ SearchState ls lst (E.editor "searchBar" (str.unlines) (Just 1) "")
+            V.EvKey (V.KChar 'd') [] -> case L.listSelectedElement lst of
+                                            Nothing -> M.continue ls
+                                            Just (rowNum, child) -> case child of
+                                                Directory _ _ -> M.continue ls
+                                                File entry url False -> M.continue ls
+                                                File entry url True -> do -- already downloaded file
+                                                    let fn = decodedName entry
+                                                    path <- liftIO $ getLocaldir >>= \case
+                                                                        Nothing -> return fn 
+                                                                        Just pre -> return $ T.pack (T.unpack pre </> T.unpack fn)
+                                                    liftIO $ deleteFile path
+                                                    -- | very bad approach. File deletion may fail.
+                                                    let newList = L.listMoveTo rowNum . L.listInsert rowNum (File entry url False) . L.listRemove rowNum $ lst
+                                                    M.continue $ LState father newList
+                                                    
             --                                                      ^ current list which reactively change with editor
             ev -> M.continue =<< (LState father <$> T.handleEvent ev lst)
         appEvent ss@(SearchState ms@(LState _ origLst) lst ed) e = case e of

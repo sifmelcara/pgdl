@@ -17,5 +17,7 @@ isFileDownloaded :: Text -> -- ^ file name
                     IO Bool
 isFileDownloaded fn path = doesFileExist $ path </> (T.unpack fn)
     
-
+deleteFile :: Text -> -- ^ file name (may be a absolute path)
+              IO ()
+deleteFile = removeFile . T.unpack
 
