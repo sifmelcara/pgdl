@@ -101,7 +101,10 @@ downloadInterface url filepath filesize alreadyFinished = do
                 V.EvKey V.KEsc [] -> M.continue st
                 V.EvKey V.KEnter [] -> do
                     liftIO $ filepath `openBy` (concat $ E.getEditContents ed)
-                    M.continue st
+                    case st of
+                        DownloadState _ -> M.continue st
+                        FinishedState -> M.halt FinishedState
+                        _ -> error "unexpected state in UserInput state."
                 ev -> do
                     newEd <- T.handleEvent ev ed
                     M.continue $ UserInput st newEd
@@ -116,13 +119,13 @@ downloadInterface url filepath filesize alreadyFinished = do
             where
             bar = C.vCenter . C.hCenter $ P.progressBar Nothing (fromIntegral bytes / fromIntegral filesize)
             note = C.vCenter . C.hCenter . str $ unlines [ "press Enter to open the file (even if its download has not finished)"
-                                                         , "press 'o' to open the file by user specified command"
+                                                         , "press 'o' to specify which program should be used to open the file."
                                                          ]
         drawUI FinishedState = [ui]
             where
             ui = C.vCenter . C.hCenter . str $ unlines [ "The file is ready for open."
-                                                       , "press Enter to open the file, or press 'q' to return to the file listing"
-                                                       , "press 'o' to open the file by user specified command"
+                                                       , "press Enter to open the file, or press 'q' to return to file listing"
+                                                       , "press 'o' to specify which program should be used to open the file."
                                                        ]
         drawUI (UserInput (UserInput _ _) _) = error "unexpected state in UserInput state."
         drawUI (UserInput s ed) = (padTop (T.Pad 1) . vLimit 5 $ ask) : drawUI s
