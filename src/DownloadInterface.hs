@@ -1,17 +1,25 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE LambdaCase#-}
+{-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
 
 module DownloadInterface (downloadInterface)
 where
 
-import Debug.Trace
-import qualified Data.Text as T
 import Data.Text (Text)
-import Networking
-import Control.Monad
-import Control.Monad.IO.Class
+import qualified Data.Text as T
+import Data.Text.Encoding
+import Data.Conduit
+import Data.Conduit.Binary
 import Data.Default
+import Control.Monad
+import Control.Monad.Trans.Resource 
+import Control.Monad.IO.Class
+import Control.Concurrent
 import qualified Control.Concurrent.Chan as C
+import Network.HTTP.Conduit
+import System.Posix.Files
+import System.Process
+import Distribution.System
 
 import qualified Graphics.Vty as V
 import qualified Brick.Main as M
@@ -21,24 +29,9 @@ import qualified Brick.Widgets.Border as B
 import qualified Brick.Widgets.ProgressBar as P
 import qualified Brick.Widgets.Center as C
 import qualified Brick.AttrMap as A
-import qualified Data.Vector as V
-import Brick.Types
-  ( Widget
-  )
+import Brick.Types (Widget)
 import Brick.Widgets.Core
-import Brick.Util (fg, on)
-
-import Network.HTTP.Conduit
-import Control.Concurrent
-
-import Control.Monad.Trans.Resource 
-import Data.Conduit
-import Control.Monad.IO.Class
-import Data.Conduit.Binary
-import System.Posix.Files
-import System.Process
-import Distribution.System
-import Data.Text.Encoding
+import Brick.Util (on)
 
 import Configure
 
@@ -60,7 +53,7 @@ downloadInterface :: Text -> -- ^ url
                      IO ()
 downloadInterface url filepath filesize alreadyFinished = do
     eventChan <- C.newChan 
-    when (not alreadyFinished) . void . forkIO $ download url filepath (C.writeChan eventChan)
+    unless alreadyFinished . void . forkIO $ download url filepath (C.writeChan eventChan)
     let
         initialState :: DownloadState 
         initialState = if alreadyFinished
@@ -100,7 +93,7 @@ downloadInterface url filepath filesize alreadyFinished = do
             VtyEvent e -> case e of
                 V.EvKey V.KEsc [] -> M.continue st
                 V.EvKey V.KEnter [] -> do
-                    liftIO $ filepath `openBy` (concat $ E.getEditContents ed)
+                    liftIO $ filepath `openBy` concat (E.getEditContents ed)
                     case st of
                         DownloadState _ -> M.continue st
                         FinishedState -> M.halt FinishedState
@@ -136,59 +129,24 @@ downloadInterface url filepath filesize alreadyFinished = do
                   forceAttr "input box" . 
                   hLimit 40 $
                   E.renderEditor ed
-        {-
-        drawUI (UserInput (DownloadState bytes) ed) = [vBox [ask, bar, note]]
-            where
-            bar = C.vCenter . C.hCenter $ P.progressBar Nothing (fromIntegral bytes / fromIntegral filesize)
-            note = C.vCenter . C.hCenter . txt $ ""
-            ask = C.vCenter . C.hCenter . 
-                  hLimit 50 . vLimit 5 . 
-                  B.borderWithLabel (str "please input a program name") .
-                  forceAttr "input box" . 
-                  hLimit 40 $
-                  E.renderEditor ed
-        drawUI (UserInput FinishedState ed) = [vBox [ask, note]]
-            where
-            note = C.vCenter . C.hCenter . txt $ ""
-            ask = C.vCenter . C.hCenter . 
-                  hLimit 50 . vLimit 5 . 
-                  B.borderWithLabel (str "please input a program name") .
-                  forceAttr "input box" . 
-                  hLimit 40 $
-                  E.renderEditor ed
-        -}
-
     M.customMain (V.mkVty Data.Default.def) eventChan theApp initialState
     return ()
 
 openBy :: Text -> String -> IO ()
-openBy file "" = xdgOpen file
-openBy file cmd = do
+openBy file "" = case buildOS of
+                    OSX -> openBy file "open"
+                    Linux -> openBy file "xdg-open"
+                    _ -> error "don't know how to open file in this OS"
+openBy file cmd = void $
     case buildOS of
         OSX   -> runCommand $ cmd ++ " " ++ addq filepath ++ " "
         Linux -> runCommand $ "nohup " ++ cmd ++ " " ++ addq filepath ++ " &>/dev/null &"
         _     -> error "don't know how to open file in this OS"
-    return ()
     where
     filepath = T.unpack file
     addq :: String -> String
     addq s = "\"" ++ s ++ "\""
     
-
-xdgOpen :: Text -> -- ^ filepath
-           IO ()
-xdgOpen tFilepath = do
-    -- how to deal with file name that contains '\"'  ?
-    case buildOS of
-        OSX   -> runCommand $ "open " ++ addq filepath ++ " "
-        Linux -> runCommand $ "nohup xdg-open " ++ addq filepath ++ " &>/dev/null &"
-        _     -> error "don't know how to open file in this OS"
-    return ()
-    where
-    filepath = T.unpack tFilepath
-    addq :: String -> String
-    addq s = "\"" ++ s ++ "\""
-
 download :: Text -> -- ^ url
             Text -> -- ^ filepath
             (DEvent -> IO ()) -> IO ()
@@ -211,7 +169,6 @@ download url tFilepath tell = do
             Just name -> getPassword >>= \case
                 Nothing -> error "no password."
                 Just pw -> applyBasicAuth (encodeUtf8 name) (encodeUtf8 pw) <$> parseUrl (T.unpack url)
-    -- let authReq = applyBasicAuth username password req
     manager <- newManager tlsManagerSettings
     runResourceT $ do
         response <- http req manager
