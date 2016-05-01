@@ -1,4 +1,6 @@
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
 
 module Networking
 where
@@ -9,9 +11,18 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as BL
+import Data.Ord
+import Data.List
+import Data.Maybe
+import Text.HTML.DirectoryListing.Type
+import Text.HTML.DirectoryListing.Parser
 import System.FilePath.Posix
+import Control.Concurrent
 
-import Configure
+import Cache
+import qualified Configure as Conf
+import Types
+import Local
 
 type NetworkResource = Text -> (Request, Manager) 
 --                    ^ relative path
@@ -44,3 +55,24 @@ getWebpage nr rp = do
         Left unicodeException -> error . show $ unicodeException
         Right t -> return t
 
+fetch :: NetworkResource ->
+         IO [DNode]
+fetch nr = do
+    html <- getWebpage nr ""
+    lcd <- T.unpack . fromMaybe "" <$> Conf.getLocaldir
+    let
+        entries = sortBy (flip $ comparing lastModified) $ parseDirectoryListing html
+        toDNode :: Text -> Entry -> IO DNode
+        toDNode url e
+            | isDirectory e = return $ Directory e childs
+            | otherwise = do
+                downloaded <- isFileDownloaded (decodedName e) lcd
+                return $ File e (url `T.append` href e) downloaded
+            where
+            childs :: IO [DNode]
+            childs = do
+                html' <- getWebpage nr newUrl
+                mapM (toDNode newUrl) . sortBy (flip $ comparing lastModified) $ parseDirectoryListing html'
+            newUrl = url `T.append` href e 
+    forkIO $ writeCache entries
+    mapM (toDNode "") entries

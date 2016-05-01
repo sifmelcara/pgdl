@@ -33,7 +33,6 @@ import Utils
 import qualified Configure as Conf
 import Cache
 import Types
-import Fetcher
 import Local
 import Networking
 import qualified Utils as U
