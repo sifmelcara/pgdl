@@ -33,7 +33,8 @@ import Brick.Types (Widget)
 import Brick.Widgets.Core
 import Brick.Util (on)
 
-import Configure
+import qualified Configure as Conf
+import Networking
 
 --                                 bytes already downloaded
 data DownloadState = DownloadState Integer | FinishedState
@@ -46,14 +47,15 @@ data DEvent = VtyEvent V.Event
 
 -- | Maybe we should try to get file size by other method,
 -- that would be more accurate and reliable.
-downloadInterface :: Text -> -- ^ url
+downloadInterface :: NetworkResource -> 
+                     Text -> -- ^ url (relative)
                      Text -> -- ^ file path (may be a absolute path)
                      Integer -> -- ^ filesize in bytes
                      Bool -> -- ^ is the download already finished?
                      IO ()
-downloadInterface url filepath filesize alreadyFinished = do
+downloadInterface nr url filepath filesize alreadyFinished = do
     eventChan <- C.newChan 
-    unless alreadyFinished . void . forkIO $ download url filepath (C.writeChan eventChan)
+    unless alreadyFinished . void . forkIO $ download nr url filepath (C.writeChan eventChan)
     let
         initialState :: DownloadState 
         initialState = if alreadyFinished
@@ -147,10 +149,11 @@ openBy file cmd = void $
     addq :: String -> String
     addq s = "\"" ++ s ++ "\""
     
-download :: Text -> -- ^ url
+download :: NetworkResource -> 
+            Text -> -- ^ url
             Text -> -- ^ filepath
             (DEvent -> IO ()) -> IO ()
-download url tFilepath tell = do
+download nr url tFilepath tell = do
     -- this implementation needs to be change
     -- since some filename contains characters that cannot be represented by String
     let
@@ -163,13 +166,7 @@ download url tFilepath tell = do
                 s <- fileSize <$> getFileStatus filepath
                 tell . UpdateFinishedSize . fromIntegral $ s
     checkerThreadID <- forkIO checkFile
-    -- note: this usage of parseUrl is dangerous, exception need to be catch in the future
-    req <- getUsername >>= \case
-            Nothing -> parseUrl (T.unpack url)
-            Just name -> getPassword >>= \case
-                Nothing -> error "no password."
-                Just pw -> applyBasicAuth (encodeUtf8 name) (encodeUtf8 pw) <$> parseUrl (T.unpack url)
-    manager <- newManager tlsManagerSettings
+    let (req, manager) = nr url
     -- use http and ResumableSource in conduit for constant memory usage
     runResourceT $ do
         response <- http req manager
