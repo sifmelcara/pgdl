@@ -14,6 +14,7 @@ import Control.Monad
 import Control.Monad.IO.Class
 import System.FilePath
 import System.Environment
+import System.IO
 import Text.HTML.DirectoryListing.Type
 
 import qualified Graphics.Vty as V
@@ -29,11 +30,12 @@ import Brick.Util (on)
 
 import EntryAttrViewer
 import Utils
-import Configure
+import qualified Configure as Conf
 import Cache
 import Types
 import Fetcher
 import Local
+import Networking
 import qualified Utils as U
 
 -- |                    father            contents                 
@@ -41,61 +43,38 @@ data MainState = LState (Maybe MainState) (L.List DNode)
                | SearchState MainState (L.List DNode) E.Editor
 
 
--- | use cropping to draw UI in the future?
-drawUI :: MainState -> [Widget]
-drawUI mainState = case mainState of
-        (LState _ l) -> [ C.hCenter . hLimit U.terminalWidth $
-                          vBox [entryList l, statusBar l]
-                        ]
-        (SearchState _ l e) -> [ C.hCenter . hLimit U.terminalWidth $
-                                 vBox [entryList l, searchBar e]
-                               ]
-    where
-    -- fixme (brick bug?): the vertical size of the list 
-    -- is somewhat strange when the hroizontal size limit
-    -- is not the multiple of its element size (it is 3)
-    -- This strange behavior do not occur in vty-ui
-    entryList lst = L.renderList lst listDrawElement
-    listDrawElement False (Directory a _) = C.hCenter . txt . mid . stripWidth $ decodedName a 
-    listDrawElement False (File a _ _) = C.hCenter . txt . mid . stripWidth $ decodedName a 
-    listDrawElement True d@(Directory _ _) = withAttr "directory" $ listDrawElement False d
-    listDrawElement True f@(File _ _ False) = withAttr "file" $ listDrawElement False f
-    listDrawElement True f@(File _ _ True) = withAttr "downloaded file" $ listDrawElement False f
-    mid s = T.unlines ["", s, ""]
-    stripWidth :: Text -> Text
-    stripWidth t = case U.cutTextByDisplayLength (U.terminalWidth-5) t of
-                    [] -> ""
-                    [singleLine] -> singleLine
-                    (x:_) -> x `T.append` "..."
-
-    searchBar ed = forceAttr "searchBar" $ hBox [txt "search: ", E.renderEditor ed]
-
-    statusBar lst = withAttr "statusBar" . str . expand $ info lst
-    expand s = s ++ replicate 88 ' '
-    info lst = case L.listSelectedElement lst of
-            Nothing -> "Nothing selected by user"
-            Just (_, sel) -> "  " ++ show (lastModified entry) ++ "    " ++ maybe "Nothing" friendlySize (fileSize entry)
-                where
-                entry = case sel of
-                            Directory e _ -> e
-                            File e _ _ -> e
-
 main :: IO ()
 main = do
-    let askUserServpath = undefined
-    rootUrl <- getArgs >>= \case
-                [url] -> return . T.pack $ url
-                _ -> getServpath >>= \case
-                        Nothing -> askUserServpath
-                        Just p -> return p
-    dNodes <- getArgs >>= \case
-                ["--offline"] -> readCache >>= \case
-                    Nothing -> error "no offline data or data corrupted."
-                    Just dlst -> return dlst
-                _ -> do
-                    putStrLn "loading webpage..."
-                    putStrLn "(you can use --offline to browse the webpages you load last time)"
-                    fetch rootUrl
+    let askPassword = do
+            putStr "please input password: "
+            hFlush stdout
+            hSetEcho stdin False
+            pass <- getLine
+            hSetEcho stdin True
+            putChar '\n'
+            return $ T.pack pass
+    (dNodes, nr) <- getArgs >>= \case
+                        ["--offline"] -> readCache >>= \case
+                            Nothing -> error "no offline data or data corrupted."
+                            Just dlst -> return (dlst, error "no network resource, offline mode.")
+                        online -> do
+                            (rootUrl, up) <- case online of
+                                                [] -> Conf.getServpath >>= \case
+                                                    Nothing -> error "example usage: pgdl https://www.kernel.org/pub/"
+                                                    Just ru -> Conf.getUsername >>= \case
+                                                                 Nothing -> return (ru, Nothing)
+                                                                 Just user -> Conf.getPassword >>= \case
+                                                                    Nothing -> do   
+                                                                        pass <- askPassword
+                                                                        return (ru, Just (user, pass))
+                                                                    Just pass -> return (ru, Just (user, pass))
+                                                [r] -> return (T.pack r, Nothing)
+                                                _ -> error "too many arguments."
+                            putStrLn "loading webpage..."
+                            putStrLn "(you can use 'pgdl --offline' to browse the webpage you load last time)"
+                            nr <- genNetworkResource rootUrl up
+                            dNodes <- fetch nr 
+                            return (dNodes, nr)
     let
         initialState :: MainState
         initialState = LState Nothing lst
@@ -121,11 +100,11 @@ main = do
                                             M.continue $ LState (Just ls) $ L.list (T.Name "root") (V.fromList dns) 3
                                         File entry url False -> do
                                             let fn = decodedName entry
-                                            path <- liftIO $ getLocaldir >>= \case
+                                            path <- liftIO $ Conf.getLocaldir >>= \case
                                                                 Nothing -> return fn 
                                                                 Just pre -> return $ T.pack (T.unpack pre </> T.unpack fn)
                                             let
-                                                dui = downloadInterface url path (fromJust $ fileSize entry) False
+                                                dui = downloadInterface nr url path (fromJust $ fileSize entry) False
                                                 --                                ^ not good, unsafe
                                                 -- | construct a newList, modify the downloaded
                                                 -- file's *downloaded state* to True.
@@ -134,10 +113,10 @@ main = do
                                             M.suspendAndResume $ dui >> return (LState father newList)
                                         File entry url True -> do -- already downloaded file
                                             let fn = decodedName entry
-                                            path <- liftIO $ getLocaldir >>= \case
+                                            path <- liftIO $ Conf.getLocaldir >>= \case
                                                                 Nothing -> return fn 
                                                                 Just pre -> return $ T.pack (T.unpack pre </> T.unpack fn)
-                                            let dui = downloadInterface url path (fromJust $ fileSize entry) True
+                                            let dui = downloadInterface nr url path (fromJust $ fileSize entry) True
                                             --                                    ^ not good, unsafe
                                             M.suspendAndResume $ dui >> return ls
             V.EvKey V.KLeft [] -> M.continue $ fromMaybe ls father
@@ -152,7 +131,7 @@ main = do
                                                 File entry url False -> M.continue ls
                                                 File entry url True -> do -- already downloaded file
                                                     let fn = decodedName entry
-                                                    path <- liftIO $ getLocaldir >>= \case
+                                                    path <- liftIO $ Conf.getLocaldir >>= \case
                                                                         Nothing -> return fn 
                                                                         Just pre -> return $ T.pack (T.unpack pre </> T.unpack fn)
                                                     liftIO $ deleteFile path
@@ -193,4 +172,44 @@ main = do
                                      ]
     M.defaultMain theApp initialState
     return ()
+
+
+-- | use cropping to draw UI in the future?
+drawUI :: MainState -> [Widget]
+drawUI mainState = case mainState of
+        (LState _ l) -> [ C.hCenter . hLimit U.terminalWidth $
+                          vBox [entryList l, statusBar l]
+                        ]
+        (SearchState _ l e) -> [ C.hCenter . hLimit U.terminalWidth $
+                                 vBox [entryList l, searchBar e]
+                               ]
+    where
+    -- fixme (brick bug?): the vertical size of the list 
+    -- is somewhat strange when the hroizontal size limit
+    -- is not the multiple of its element size (it is 3)
+    -- This strange behavior do not occur in vty-ui
+    entryList lst = L.renderList lst listDrawElement
+    listDrawElement False (Directory a _) = C.hCenter . txt . mid . stripWidth $ decodedName a 
+    listDrawElement False (File a _ _) = C.hCenter . txt . mid . stripWidth $ decodedName a 
+    listDrawElement True d@(Directory _ _) = withAttr "directory" $ listDrawElement False d
+    listDrawElement True f@(File _ _ False) = withAttr "file" $ listDrawElement False f
+    listDrawElement True f@(File _ _ True) = withAttr "downloaded file" $ listDrawElement False f
+    mid s = T.unlines ["", s, ""]
+    stripWidth :: Text -> Text
+    stripWidth t = case U.cutTextByDisplayLength (U.terminalWidth-5) t of
+                    [] -> ""
+                    [singleLine] -> singleLine
+                    (x:_) -> x `T.append` "..."
+
+    searchBar ed = forceAttr "searchBar" $ hBox [txt "search: ", E.renderEditor ed]
+
+    statusBar lst = withAttr "statusBar" . str . expand $ info lst
+    expand s = s ++ replicate 88 ' '
+    info lst = case L.listSelectedElement lst of
+            Nothing -> "Nothing selected by user"
+            Just (_, sel) -> "  " ++ show (lastModified entry) ++ "    " ++ maybe "Nothing" friendlySize (fileSize entry)
+                where
+                entry = case sel of
+                            Directory e _ -> e
+                            File e _ _ -> e
 
