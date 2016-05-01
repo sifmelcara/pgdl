@@ -15,7 +15,7 @@ import Configure
 isFileDownloaded :: Text -> -- ^ file name
                     String -> -- ^ local directory
                     IO Bool
-isFileDownloaded fn path = doesFileExist $ path </> (T.unpack fn)
+isFileDownloaded fn path = doesFileExist $ path </> T.unpack fn
     
 deleteFile :: Text -> -- ^ file name (may be a absolute path)
               IO ()

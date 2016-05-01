@@ -33,11 +33,11 @@ instance Binary Entry where
         h <- get
         l <- get
         f <- get
-        return $ Entry { visibleName = v
-                       , href = h
-                       , lastModified = l
-                       , fileSize = f
-                       }
+        return Entry { visibleName = v
+                     , href = h
+                     , lastModified = l
+                     , fileSize = f
+                     }
         
 writeCache :: [Entry] -> IO ()
 writeCache es = do
@@ -50,12 +50,11 @@ readCache = do
     lcd <- T.unpack . fromMaybe "" <$> getLocaldir
     doesFileExist p >>= \case
         False -> return Nothing
-        True -> do
-            decodeFileOrFail p >>= \case
-                Right d -> do
-                    dnodes <- mapM (toDNode lcd) d
-                    return $ Just dnodes
-                Left _ -> return Nothing
+        True -> decodeFileOrFail p >>= \case
+                    Right d -> do
+                        dnodes <- mapM (toDNode lcd) d
+                        return $ Just dnodes
+                    Left _ -> return Nothing
     where
     toDNode :: String -> Entry -> IO DNode
     toDNode lcd e

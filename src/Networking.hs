@@ -25,11 +25,11 @@ genNetworkResource url up = do
                         Nothing -> error $ "invalid url: " ++ path
                         Just r -> auth r
             where
-            path = (T.unpack url) ++ (T.unpack rp)
+            path = T.unpack url ++ T.unpack rp
             auth = case up of
                     Nothing -> id
                     Just (u, p) -> applyBasicAuth (encodeUtf8 u) (encodeUtf8 p)
-    manager <- (newManager tlsManagerSettings :: IO Manager)
+    manager <- newManager tlsManagerSettings
     return $ \t -> (genReq t, manager)
     
 
