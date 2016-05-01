@@ -170,6 +170,7 @@ download url tFilepath tell = do
                 Nothing -> error "no password."
                 Just pw -> applyBasicAuth (encodeUtf8 name) (encodeUtf8 pw) <$> parseUrl (T.unpack url)
     manager <- newManager tlsManagerSettings
+    -- use http and ResumableSource in conduit for constant memory usage
     runResourceT $ do
         response <- http req manager
         let body = responseBody response
