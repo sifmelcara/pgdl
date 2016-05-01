@@ -15,22 +15,18 @@ import Data.Maybe
 import Control.Concurrent
 
 import Cache
-import Configure
+import qualified Configure as Conf
 import Local
 import Types
 import Networking
 
-fetch :: Text -> -- ^ root url
+fetch :: NetworkResource ->
          IO [DNode]
-fetch rootUrl = do
-    html <- getWebpage rootUrl
-    lcd <- T.unpack . fromMaybe "" <$> getLocaldir
+fetch nr = do
+    html <- getWebpage nr ""
+    lcd <- T.unpack . fromMaybe "" <$> Conf.getLocaldir
     let
         entries = sortBy (flip $ comparing lastModified) $ parseDirectoryListing html
-        -- | TODO: reuse network connection manager to avoid
-        -- TlsExceptionHostPort (HandshakeFailed (Error_Packet_unexpected "Alert [(AlertLevel_Fatal,BadRecordMac)]" " expected: change cipher")) "www.kernel.org" 80
-        -- (Maybe reuse network connection manager can avoid this error)
-        -- However, pgdl-rewrite will definitely use http instead of simpleHTTP after UI design
         toDNode :: Text -> Entry -> IO DNode
         toDNode url e
             | isDirectory e = return $ Directory e childs
@@ -40,10 +36,9 @@ fetch rootUrl = do
             where
             childs :: IO [DNode]
             childs = do
-                html' <- getWebpage newUrl
+                html' <- getWebpage nr (href e)
                 mapM (toDNode newUrl) . sortBy (flip $ comparing lastModified) $ parseDirectoryListing html'
-                where
-                newUrl = url `T.append` href e 
+            newUrl = url `T.append` href e 
     forkIO $ writeCache entries
-    mapM (toDNode rootUrl) entries
+    mapM (toDNode "") entries
 

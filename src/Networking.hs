@@ -9,35 +9,36 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as BL
+import System.FilePath.Posix
 
 import Configure
 
 type NetworkResource = Text -> (Request, Manager) 
+--                    ^ relative path
 
--- | generate a network resource.
--- this function should only 
-genNetworkResource :: IO Text -> IO NetworkResource
-genNetworkResource passwordAsker = do
-    manager <- newManager tlsManagerSettings
-    req <- getUsername >>= \case
-            Nothing -> parseUrl (T.unpack url)
-            Just name -> getPassword >>= \case
-                Nothing -> error "no password."
-                Just pw -> applyBasicAuth (encodeUtf8 name) (encodeUtf8 pw) <$> parseUrl (T.unpack url)
+genNetworkResource :: Text -> -- ^ webpage url (root)
+                      Maybe (Text, Text) -> -- ^ (username, password)
+                      IO NetworkResource
+genNetworkResource url up = do
+    let genReq :: Text -> Request
+        genReq rp = case parseUrl path of
+                        Nothing -> error $ "invalid url: " ++ path
+                        Just r -> auth r
+            where
+            path = (T.unpack url) ++ (T.unpack rp)
+            auth = case up of
+                    Nothing -> id
+                    Just (u, p) -> applyBasicAuth (encodeUtf8 u) (encodeUtf8 p)
+    manager <- (newManager tlsManagerSettings :: IO Manager)
     return $ \t -> (genReq t, manager)
+    
 
-getWebpage :: Text -> IO Text
-getWebpage url = do
-    user <- getUsername
-    pass <- getPassword
-    req <- case (user, pass) of
-            (Just u, Just p) -> applyBasicAuth bu bp <$> parseUrl (T.unpack url)
-                where
-                [bu, bp] = map encodeUtf8 [u, p]
-            (Just u, Nothing) -> 
-            _ -> parseUrl $ T.unpack url
-    manager <- newManager tlsManagerSettings
-    response <- httpLbs req manager
+getWebpage :: NetworkResource -> 
+              Text -> -- relative path
+              IO Text
+getWebpage nr rp = do
+    let (req, mgr) = nr rp
+    response <- httpLbs req mgr
     let body = responseBody response
     case decodeUtf8' . B.concat . BL.toChunks $ body of
         Left unicodeException -> error . show $ unicodeException
