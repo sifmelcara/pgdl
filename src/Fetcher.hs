@@ -36,7 +36,7 @@ fetch nr = do
             where
             childs :: IO [DNode]
             childs = do
-                html' <- getWebpage nr (href e)
+                html' <- getWebpage nr newUrl
                 mapM (toDNode newUrl) . sortBy (flip $ comparing lastModified) $ parseDirectoryListing html'
             newUrl = url `T.append` href e 
     forkIO $ writeCache entries
