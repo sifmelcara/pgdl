@@ -9,8 +9,14 @@ category:            Network
 build-type:          Simple
 extra-source-files:  README.md
 cabal-version:       >=1.10
-description:         
-synopsis:            browse directory listing webpages and download file from them.
+description:         pgdl is a program for viewing and accessing directory listing webpage in terminal.
+                     .
+                     Browsing files on directory listings like this and this is often annoying and hard to find the files we want.
+                     .
+                     pgdl provids a simple interface for browsing and downloading the files in web-engine-generated directory listings.
+
+
+synopsis:            browse directory listing webpages and download files from them.
 
 source-repository head
   type:     git
