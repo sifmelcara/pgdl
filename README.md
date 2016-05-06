@@ -1,37 +1,58 @@
 # pgdl
 
-a terminal user interface program that downloads a video (or a file) from webpage and xdg-open it immediately.
-(Linux: xdg-open "video.mp4", MACOSX: open "video.mp4")
+## What can this program do?
 
-Client: Only for Linux and MACOSX.
-Server: Only for nginx's file download page.
+pgdl is a program for viewing and accessing directory listing webpage in terminal.
 
-The program will sort files and folders by date while files in nginx's download page just sort by name.
+Browsing files on directory listings like
+[this](https://www.kernel.org/pub/linux/) and
+[this](https://nixos.org/channels/)
+is often annoying and hard to find the files we want.
+
+pgdl provids a simple interface for browsing and downloading the files in web-engine-generated directory listings.
 
 ## Installing
 
+by cabal:
 ```shell
 cabal update  
 cabal install pgdl
 ```
 
-If there is an error occured when installing vty-ui, you may need 
+via nix:
 ```shell
-cabal install vty-ui -f no-tests 
+nix-env -iA nixos.haskellPackages.pgdl
 ```
 
-to skip build of testing executable.
+## example usage
+
+```shell
+pgdl https://www.kernel.org/pub/linux/
+```
+or simply type pgdl if you have set servpath attribute in the config file.
 
 ## Shortcut keys
 
-q - quit  
-s - list files that similar with the highlighted file
-Key Right - show the detailed information of the highlighted file
-Key Left - go back to the previous page  
-Enter - xdg-open the file  
-/ - open a input box to enter a keyword to search  
-n - sort the current list by name  
-v - show the filess already in the disk  
-u - show the filess not in the disk  
-h - shortcut keys' help page
+'/' for file searching
 
+press Enter to confirm or to download the selected file
+
+press 'q' to quit the program
+
+press 'd' to delete currently selected file (which have been downloaded)
+
+
+## Config file
+
+If you want to access webpage that uses basic authentication, you should at least set
+*username* attribute in config file.
+(if password is not set, you need to enter password manually when program launch)
+
+(~/.pgdl)
+```bash
+# example: 
+username = "jack"      # should be set if the webpage have basic authentication
+password = "mypassw"   # optional
+servpath = "example.org/videodir/" # default server location, optional
+localdir = "/home/jack/Downloads/" # where to store downloaded files, optional
+```
