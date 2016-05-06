@@ -25,7 +25,9 @@ source-repository head
 executable pgdl
   hs-source-dirs:      src
   main-is:             Main.hs
-  other-modules:       
+  other-modules:       Cache, DownloadInterface, Local
+                       Networking, Utils, Configure,
+                       EntryAttrViewer, Types
   build-depends:       base == 4.*,
                        tagsoup,
                        directory-listing-webpage-parser,
