@@ -36,7 +36,7 @@ genNetworkResource url up = do
                         Nothing -> error $ "invalid url: " ++ path
                         Just r -> auth r
             where
-            path = T.unpack url ++ T.unpack rp
+            path = T.unpack url </> T.unpack rp
             auth = case up of
                     Nothing -> id
                     Just (u, p) -> applyBasicAuth (encodeUtf8 u) (encodeUtf8 p)
@@ -67,12 +67,12 @@ fetch nr = do
             | isDirectory e = return $ Directory e childs
             | otherwise = do
                 downloaded <- isFileDownloaded (decodedName e) lcd
-                return $ File e (url `T.append` href e) downloaded
+                return $ File e (T.pack $ T.unpack url </> T.unpack (href e)) downloaded
             where
             childs :: IO [DNode]
             childs = do
                 html' <- getWebpage nr newUrl
                 mapM (toDNode newUrl) . sortBy (flip $ comparing lastModified) $ parseDirectoryListing html'
-            newUrl = url `T.append` href e 
+            newUrl = T.pack $ T.unpack url </> T.unpack (href e)
     forkIO $ writeCache entries
     mapM (toDNode "") entries
