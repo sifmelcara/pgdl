@@ -38,7 +38,7 @@ executable pgdl
                        conduit, conduit-extra,
                        http-conduit, resourcet,
                        configurator >= 0.3,
-                       directory >= 1.2.3.0,
+                       directory,
                        Cabal,
                        filepath,
                        transformers,

@@ -59,7 +59,8 @@ getServpath = do
 -- if it doesn't exists.
 getCacheFileLocation :: IO FilePath
 getCacheFileLocation = do
-    cdir <- getXdgDirectory XdgCache ""
+    home <- getUserDocumentsDirectory
+    let cdir = home </> ".cache"
     createDirectoryIfMissing True cdir
     let cacheFile = cdir </> "pgdl"
     return cacheFile
