@@ -45,7 +45,7 @@ executable pgdl
                        process,
                        filepath,
                        time,
-                       binary
+                       binary >= 0.7
 
   ghc-options:         -threaded
   default-language:    Haskell2010
