@@ -1,5 +1,5 @@
 # pgdl
-
+[![Build Status](https://travis-ci.org/sifmelcara/pgdl.svg?branch=master)](https://travis-ci.org/sifmelcara/pgdl)
 ## What can this program do?
 
 pgdl is a program for viewing and accessing directory listing webpage in terminal.
