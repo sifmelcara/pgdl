@@ -18,6 +18,7 @@ import Text.HTML.DirectoryListing.Type
 import Text.HTML.DirectoryListing.Parser
 import System.FilePath.Posix
 import Control.Concurrent
+import Control.Applicative
 
 import Cache
 import qualified Configure as Conf

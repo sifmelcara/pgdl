@@ -4,6 +4,7 @@
 module Cache
 where
 
+import Control.Applicative
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Binary

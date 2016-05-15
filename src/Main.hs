@@ -12,6 +12,7 @@ import Data.Maybe
 import DownloadInterface
 import Control.Monad
 import Control.Monad.IO.Class
+import Control.Applicative
 import System.FilePath
 import System.Environment
 import System.IO

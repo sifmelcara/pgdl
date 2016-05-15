@@ -6,6 +6,7 @@ where
 
 import qualified Data.Text as T
 import Data.Text (Text)
+import Control.Applicative
 
 import qualified Data.Configurator as C
 import qualified Data.Configurator.Types as C

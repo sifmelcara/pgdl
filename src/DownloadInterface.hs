@@ -15,6 +15,7 @@ import Control.Monad
 import Control.Monad.Trans.Resource 
 import Control.Monad.IO.Class
 import Control.Concurrent
+import Control.Applicative
 import qualified Control.Concurrent.Chan as C
 import Network.HTTP.Conduit
 import System.Posix.Files
