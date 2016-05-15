@@ -1,6 +1,6 @@
 
 name:                pgdl
-version:             9.1
+version:             9.2
 license:             PublicDomain
 license-file:        LICENSE
 author:              mingchuan
@@ -30,7 +30,7 @@ executable pgdl
                        EntryAttrViewer, Types
   build-depends:       base == 4.*,
                        tagsoup,
-                       directory-listing-webpage-parser,
+                       directory-listing-webpage-parser >= 0.1.1.0,
                        brick, vty, data-default,
                        vector,
                        text, bytestring,
