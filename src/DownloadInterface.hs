@@ -7,7 +7,6 @@ where
 
 import Data.Text (Text)
 import qualified Data.Text as T
-import Data.Text.Encoding
 import Data.Conduit
 import Data.Conduit.Binary
 import Data.Default
@@ -34,7 +33,6 @@ import Brick.Types (Widget)
 import Brick.Widgets.Core
 import Brick.Util (on)
 
-import qualified Configure as Conf
 import Networking
 
 --                                 bytes already downloaded
@@ -71,7 +69,7 @@ downloadInterface nr url filepath filesize alreadyFinished = do
                   , M.appLiftVtyEvent = VtyEvent
                   }
         appEvent :: DownloadState -> DEvent -> T.EventM (T.Next DownloadState)
-        appEvent ds@(DownloadState doneB) de = case de of
+        appEvent ds@(DownloadState _) de = case de of
             VtyEvent e -> case e of
                 V.EvKey V.KEsc [] -> M.halt ds
                 V.EvKey (V.KChar 'q') _ -> M.halt ds
@@ -79,7 +77,7 @@ downloadInterface nr url filepath filesize alreadyFinished = do
                 V.EvKey V.KEnter [] -> do
                     liftIO $ filepath `openBy` ""
                     M.continue ds
-                ev -> M.continue ds
+                _ -> M.continue ds
             UpdateFinishedSize b -> M.continue . DownloadState $ b
             DownloadFinish -> M.continue FinishedState
         appEvent FinishedState de = case de of
@@ -90,7 +88,7 @@ downloadInterface nr url filepath filesize alreadyFinished = do
                     liftIO $ filepath `openBy` ""
                     M.halt FinishedState
                     -- ^ file opened, we can quit download interface now
-                ev -> M.continue FinishedState
+                _ -> M.continue FinishedState
             _ -> error "received non vty event after FinishedState was reached."
         appEvent (UserInput st ed) de = case de of
             VtyEvent e -> case e of

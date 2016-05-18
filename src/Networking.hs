@@ -33,11 +33,11 @@ genNetworkResource :: Text -> -- ^ webpage url (root)
                       IO NetworkResource
 genNetworkResource url up = do
     let genReq :: Text -> Request
-        genReq rp = case parseUrl path of
-                        Nothing -> error $ "invalid url: " ++ path
+        genReq rp = case parseUrl absPath of
+                        Nothing -> error $ "invalid url: " ++ absPath
                         Just r -> auth r
             where
-            path = T.unpack url </> T.unpack rp
+            absPath = T.unpack url </> T.unpack rp
             auth = case up of
                     Nothing -> id
                     Just (u, p) -> applyBasicAuth (encodeUtf8 u) (encodeUtf8 p)

@@ -9,8 +9,6 @@ import System.FilePath.Posix
 import Data.Text (Text)
 import qualified Data.Text as T
 
-import Configure
-
 -- | determine whether a file is in specified directory
 isFileDownloaded :: Text -> -- ^ file name
                     String -> -- ^ local directory

@@ -43,7 +43,7 @@ entryAttrViewer (File entry url downloaded) = do
             V.EvKey V.KEsc [] -> M.halt ()
             V.EvKey (V.KChar 'q') [] -> M.halt ()
             V.EvKey V.KLeft [] -> M.halt ()
-            ev -> M.continue ()
+            _ -> M.continue ()
         theMap = A.attrMap V.defAttr [ (P.progressCompleteAttr, V.black `on` V.cyan)
                                      , (P.progressIncompleteAttr, V.black `on` V.white)
                                      ]

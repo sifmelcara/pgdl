@@ -6,7 +6,6 @@ where
 
 import Control.Applicative
 import qualified Data.Text as T
-import Data.Text (Text)
 import Data.Binary
 import Data.Maybe
 import Data.Time.LocalTime
