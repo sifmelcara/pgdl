@@ -7,9 +7,11 @@ where
 
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.ByteString.Char8 as BC
 import Data.Conduit
 import Data.Conduit.Binary
 import Data.Default
+import Data.List
 import Control.Monad
 import Control.Monad.Trans.Resource 
 import Control.Monad.IO.Class
@@ -17,6 +19,7 @@ import Control.Concurrent
 import Control.Applicative
 import qualified Control.Concurrent.Chan as C
 import Network.HTTP.Conduit
+import Network.HTTP.Types.Header
 import System.Posix.Files
 import System.Process
 import Distribution.System
@@ -35,6 +38,18 @@ import Brick.Util (on)
 
 import Networking
 
+data DownloadSettings =
+    DownloadSettings { networkResource :: NetworkResource
+                     , relativeUrl :: Text
+                     , localStoragePath :: Text
+                     -- ^ file name included
+                     , justOpen :: Bool
+                     -- ^ when True, don't use any network resource
+                     , continueDownload :: Bool
+                     -- ^ when True, continue the download progress (use "Range" in http header)
+                     -- else redownload the whole file
+                     }
+
 --                                 bytes already downloaded
 data DownloadState = DownloadState Integer | FinishedState
                    | UserInput DownloadState E.Editor
@@ -44,22 +59,18 @@ data DEvent = VtyEvent V.Event
             | UpdateFinishedSize Integer
             | DownloadFinish
 
--- | Maybe we should try to get file size by other method,
--- that would be more accurate and reliable.
-downloadInterface :: NetworkResource -> 
-                     Text -> -- ^ url (relative)
-                     Text -> -- ^ file path (may be a absolute path)
-                     Integer -> -- ^ filesize in bytes
-                     Bool -> -- ^ is the download already finished?
-                     IO ()
-downloadInterface nr url filepath filesize alreadyFinished = do
+downloadInterface :: DownloadSettings -> IO () 
+downloadInterface dSettings = do
     eventChan <- C.newChan 
-    unless alreadyFinished . void . forkIO $ download nr url filepath (C.writeChan eventChan)
+    unless (justOpen dSettings) . void . forkIO $ download dSettings (C.writeChan eventChan)
+    -- | need refactoring.
+    progressBarTotSize <- if justOpen dSettings then error "justOpen mode."
+                          else getContentLength dSettings
     let
         initialState :: DownloadState 
-        initialState = if alreadyFinished
+        initialState = if justOpen dSettings
                        then FinishedState
-                       else DownloadState 0
+                       else DownloadState 0 
         theApp =
             M.App { M.appDraw = drawUI
                   , M.appChooseCursor = M.neverShowCursor
@@ -75,7 +86,7 @@ downloadInterface nr url filepath filesize alreadyFinished = do
                 V.EvKey (V.KChar 'q') _ -> M.halt ds
                 V.EvKey (V.KChar 'o') [] -> M.continue $ UserInput ds (E.editor "command" (str.unlines) (Just 1) "")
                 V.EvKey V.KEnter [] -> do
-                    liftIO $ filepath `openBy` ""
+                    liftIO $ (localStoragePath dSettings) `openBy` ""
                     M.continue ds
                 _ -> M.continue ds
             UpdateFinishedSize b -> M.continue . DownloadState $ b
@@ -85,7 +96,7 @@ downloadInterface nr url filepath filesize alreadyFinished = do
                 V.EvKey (V.KChar 'q') _ -> M.halt FinishedState
                 V.EvKey (V.KChar 'o') [] -> M.continue $ UserInput FinishedState (E.editor "command" (str.unlines) (Just 1) "")
                 V.EvKey V.KEnter [] -> do
-                    liftIO $ filepath `openBy` ""
+                    liftIO $ (localStoragePath dSettings) `openBy` ""
                     M.halt FinishedState
                     -- ^ file opened, we can quit download interface now
                 _ -> M.continue FinishedState
@@ -94,7 +105,7 @@ downloadInterface nr url filepath filesize alreadyFinished = do
             VtyEvent e -> case e of
                 V.EvKey V.KEsc [] -> M.continue st
                 V.EvKey V.KEnter [] -> do
-                    liftIO $ filepath `openBy` concat (E.getEditContents ed)
+                    liftIO $ (localStoragePath dSettings) `openBy` concat (E.getEditContents ed)
                     case st of
                         DownloadState _ -> M.continue st
                         FinishedState -> M.halt FinishedState
@@ -111,7 +122,7 @@ downloadInterface nr url filepath filesize alreadyFinished = do
         drawUI :: DownloadState -> [Widget]
         drawUI (DownloadState bytes) = [vBox [bar, note]]
             where
-            bar = C.vCenter . C.hCenter $ P.progressBar Nothing (fromIntegral bytes / fromIntegral filesize)
+            bar = C.vCenter . C.hCenter $ P.progressBar Nothing (fromIntegral bytes / fromIntegral progressBarTotSize)
             note = C.vCenter . C.hCenter . str $ unlines [ "press Enter to open the file (even if its download has not finished)"
                                                          , "press 'o' to specify which program should be used to open the file."
                                                          ]
@@ -148,15 +159,26 @@ openBy file cmd = void $
     addq :: String -> String
     addq s = "\"" ++ s ++ "\""
     
-download :: NetworkResource -> 
-            Text -> -- ^ url
-            Text -> -- ^ filepath
-            (DEvent -> IO ()) -> IO ()
-download nr url tFilepath tell = do
+getContentLength :: DownloadSettings -> IO Integer
+getContentLength dSettings = do
+    let (req, manager) = networkResource dSettings $ relativeUrl dSettings
+    runResourceT $ do
+        response <- http req manager
+        let headers = responseHeaders response
+        case find (\(hn, bs) -> hn == hContentLength) headers of
+            Nothing -> error "no content-length presents in response header"
+            Just (hn, bs) -> case BC.readInteger bs of
+                Nothing -> error "no integer in content-length header"
+                Just (sz, _) -> return sz
+    
+download :: DownloadSettings -> 
+            (DEvent -> IO ()) ->
+            IO ()
+download dSettings tell = do
     -- this implementation needs to be change
     -- since some filename contains characters that cannot be represented by String
     let
-        filepath = T.unpack tFilepath
+        filepath = T.unpack $ localStoragePath dSettings
         checkFile :: IO ()
         checkFile = forever $ do
             threadDelay $ 1000000 * 1
@@ -165,7 +187,7 @@ download nr url tFilepath tell = do
                 s <- fileSize <$> getFileStatus filepath
                 tell . UpdateFinishedSize . fromIntegral $ s
     checkerThreadID <- forkIO checkFile
-    let (req, manager) = nr url
+    let (req, manager) = networkResource dSettings $ relativeUrl dSettings
     -- use http and ResumableSource in conduit for constant memory usage
     runResourceT $ do
         response <- http req manager
