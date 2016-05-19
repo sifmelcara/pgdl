@@ -37,6 +37,7 @@ executable pgdl
                        unix,
                        conduit, conduit-extra,
                        http-conduit, resourcet,
+                       http-types,
                        configurator >= 0.3,
                        directory,
                        Cabal,
