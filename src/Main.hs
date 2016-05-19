@@ -122,8 +122,8 @@ main = do
                                             let dui = downloadInterface $ DownloadSettings { networkResource = nr
                                                                                            , relativeUrl = url
                                                                                            , localStoragePath = path
-                                                                                           , justOpen = mod /= [V.MShift]
-                                                                                           , continueDownload = mod == [V.MShift]
+                                                                                           , justOpen = mod /= [V.MMeta]
+                                                                                           , continueDownload = mod == [V.MMeta] 
                                                                                            }
                                             --                                    ^ not good, unsafe
                                             M.suspendAndResume $ dui >> return ls
