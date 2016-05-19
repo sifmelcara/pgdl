@@ -190,7 +190,7 @@ download dSettings tell = do
         filepath = T.unpack $ localStoragePath dSettings
         checkFile :: IO ()
         checkFile = forever $ do
-            threadDelay $ 1000000 * 1
+            threadDelay $ 100000 -- 0.1 second
             getLocalFileSize filepath >>= \case
                 Nothing -> return ()
                 Just s -> tell . UpdateFinishedSize $ s
