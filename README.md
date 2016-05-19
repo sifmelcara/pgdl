@@ -41,7 +41,7 @@ press 'q' to quit the program
 
 press 'd' to delete currently selected file (which have been downloaded)
 
-press Meta+Enter to resume the download progress (like `curl -C` does)
+press Meta+Enter to resume the download progress of the currently selected file (like `curl -C` does)
 
 
 ## Config file
