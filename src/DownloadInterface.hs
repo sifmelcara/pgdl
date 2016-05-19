@@ -64,7 +64,10 @@ downloadInterface dSettings = do
     eventChan <- C.newChan 
     unless (justOpen dSettings) . void . forkIO $ download dSettings (C.writeChan eventChan)
     -- | need refactoring.
-    progressBarTotSize <- if justOpen dSettings then error "justOpen mode."
+    progressBarTotSize <- if justOpen dSettings
+                          then getLocalFileSize (T.unpack $ localStoragePath dSettings) >>= \case
+                                Nothing -> error "file do not exist."
+                                Just s -> return s
                           else getContentLength dSettings
     let
         initialState :: DownloadState 
@@ -170,6 +173,12 @@ getContentLength dSettings = do
             Just (hn, bs) -> case BC.readInteger bs of
                 Nothing -> error "no integer in content-length header"
                 Just (sz, _) -> return sz
+
+getLocalFileSize :: String -> IO (Maybe Integer)
+getLocalFileSize path =
+    fileExist path >>= \case
+        False -> return Nothing
+        True -> Just . fromIntegral . fileSize <$> getFileStatus path
     
 download :: DownloadSettings -> 
             (DEvent -> IO ()) ->
@@ -182,10 +191,9 @@ download dSettings tell = do
         checkFile :: IO ()
         checkFile = forever $ do
             threadDelay $ 1000000 * 1
-            exist <- fileExist filepath
-            when exist $ do
-                s <- fileSize <$> getFileStatus filepath
-                tell . UpdateFinishedSize . fromIntegral $ s
+            getLocalFileSize filepath >>= \case
+                Nothing -> return ()
+                Just s -> tell . UpdateFinishedSize $ s
     checkerThreadID <- forkIO checkFile
     let (req, manager) = networkResource dSettings $ relativeUrl dSettings
     -- use http and ResumableSource in conduit for constant memory usage
