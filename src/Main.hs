@@ -92,7 +92,7 @@ main = do
         appEvent ls@(LState father lst) e = case e of
             V.EvKey V.KEsc [] -> M.halt ls
             V.EvKey (V.KChar 'q') [] -> M.halt ls
-            V.EvKey V.KEnter [] -> case L.listSelectedElement lst of
+            V.EvKey V.KEnter mod -> case L.listSelectedElement lst of
                                     Nothing -> M.continue ls
                                     Just (rowNum, child) -> case child of
                                         Directory entry dnsOp -> do
@@ -122,8 +122,8 @@ main = do
                                             let dui = downloadInterface $ DownloadSettings { networkResource = nr
                                                                                            , relativeUrl = url
                                                                                            , localStoragePath = path
-                                                                                           , justOpen = True
-                                                                                           , continueDownload = False
+                                                                                           , justOpen = mod /= [V.MShift]
+                                                                                           , continueDownload = mod == [V.MShift]
                                                                                            }
                                             --                                    ^ not good, unsafe
                                             M.suspendAndResume $ dui >> return ls
