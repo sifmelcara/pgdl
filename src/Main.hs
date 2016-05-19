@@ -103,12 +103,12 @@ main = do
                                             path <- liftIO $ Conf.getLocaldir >>= \case
                                                                 Nothing -> return fn 
                                                                 Just pre -> return $ T.pack (T.unpack pre </> T.unpack fn)
-                                            let dui = downloadInterface $ DownloadSettings { networkResource = nr
-                                                                                           , relativeUrl = url
-                                                                                           , localStoragePath = path
-                                                                                           , justOpen = False
-                                                                                           , continueDownload = False
-                                                                                           }
+                                            let dui = downloadInterface DownloadSettings { networkResource = nr
+                                                                                         , relativeUrl = url
+                                                                                         , localStoragePath = path
+                                                                                         , justOpen = False
+                                                                                         , continueDownload = False
+                                                                                         }
                                                 -- | construct a newList, modify the downloaded
                                                 -- file's *downloaded state* to True.
                                                 -- Maybe this is not a good approach?
@@ -119,12 +119,12 @@ main = do
                                             path <- liftIO $ Conf.getLocaldir >>= \case
                                                                 Nothing -> return fn 
                                                                 Just pre -> return $ T.pack (T.unpack pre </> T.unpack fn)
-                                            let dui = downloadInterface $ DownloadSettings { networkResource = nr
-                                                                                           , relativeUrl = url
-                                                                                           , localStoragePath = path
-                                                                                           , justOpen = mod /= [V.MMeta]
-                                                                                           , continueDownload = mod == [V.MMeta] 
-                                                                                           }
+                                            let dui = downloadInterface DownloadSettings { networkResource = nr
+                                                                                         , relativeUrl = url
+                                                                                         , localStoragePath = path
+                                                                                         , justOpen = mod /= [V.MMeta]
+                                                                                         , continueDownload = mod == [V.MMeta] 
+                                                                                         }
                                             --                                    ^ not good, unsafe
                                             M.suspendAndResume $ dui >> return ls
             V.EvKey V.KLeft [] -> M.continue $ fromMaybe ls father

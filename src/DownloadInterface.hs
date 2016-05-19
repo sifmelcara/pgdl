@@ -89,7 +89,7 @@ downloadInterface dSettings = do
                 V.EvKey (V.KChar 'q') _ -> M.halt ds
                 V.EvKey (V.KChar 'o') [] -> M.continue $ UserInput ds (E.editor "command" (str.unlines) (Just 1) "")
                 V.EvKey V.KEnter [] -> do
-                    liftIO $ (localStoragePath dSettings) `openBy` ""
+                    liftIO $ localStoragePath dSettings `openBy` ""
                     M.continue ds
                 _ -> M.continue ds
             UpdateFinishedSize b -> M.continue . DownloadState $ b
@@ -99,7 +99,7 @@ downloadInterface dSettings = do
                 V.EvKey (V.KChar 'q') _ -> M.halt FinishedState
                 V.EvKey (V.KChar 'o') [] -> M.continue $ UserInput FinishedState (E.editor "command" (str.unlines) (Just 1) "")
                 V.EvKey V.KEnter [] -> do
-                    liftIO $ (localStoragePath dSettings) `openBy` ""
+                    liftIO $ localStoragePath dSettings `openBy` ""
                     M.halt FinishedState
                     -- ^ file opened, we can quit download interface now
                 _ -> M.continue FinishedState
@@ -108,7 +108,7 @@ downloadInterface dSettings = do
             VtyEvent e -> case e of
                 V.EvKey V.KEsc [] -> M.continue st
                 V.EvKey V.KEnter [] -> do
-                    liftIO $ (localStoragePath dSettings) `openBy` concat (E.getEditContents ed)
+                    liftIO $ localStoragePath dSettings `openBy` concat (E.getEditContents ed)
                     case st of
                         DownloadState _ -> M.continue st
                         FinishedState -> M.halt FinishedState
@@ -190,7 +190,7 @@ download dSettings tell = do
         filepath = T.unpack $ localStoragePath dSettings
         checkFile :: IO ()
         checkFile = forever $ do
-            threadDelay $ 100000 -- 0.1 second
+            threadDelay 100000 -- 0.1 second
             getLocalFileSize filepath >>= \case
                 Nothing -> return ()
                 Just s -> tell . UpdateFinishedSize $ s
@@ -206,15 +206,15 @@ download dSettings tell = do
                else req
     -- use http and ResumableSource in conduit for constant memory usage
     runResourceT $ do
-        case continueDownload dSettings of
-            True -> when (localFileSize < remoteFileSize) $ do
+        if continueDownload dSettings then
+            when (localFileSize < remoteFileSize) $ do
                 response <- http req' manager
                 let body = responseBody response
                 body $$+- sinkIOHandle (IO.openBinaryFile filepath IO.AppendMode)
-            False -> do
-                response <- http req' manager
-                let body = responseBody response
-                body $$+- sinkIOHandle (IO.openBinaryFile filepath IO.WriteMode)
+        else do
+            response <- http req' manager
+            let body = responseBody response
+            body $$+- sinkIOHandle (IO.openBinaryFile filepath IO.WriteMode)
         liftIO $ do
             killThread checkerThreadID
             tell DownloadFinish
