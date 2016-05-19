@@ -22,6 +22,7 @@ import Network.HTTP.Conduit
 import Network.HTTP.Types.Header
 import System.Posix.Files
 import System.Process
+import qualified System.IO as IO
 import Distribution.System
 
 import qualified Graphics.Vty as V
@@ -62,18 +63,17 @@ data DEvent = VtyEvent V.Event
 downloadInterface :: DownloadSettings -> IO () 
 downloadInterface dSettings = do
     eventChan <- C.newChan 
-    unless (justOpen dSettings) . void . forkIO $ download dSettings (C.writeChan eventChan)
-    -- | need refactoring.
+    unless (justOpen dSettings) . void . forkIO $
+        download dSettings (C.writeChan eventChan)
     progressBarTotSize <- if justOpen dSettings
                           then getLocalFileSize (T.unpack $ localStoragePath dSettings) >>= \case
                                 Nothing -> error "file do not exist."
                                 Just s -> return s
                           else getContentLength dSettings
     let
-        initialState :: DownloadState 
         initialState = if justOpen dSettings
                        then FinishedState
-                       else DownloadState 0 
+                       else DownloadState 0
         theApp =
             M.App { M.appDraw = drawUI
                   , M.appChooseCursor = M.neverShowCursor
@@ -196,11 +196,25 @@ download dSettings tell = do
                 Just s -> tell . UpdateFinishedSize $ s
     checkerThreadID <- forkIO checkFile
     let (req, manager) = networkResource dSettings $ relativeUrl dSettings
+    localFileSize <- getLocalFileSize (T.unpack $ localStoragePath dSettings) >>= \case
+        Nothing -> return 0
+        Just s -> return s
+    remoteFileSize <- getContentLength dSettings
+    let extraHeaders = [("Range", "bytes=" `BC.append` BC.pack (show localFileSize) `BC.append` "-")]
+    let req' = if continueDownload dSettings
+               then req { requestHeaders = extraHeaders ++ requestHeaders req }
+               else req
     -- use http and ResumableSource in conduit for constant memory usage
     runResourceT $ do
-        response <- http req manager
-        let body = responseBody response
-        body $$+- sinkFile filepath
+        case continueDownload dSettings of
+            True -> when (localFileSize < remoteFileSize) $ do
+                response <- http req' manager
+                let body = responseBody response
+                body $$+- sinkIOHandle (IO.openBinaryFile filepath IO.AppendMode)
+            False -> do
+                response <- http req' manager
+                let body = responseBody response
+                body $$+- sinkIOHandle (IO.openBinaryFile filepath IO.WriteMode)
         liftIO $ do
             killThread checkerThreadID
             tell DownloadFinish
