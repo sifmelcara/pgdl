@@ -35,11 +35,13 @@ or simply type pgdl if you have set servpath attribute in the config file.
 
 '/' for file searching
 
-press Enter to confirm or to download the selected file
+press Enter to download the selected file
 
 press 'q' to quit the program
 
 press 'd' to delete currently selected file (which have been downloaded)
+
+press Meta+Enter to resume the download progress (like `curl -C` does)
 
 
 ## Config file
