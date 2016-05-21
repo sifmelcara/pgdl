@@ -192,10 +192,6 @@ drawUI mainState = case mainState of
                                  vBox [entryList l, searchBar e]
                                ]
     where
-    -- fixme (brick bug?): the vertical size of the list 
-    -- is somewhat strange when the hroizontal size limit
-    -- is not the multiple of its element size (it is 3)
-    -- This strange behavior do not occur in vty-ui
     entryList lst = L.renderList lst listDrawElement
     listDrawElement False (Directory a _) = C.hCenter . txt . mid . stripWidth $ decodedName a 
     listDrawElement False (File a _ _) = C.hCenter . txt . mid . stripWidth $ decodedName a 
