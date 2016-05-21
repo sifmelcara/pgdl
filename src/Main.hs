@@ -41,31 +41,9 @@ import qualified Utils as U
 data MainState = LState (Maybe MainState) (L.List DNode)
                | SearchState MainState (L.List DNode) E.Editor
 
-
 main :: IO ()
 main = do
-    (dNodes, nr) <- getArgs >>= \case
-                        ["--offline"] -> readCache >>= \case
-                            Nothing -> error "no offline data or data corrupted."
-                            Just dlst -> return (dlst, error "no network resource, offline mode.")
-                        online -> do
-                            (rootUrl, up) <- case online of
-                                                [] -> Conf.getServpath >>= \case
-                                                    Nothing -> error "example usage: pgdl https://www.kernel.org/pub/"
-                                                    Just ru -> Conf.getUsername >>= \case
-                                                                 Nothing -> return (ru, Nothing)
-                                                                 Just user -> Conf.getPassword >>= \case
-                                                                    Nothing -> do   
-                                                                        pass <- U.askPassword
-                                                                        return (ru, Just (user, pass))
-                                                                    Just pass -> return (ru, Just (user, pass))
-                                                [r] -> return (T.pack r, Nothing)
-                                                _ -> error "too many arguments."
-                            putStrLn "loading webpage..."
-                            putStrLn "(you can use 'pgdl --offline' to browse the webpage you load last time)"
-                            nr <- genNetworkResource rootUrl up
-                            dNodes <- fetch nr 
-                            return (dNodes, nr)
+    (dNodes, nr) <- initializeResource
     let
         initialState :: MainState
         initialState = LState Nothing lst
@@ -172,7 +150,6 @@ main = do
     M.defaultMain theApp initialState
     return ()
 
-
 -- | use cropping to draw UI in the future?
 drawUI :: MainState -> [Widget]
 drawUI mainState = case mainState of
@@ -208,3 +185,27 @@ drawUI mainState = case mainState of
                             Directory e _ -> e
                             File e _ _ -> e
 
+initializeResource :: IO ([DNode], NetworkResource)
+initializeResource = 
+    getArgs >>= \case
+        ["--offline"] -> readCache >>= \case
+            Nothing -> error "no offline data or data corrupted."
+            Just dlst -> return (dlst, error "no network resource, offline mode.")
+        online -> do
+            (rootUrl, up) <- case online of
+                                [] -> Conf.getServpath >>= \case
+                                    Nothing -> error "example usage: pgdl https://www.kernel.org/pub/"
+                                    Just ru -> Conf.getUsername >>= \case
+                                                 Nothing -> return (ru, Nothing)
+                                                 Just user -> Conf.getPassword >>= \case
+                                                    Nothing -> do   
+                                                        pass <- U.askPassword
+                                                        return (ru, Just (user, pass))
+                                                    Just pass -> return (ru, Just (user, pass))
+                                [r] -> return (T.pack r, Nothing)
+                                _ -> error "too many arguments."
+            putStrLn "loading webpage..."
+            putStrLn "(you can use 'pgdl --offline' to browse the webpage you load last time)"
+            nr <- genNetworkResource rootUrl up
+            dNodes <- fetch nr 
+            return (dNodes, nr)
