@@ -9,6 +9,7 @@ import qualified Data.Text as T
 import Data.Text (Text)
 import Text.Printf
 import Data.Text.Encoding
+import System.IO
 
 -- | give a file size in bytes, return pretty file size 
 -- represent in KB, MB, GB or TB
@@ -60,4 +61,13 @@ cutTextByDisplayLength len = map T.pack . gp . T.unpack
             | lsum + snd x <= len = go (lsum + snd x) (fst x : acc) xs
             | otherwise = reverse acc : go 0 "" str
 
+askPassword :: IO Text
+askPassword = do
+    putStr "please input password: "
+    hFlush stdout
+    hSetEcho stdin False
+    pass <- getLine
+    hSetEcho stdin True
+    putChar '\n'
+    return $ T.pack pass
 

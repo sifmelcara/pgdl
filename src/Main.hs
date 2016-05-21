@@ -15,7 +15,6 @@ import Control.Monad.IO.Class
 import Control.Applicative
 import System.FilePath
 import System.Environment
-import System.IO
 import Text.HTML.DirectoryListing.Type
 
 import qualified Graphics.Vty as V
@@ -45,14 +44,6 @@ data MainState = LState (Maybe MainState) (L.List DNode)
 
 main :: IO ()
 main = do
-    let askPassword = do
-            putStr "please input password: "
-            hFlush stdout
-            hSetEcho stdin False
-            pass <- getLine
-            hSetEcho stdin True
-            putChar '\n'
-            return $ T.pack pass
     (dNodes, nr) <- getArgs >>= \case
                         ["--offline"] -> readCache >>= \case
                             Nothing -> error "no offline data or data corrupted."
@@ -65,7 +56,7 @@ main = do
                                                                  Nothing -> return (ru, Nothing)
                                                                  Just user -> Conf.getPassword >>= \case
                                                                     Nothing -> do   
-                                                                        pass <- askPassword
+                                                                        pass <- U.askPassword
                                                                         return (ru, Just (user, pass))
                                                                     Just pass -> return (ru, Just (user, pass))
                                                 [r] -> return (T.pack r, Nothing)
