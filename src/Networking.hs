@@ -16,6 +16,7 @@ import Data.List
 import Data.Maybe
 import Text.HTML.DirectoryListing.Type
 import Text.HTML.DirectoryListing.Parser
+import System.Directory
 import System.FilePath.Posix
 import Control.Concurrent
 import Control.Applicative
@@ -23,7 +24,6 @@ import Control.Applicative
 import Cache
 import qualified Configure as Conf
 import Types
-import Local
 
 type NetworkResource = Text -> (Request, Manager) 
 --                    ^ relative path
@@ -67,7 +67,7 @@ fetch nr = do
         toDNode url e
             | isDirectory e = return $ Directory e childs
             | otherwise = do
-                downloaded <- isFileDownloaded (decodedName e) lcd
+                downloaded <- doesFileExist $ lcd </> T.unpack (decodedName e)
                 return $ File e (T.pack $ T.unpack url </> T.unpack (href e)) downloaded
             where
             childs :: IO [DNode]

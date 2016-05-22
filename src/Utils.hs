@@ -73,12 +73,6 @@ askPassword = do
     putChar '\n'
     return $ T.pack pass
 
--- | determine whether a file is in specified directory
-isFileDownloaded :: Text -> -- ^ file name
-                    String -> -- ^ local directory
-                    IO Bool
-isFileDownloaded fn path = doesFileExist $ path </> T.unpack fn
-    
 deleteFile :: Text -> -- ^ file name (may be a absolute path)
               IO ()
 deleteFile = removeFile . T.unpack

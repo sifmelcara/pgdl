@@ -11,11 +11,11 @@ import Data.Maybe
 import Data.Time.LocalTime
 import Data.Time.Clock.POSIX
 import System.Directory
+import System.FilePath.Posix
 import Text.HTML.DirectoryListing.Type
 
 import Configure
 import Types 
-import Local
 
 -- | this conversion may lose accuracy?
 instance Binary LocalTime where
@@ -60,7 +60,7 @@ readCache = do
     toDNode lcd e
         | isDirectory e = return $ Directory e noData
         | otherwise = do
-            downloaded <- isFileDownloaded (decodedName e) lcd
+            downloaded <- doesFileExist $ lcd </> T.unpack (decodedName e)
             return $ File e "offline mode" downloaded
     noData = error "offline mode"
     
