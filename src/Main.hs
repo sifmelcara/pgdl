@@ -62,61 +62,58 @@ main = do
             V.EvKey V.KEsc [] -> M.halt ls
             V.EvKey (V.KChar 'q') [] -> M.halt ls
             V.EvKey V.KEnter mod -> case L.listSelectedElement lst of
-                                    Nothing -> M.continue ls
-                                    Just (rowNum, child) -> case child of
-                                        Directory entry dnsOp -> do
-                                            dns <- liftIO dnsOp -- grab the subdirectory
-                                            M.continue $ LState (Just ls) $ L.list (T.Name "root") (V.fromList dns) 3
-                                        File entry url False -> do
-                                            let fn = decodedName entry
-                                            path <- liftIO $ Conf.getLocaldir >>= \case
-                                                                Nothing -> return fn 
-                                                                Just pre -> return $ T.pack (T.unpack pre </> T.unpack fn)
-                                            let dui = downloadInterface DownloadSettings { networkResource = nr
-                                                                                         , relativeUrl = url
-                                                                                         , localStoragePath = path
-                                                                                         , justOpen = False
-                                                                                         , continueDownload = False
-                                                                                         }
-                                                -- | construct a newList, modify the downloaded
-                                                -- file's *downloaded state* to True.
-                                                -- Maybe this is not a good approach?
-                                                newList = L.listMoveTo rowNum . L.listInsert rowNum (File entry url True) . L.listRemove rowNum $ lst
-                                            M.suspendAndResume $ dui >> return (LState father newList)
-                                        File entry url True -> do -- already downloaded file
-                                            let fn = decodedName entry
-                                            path <- liftIO $ Conf.getLocaldir >>= \case
-                                                                Nothing -> return fn 
-                                                                Just pre -> return $ T.pack (T.unpack pre </> T.unpack fn)
-                                            let dui = downloadInterface DownloadSettings { networkResource = nr
-                                                                                         , relativeUrl = url
-                                                                                         , localStoragePath = path
-                                                                                         , justOpen = mod /= [V.MMeta]
-                                                                                         , continueDownload = mod == [V.MMeta] 
-                                                                                         }
-                                            --                                    ^ not good, unsafe
-                                            M.suspendAndResume $ dui >> return ls
+                Nothing -> M.continue ls
+                Just (rowNum, child) -> case child of
+                    Directory entry dnsOp -> do
+                        dns <- liftIO dnsOp -- grab the subdirectory
+                        M.continue $ LState (Just ls) $ L.list (T.Name "root") (V.fromList dns) 3
+                    File entry url False -> do
+                        let fn = decodedName entry
+                        path <- liftIO $ Conf.getLocaldir >>= \case
+                            Nothing -> return fn 
+                            Just pre -> return $ T.pack (T.unpack pre </> T.unpack fn)
+                        let dui = downloadInterface DownloadSettings { networkResource = nr
+                                                                     , relativeUrl = url
+                                                                     , localStoragePath = path
+                                                                     , justOpen = False
+                                                                     , continueDownload = False
+                                                                     }
+                            -- | construct a newList, modify the downloaded
+                            -- file's *downloaded state* to True.
+                            -- Maybe this is not a good approach?
+                            newList = L.listMoveTo rowNum . L.listInsert rowNum (File entry url True) . L.listRemove rowNum $ lst
+                        M.suspendAndResume $ dui >> return (LState father newList)
+                    File entry url True -> do -- already downloaded file
+                        let fn = decodedName entry
+                        path <- liftIO $ Conf.getLocaldir >>= \case
+                            Nothing -> return fn 
+                            Just pre -> return $ T.pack (T.unpack pre </> T.unpack fn)
+                        let dui = downloadInterface DownloadSettings { networkResource = nr
+                                                                     , relativeUrl = url
+                                                                     , localStoragePath = path
+                                                                     , justOpen = mod /= [V.MMeta]
+                                                                     , continueDownload = mod == [V.MMeta] 
+                                                                     }
+                        M.suspendAndResume $ dui >> return ls
             V.EvKey V.KLeft [] -> M.continue $ fromMaybe ls father
             V.EvKey V.KRight [] -> case L.listSelectedElement lst of
-                                    Nothing -> M.continue ls
-                                    Just (_, sel) -> M.suspendAndResume $ entryAttrViewer sel >> return ls
+                Nothing -> M.continue ls
+                Just (_, sel) -> M.suspendAndResume $ entryAttrViewer sel >> return ls
             V.EvKey (V.KChar '/') [] -> M.continue $ SearchState ls lst (E.editor "searchBar" (str.unlines) (Just 1) "")
             V.EvKey (V.KChar 'd') [] -> case L.listSelectedElement lst of
-                                            Nothing -> M.continue ls
-                                            Just (rowNum, child) -> case child of
-                                                Directory _ _ -> M.continue ls
-                                                File entry url False -> M.continue ls
-                                                File entry url True -> do -- already downloaded file
-                                                    let fn = decodedName entry
-                                                    path <- liftIO $ Conf.getLocaldir >>= \case
-                                                                        Nothing -> return fn 
-                                                                        Just pre -> return $ T.pack (T.unpack pre </> T.unpack fn)
-                                                    liftIO $ deleteFile path
-                                                    -- | very bad approach. File deletion may fail.
-                                                    let newList = L.listMoveTo rowNum . L.listInsert rowNum (File entry url False) . L.listRemove rowNum $ lst
-                                                    M.continue $ LState father newList
-                                                    
-            --                                                      ^ current list which reactively change with editor
+                Nothing -> M.continue ls
+                Just (rowNum, child) -> case child of
+                    Directory _ _ -> M.continue ls
+                    File entry url False -> M.continue ls
+                    File entry url True -> do -- already downloaded file
+                        let fn = decodedName entry
+                        path <- liftIO $ Conf.getLocaldir >>= \case
+                                            Nothing -> return fn 
+                                            Just pre -> return $ T.pack (T.unpack pre </> T.unpack fn)
+                        liftIO $ deleteFile path
+                        -- | very bad approach. File deletion may fail.
+                        let newList = L.listMoveTo rowNum . L.listInsert rowNum (File entry url False) . L.listRemove rowNum $ lst
+                        M.continue $ LState father newList
             ev -> M.continue =<< (LState father <$> T.handleEvent ev lst)
         appEvent ss@(SearchState ms@(LState _ origLst) lst ed) e = case e of
             V.EvKey V.KEsc [] -> M.halt ss
@@ -133,7 +130,6 @@ main = do
                     applyFilter kw lst = replaceList newElms lst
                         where
                         newElms = V.filter (\dn -> kw `isKeyWordOf` getDNText dn) $ L.listElements lst
-                        -- | sometime this will crash? how?
                         replaceList es l = l {L.listElements = es, L.listSelected = Just 0}
                     getDNText (Directory e _) = decodedName e
                     getDNText (File e _ _) = decodedName e 
@@ -178,12 +174,12 @@ drawUI mainState = case mainState of
     statusBar lst = withAttr "statusBar" . str . expand $ info lst
     expand s = s ++ replicate 88 ' '
     info lst = case L.listSelectedElement lst of
-            Nothing -> "Nothing selected by user"
-            Just (_, sel) -> "  " ++ show (lastModified entry) ++ "    " ++ maybe "Nothing" friendlySize (fileSize entry)
-                where
-                entry = case sel of
-                            Directory e _ -> e
-                            File e _ _ -> e
+        Nothing -> "Nothing selected by user"
+        Just (_, sel) -> "  " ++ show (lastModified entry) ++ "    " ++ maybe "Nothing" friendlySize (fileSize entry)
+            where
+            entry = case sel of
+                        Directory e _ -> e
+                        File e _ _ -> e
 
 initializeResource :: IO ([DNode], NetworkResource)
 initializeResource = 
@@ -193,19 +189,20 @@ initializeResource =
             Just dlst -> return (dlst, error "no network resource, offline mode.")
         online -> do
             (rootUrl, up) <- case online of
-                                [] -> Conf.getServpath >>= \case
-                                    Nothing -> error "example usage: pgdl https://www.kernel.org/pub/"
-                                    Just ru -> Conf.getUsername >>= \case
-                                                 Nothing -> return (ru, Nothing)
-                                                 Just user -> Conf.getPassword >>= \case
-                                                    Nothing -> do   
-                                                        pass <- U.askPassword
-                                                        return (ru, Just (user, pass))
-                                                    Just pass -> return (ru, Just (user, pass))
-                                [r] -> return (T.pack r, Nothing)
-                                _ -> error "too many arguments."
+                [] -> Conf.getServpath >>= \case
+                    Nothing -> error "example usage: pgdl https://www.kernel.org/pub/"
+                    Just ru -> Conf.getUsername >>= \case
+                                 Nothing -> return (ru, Nothing)
+                                 Just user -> Conf.getPassword >>= \case
+                                    Nothing -> do   
+                                        pass <- U.askPassword
+                                        return (ru, Just (user, pass))
+                                    Just pass -> return (ru, Just (user, pass))
+                [r] -> return (T.pack r, Nothing)
+                _ -> error "too many arguments."
             putStrLn "loading webpage..."
             putStrLn "(you can use 'pgdl --offline' to browse the webpage you load last time)"
             nr <- genNetworkResource rootUrl up
             dNodes <- fetch nr 
             return (dNodes, nr)
+
