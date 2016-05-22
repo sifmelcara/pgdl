@@ -15,6 +15,8 @@ import Control.Monad.IO.Class
 import Control.Applicative
 import System.FilePath
 import System.Environment
+import System.FilePath.Posix
+import System.Directory
 import Text.HTML.DirectoryListing.Type
 
 import qualified Graphics.Vty as V
@@ -107,9 +109,9 @@ main = do
                     File entry url True -> do -- already downloaded file
                         let fn = decodedName entry
                         path <- liftIO $ Conf.getLocaldir >>= \case
-                                            Nothing -> return fn 
-                                            Just pre -> return $ T.pack (T.unpack pre </> T.unpack fn)
-                        liftIO $ deleteFile path
+                                            Nothing -> return $ T.unpack fn 
+                                            Just pre -> return $ T.unpack pre </> T.unpack fn
+                        liftIO $ removeFile path
                         -- | very bad approach. File deletion may fail.
                         let newList = L.listMoveTo rowNum . L.listInsert rowNum (File entry url False) . L.listRemove rowNum $ lst
                         M.continue $ LState father newList

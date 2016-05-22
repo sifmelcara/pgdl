@@ -10,8 +10,6 @@ import Data.Text (Text)
 import Text.Printf
 import Data.Text.Encoding
 import System.IO
-import System.Directory
-import System.FilePath.Posix
 
 -- | give a file size in bytes, return pretty file size 
 -- represent in KB, MB, GB or TB
@@ -72,8 +70,4 @@ askPassword = do
     hSetEcho stdin True
     putChar '\n'
     return $ T.pack pass
-
-deleteFile :: Text -> -- ^ file name (may be a absolute path)
-              IO ()
-deleteFile = removeFile . T.unpack
 
