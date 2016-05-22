@@ -9,14 +9,11 @@ import qualified Data.Text as T
 import qualified Data.Vector as V
 import Data.Text (Text)
 import Data.Maybe
-import DownloadInterface
-import Control.Monad
 import Control.Monad.IO.Class
 import Control.Applicative
-import System.FilePath
-import System.Environment
-import System.FilePath.Posix
-import System.Directory
+import System.FilePath ((</>))
+import System.Environment (getArgs)
+import System.Directory (removeFile)
 import Text.HTML.DirectoryListing.Type
 
 import qualified Graphics.Vty as V
@@ -26,10 +23,11 @@ import qualified Brick.Widgets.List as L
 import qualified Brick.Widgets.Center as C
 import qualified Brick.Widgets.Edit as E
 import qualified Brick.AttrMap as A
-import Brick.Types (Widget)
 import Brick.Widgets.Core
+import Brick.Types (Widget)
 import Brick.Util (on)
 
+import DownloadInterface
 import EntryAttrViewer
 import Utils
 import qualified Configure as Conf
@@ -62,7 +60,7 @@ main = do
         appEvent ls@(LState father lst) e = case e of
             V.EvKey V.KEsc [] -> M.halt ls
             V.EvKey (V.KChar 'q') [] -> M.halt ls
-            V.EvKey V.KEnter mod -> case L.listSelectedElement lst of
+            V.EvKey V.KEnter mdf -> case L.listSelectedElement lst of
                 Nothing -> M.continue ls
                 Just (rowNum, child) -> case child of
                     Directory entry dnsOp -> do
@@ -92,8 +90,8 @@ main = do
                         let dui = downloadInterface DownloadSettings { networkResource = nr
                                                                      , relativeUrl = url
                                                                      , localStoragePath = path
-                                                                     , justOpen = mod /= [V.MMeta]
-                                                                     , continueDownload = mod == [V.MMeta] 
+                                                                     , justOpen = mdf /= [V.MMeta]
+                                                                     , continueDownload = mdf == [V.MMeta] 
                                                                      }
                         M.suspendAndResume $ dui >> return ls
             V.EvKey V.KLeft [] -> M.continue $ fromMaybe ls father

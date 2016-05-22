@@ -5,7 +5,6 @@ where
 
 import Data.Text (Text)
 import qualified Data.Text as T
-import Control.Monad
 
 import qualified Graphics.Vty as V
 import qualified Brick.Main as M
@@ -20,7 +19,6 @@ import Brick.Util (on)
 
 import Types
 import Text.HTML.DirectoryListing.Type
-
 import qualified Utils as U
 
 entryAttrViewer :: DNode -> IO ()
