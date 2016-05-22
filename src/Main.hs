@@ -13,7 +13,7 @@ import Control.Monad.IO.Class
 import Control.Applicative
 import System.FilePath ((</>))
 import System.Environment (getArgs)
-import System.Directory (removeFile)
+import System.Directory (removeFile, doesFileExist)
 import Text.HTML.DirectoryListing.Type
 
 import qualified Graphics.Vty as V
@@ -77,11 +77,11 @@ main = do
                                                                      , justOpen = False
                                                                      , continueDownload = False
                                                                      }
-                            -- | construct a newList, modify the downloaded
-                            -- file's *downloaded state* to True.
-                            -- Maybe this is not a good approach?
                             newList = L.listMoveTo rowNum . L.listInsert rowNum (File entry url True) . L.listRemove rowNum $ lst
-                        M.suspendAndResume $ dui >> return (LState father newList)
+                        M.suspendAndResume $
+                            dui >> doesFileExist (T.unpack path) >>= \case
+                                True -> return (LState father newList)
+                                False -> return (LState father lst)
                     File entry url True -> do -- already downloaded file
                         let fn = decodedName entry
                         path <- liftIO $ Conf.getLocaldir >>= \case
