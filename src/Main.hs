@@ -36,18 +36,15 @@ import Types
 import Networking
 import qualified Utils as U
 
--- |                    father            contents                 
-data MainState = LState (Maybe MainState) (L.List DNode)
-               | SearchState MainState (L.List DNode) E.Editor
+data MainState = LState DList
+               | SearchState DList E.Editor
 
 main :: IO ()
 main = do
     (dNodes, nr) <- initializeResource
     let
         initialState :: MainState
-        initialState = LState Nothing lst
-            where
-            lst = L.list (T.Name "root") (V.fromList dNodes) 3
+        initialState = LState $ newDList dNodes
         theApp =
             M.App { M.appDraw = drawUI
                   , M.appChooseCursor = M.neverShowCursor
@@ -57,15 +54,15 @@ main = do
                   , M.appLiftVtyEvent = id
                   }
         appEvent :: MainState -> V.Event -> T.EventM (T.Next MainState)
-        appEvent ls@(LState father lst) e = case e of
+        appEvent ls@(LState dlst) e = case e of
             V.EvKey V.KEsc [] -> M.halt ls
             V.EvKey (V.KChar 'q') [] -> M.halt ls
-            V.EvKey V.KEnter mdf -> case L.listSelectedElement lst of
+            V.EvKey V.KEnter mdf -> case extractSelectedDNode dlst of
                 Nothing -> M.continue ls
-                Just (rowNum, child) -> case child of
-                    Directory entry dnsOp -> do
-                        dns <- liftIO dnsOp -- grab the subdirectory
-                        M.continue $ LState (Just ls) $ L.list (T.Name "root") (V.fromList dns) 3
+                Just dnode -> case dnode of
+                    Directory entry openOp -> do
+                        dns <- liftIO openOp -- grab the subdirectory
+                        M.continue $ LState (pushDList dlst dns)
                     File entry url False -> do
                         let fn = decodedName entry
                         path <- liftIO $ Conf.getLocaldir >>= \case
@@ -77,11 +74,8 @@ main = do
                                                                      , justOpen = False
                                                                      , continueDownload = False
                                                                      }
-                            newList = L.listMoveTo rowNum . L.listInsert rowNum (File entry url True) . L.listRemove rowNum $ lst
-                        M.suspendAndResume $
-                            dui >> doesFileExist (T.unpack path) >>= \case
-                                True -> return (LState father newList)
-                                False -> return (LState father lst)
+                        ex <- doesFileExist (T.unpack path)
+                        M.suspendAndResume $ dui >> return (LState (replaceSelectedDNode dlst (File entry url ex)))
                     File entry url True -> do -- already downloaded file
                         let fn = decodedName entry
                         path <- liftIO $ Conf.getLocaldir >>= \case
@@ -98,10 +92,10 @@ main = do
             V.EvKey V.KRight [] -> case L.listSelectedElement lst of
                 Nothing -> M.continue ls
                 Just (_, sel) -> M.suspendAndResume $ entryAttrViewer sel >> return ls
-            V.EvKey (V.KChar '/') [] -> M.continue $ SearchState ls lst (E.editor "searchBar" (str.unlines) (Just 1) "")
-            V.EvKey (V.KChar 'd') [] -> case L.listSelectedElement lst of
+            V.EvKey (V.KChar '/') [] -> M.continue $ SearchState dlst (E.editor "searchBar" (str.unlines) (Just 1) "")
+            V.EvKey (V.KChar 'd') [] -> case extraceSelectedDNode dlst of
                 Nothing -> M.continue ls
-                Just (rowNum, child) -> case child of
+                Just dnode -> case dnode of
                     Directory _ _ -> M.continue ls
                     File entry url False -> M.continue ls
                     File entry url True -> do -- already downloaded file
@@ -110,9 +104,8 @@ main = do
                                             Nothing -> return $ T.unpack fn 
                                             Just pre -> return $ T.unpack pre </> T.unpack fn
                         liftIO $ removeFile path
-                        -- | very bad approach. File deletion may fail.
-                        let newList = L.listMoveTo rowNum . L.listInsert rowNum (File entry url False) . L.listRemove rowNum $ lst
-                        M.continue $ LState father newList
+                        ex <- doesFileExist (T.unpack path)
+                        M.continue $ LState (replaceSelectedDNode dlst (File entry url ex))
             ev -> M.continue =<< (LState father <$> T.handleEvent ev lst)
         appEvent ss@(SearchState ms@(LState _ origLst) lst ed) e = case e of
             V.EvKey V.KEsc [] -> M.halt ss
