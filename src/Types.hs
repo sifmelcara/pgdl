@@ -15,17 +15,17 @@ data DNode = Directory Entry (IO [DNode]) | File Entry Text Bool
 --                                                          downloaded?
 
 -- | Note: The list in a DList should never be empty
-data DList = DList [(Vector Int, Vector DNode)] (Maybe Int)
---                                                ^ selected location of Vector Int
+data DList = DList (Vector DNode) [Vector Int] (Maybe Int)
+--                 ^ DNode pool                  ^ selected location of Vector Int
 
 newDList :: [DNode] -> DList 
-newDList = pushDList (DList [] Nothing)
+newDList = pushDList (DList V.empty [] Nothing)
 
 -- | filter the elements in a DList, this action directly modify
 -- the state of the top element of directory stack. The purpose of this function is
 -- to provide the ability to dynamically filter list
 filterDList :: DList -> (DNode -> Bool) -> DList
-filterDList (DList ((vIdx, vDn):xs) sel) f = DList ((vIdx', vDn):xs) sel'
+filterDList (DList vDn (vIdx:xs) sel) f = DList vDn (vIdx':xs) sel'
     where
     vIdx' = V.filter (\i -> f $ vDn ! i) vIdx
     sel' = case sel of
@@ -35,22 +35,24 @@ filterDList (DList ((vIdx, vDn):xs) sel) f = DList ((vIdx', vDn):xs) sel'
 
 -- | pop the directory stack (used when leaving a directory or exiting a filtered list)
 popDList :: DList -> DList 
-popDList dl@(DList [_] sel) = dl
-popDList (DList (x:xs) sel) = DList xs sel
+popDList dl@(DList _ [_] sel) = dl
+popDList (DList vDn (x:xs) sel) = DList vDn xs sel
 
 -- | used when we move to the search (filter) state
 dupDList :: DList -> DList
-dupDList (DList (x:xs) sel) = DList (x:x:xs) sel
+dupDList (DList vDn (x:xs) sel) = DList vDn (x:x:xs) sel
 
 -- | used when we enter a new directory
 pushDList :: DList -> [DNode] -> DList
-pushDList (DList xs sel) dns = DList ((V.enumFromN 0 (length dns), V.fromList dns):xs) sel
+pushDList (DList vDn xs sel) dns = DList vDn' (V.enumFromN (V.length vDn) (length dns):xs) sel
+    where
+    vDn' = vDn V.++ V.fromList dns
 
 -- | return a brick list which is ready to be rendered
 extractDList :: DList -> L.List DNode
-extractDList (DList ((vIdx, vDn):xs) _) = L.list "mainList" (V.backpermute vDn vIdx) 3
+extractDList (DList vDn (vIdx:xs) _) = L.list "mainList" (V.backpermute vDn vIdx) 3
 
 -- | extract the currently selected DNode
 extractSelectedDNode :: DList -> Maybe DNode
-extractSelectedDNode (DList ((vIdx, vDn):xs) sel) = (\i -> vDn ! (vIdx ! i)) <$> sel
+extractSelectedDNode (DList vDn (vIdx:xs) sel) = (vDn!) . (vIdx!) <$> sel
 
