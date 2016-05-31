@@ -3,6 +3,7 @@
 module Types
 where
 
+import Control.Applicative ((<$>))
 import Text.HTML.DirectoryListing.Type
 import Data.Text (Text)
 import Data.Maybe
@@ -13,8 +14,12 @@ import Data.Vector ((!), Vector)
 data DNode = Directory Entry (IO [DNode]) | File Entry Text Bool
 --                                                          downloaded?
 
+-- | Note: The list in a DList should never be empty
 data DList = DList [(Vector Int, Vector DNode)] (Maybe Int)
 --                                                ^ selected location of Vector Int
+
+newDList :: [DNode] -> DList 
+newDList = pushDList (DList [] Nothing)
 
 -- | filter the elements in a DList, this action directly modify
 -- the state of the top element of directory stack. The purpose of this function is
@@ -39,7 +44,7 @@ dupDList (DList (x:xs) sel) = DList (x:x:xs) sel
 
 -- | used when we enter a new directory
 pushDList :: DList -> [DNode] -> DList
-pushDList (DList xs sel) x = DList ((V.enumFromN 0 (length x), V.fromList x):xs) sel
+pushDList (DList xs sel) dns = DList ((V.enumFromN 0 (length dns), V.fromList dns):xs) sel
 
 -- | return a brick list which is ready to be rendered
 extractDList :: DList -> L.List DNode
