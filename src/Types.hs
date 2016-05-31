@@ -8,31 +8,38 @@ import Text.HTML.DirectoryListing.Type
 import Data.Text (Text)
 import Data.Maybe
 import qualified Brick.Widgets.List as L
+import Brick.Widgets.List (listSelectedL, listElementsL, listSelectedElement)
 import qualified Data.Vector as V
 import Data.Vector ((!), Vector)
+import Control.Lens
 
 data DNode = Directory Entry (IO [DNode]) | File Entry Text Bool
 --                                                          downloaded?
 
 -- | Note: The list in a DList should never be empty
-data DList = DList (Vector DNode) [Vector Int] (Maybe Int)
---                 ^ DNode pool                  ^ selected location of Vector Int
+data DList = DList (Vector DNode) [L.List Int]
+--                 ^ DNode pool                  
 
+{-
 newDList :: [DNode] -> DList 
-newDList = pushDList (DList V.empty [] Nothing)
+newDList = pushDList (DList V.empty [])
+-}
 
 -- | filter the elements in a DList, this action directly modify
 -- the state of the top element of directory stack. The purpose of this function is
 -- to provide the ability to dynamically filter list
 filterDList :: DList -> (DNode -> Bool) -> DList
-filterDList (DList vDn (vIdx:xs) sel) f = DList vDn (vIdx':xs) sel'
+filterDList (DList vDn (lIdx:xs)) f = DList vDn (lIdx':xs) 
     where
-    vIdx' = V.filter (\i -> f $ vDn ! i) vIdx
-    sel' = case sel of
+    es = lIdx ^. listElementsL 
+    es' = V.filter (f . (vDn!)) es
+    lIdx' = (lIdx & listElementsL %~ (V.filter (f . (vDn!)))) & listSelectedL .~ sel'
+    sel' = case listSelectedElement lIdx of
         Nothing -> Nothing
-        Just i -> V.elemIndex (vIdx ! i) vIdx'
+        Just (i, e) -> V.elemIndex e es'
         -- ^ keep the focus on the old selected element if it haven't been filtered out
 
+{-
 -- | pop the directory stack (used when leaving a directory or exiting a filtered list)
 popDList :: DList -> DList 
 popDList dl@(DList _ [_] sel) = dl
@@ -79,4 +86,4 @@ mapSelectedDNodeM (DList vDn (vIdx:xs) sel) f = do
         return $ DList vDn' (vIdx:xs) sel
 
         
-
+-}
