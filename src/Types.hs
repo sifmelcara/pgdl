@@ -57,6 +57,16 @@ extractSelectedDNode :: DList -> Maybe DNode
 extractSelectedDNode (DList vDn (vIdx:xs) sel) = (vDn!) . (vIdx!) <$> sel
 
 -- | perform a monadic action on the selected element, note this cost O(N)
+replaceSelectedDNode :: DList -> DNode -> Maybe DList
+replaceSelectedDNode (DList vDn (vIdx:xs) sel) d' = do
+    idx <- sel
+    let poolIdx = vIdx ! idx
+    let (front, back) = V.splitAt poolIdx vDn
+    -- ^ back will have at least one element because 0 <= poolIdx < V.length vDn
+    let vDn' = front V.++ (d' `V.cons` (V.tail vDn))
+    return $ DList vDn' (vIdx:xs) sel
+
+-- | perform a monadic action on the selected element, note this cost O(N)
 mapSelectedDNodeM :: Monad m => DList -> (DNode -> m DNode) -> Maybe (m DList)
 mapSelectedDNodeM (DList vDn (vIdx:xs) sel) f = do
     idx <- sel
