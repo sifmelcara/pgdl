@@ -10,6 +10,7 @@ import Data.Text (Text)
 import Text.Printf
 import Data.Text.Encoding
 import System.IO
+import qualified Graphics.Text.Width as TW
 
 -- | give a file size in bytes, return pretty file size 
 -- represent in KB, MB, GB or TB
@@ -33,17 +34,17 @@ friendlySize b
 terminalWidth :: Num a => a
 terminalWidth = 80
 
+-- | charDisplayLen returns the display length of a character
+charDisplayLen :: Char -> Integer
+charDisplayLen c
+    | w > 0 = fromIntegral w
+    | otherwise = 2 -- assume unknown characters occupy 2 widths
+    where
+    w = TW.safeWcwidth c
+
 -- | return the estimated display length of a Text
 displayLength :: Text -> Integer
 displayLength = sum . map charDisplayLen . T.unpack
-
--- | charDisplayLen determine a unicode character is a wide character or not
--- (a wide character occupy 2 space in the terminal)
--- this method may seem unreliable, but have no better idea.
-charDisplayLen :: Char -> Integer
-charDisplayLen c
-    | (B.length . encodeUtf8 . T.pack $ [c]) > 1 = 2
-    | otherwise = 1
 
 -- | given a line of Text, cut it to a group of Text
 -- which have 'len' display length
