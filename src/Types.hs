@@ -38,9 +38,17 @@ filterDList (DList _ [_])  _ = error "try to filter a list without a reference (
 filterDList (DList sDn (x:ref:xs)) f = DList sDn (x':ref:xs)
     where
     newElements = (V.filter (f . S.index sDn) $ ref ^. listElementsL)
-    x' = setSelection $ x & listElementsL .~ newElements 
+    x' = (listSelectedL .~ newSelLoc) $ x & listElementsL .~ newElements 
     oldSelectionVal = snd <$> listSelectedElement x
-    setSelection = listSelectedL .~ (oldSelectionVal >>= (\v -> V.elemIndex v newElements))
+    -- determine new selected location carefully, brick/vector will often crash
+    -- if the new location is out of bound.
+    newSelLoc = do
+        oldSelVal <- oldSelectionVal
+        case V.elemIndex oldSelVal newElements of
+            Nothing -> case V.length newElements of
+                0 -> Nothing
+                _ -> return 0
+            Just i -> return i
 
 -- | pop the directory stack (used when leaving a directory or exiting a filtered list)
 popDList :: DList -> DList 
