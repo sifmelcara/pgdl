@@ -74,9 +74,11 @@ main = do
                                                                      , justOpen = False
                                                                      , continueDownload = False
                                                                      }
-                        ex <- liftIO $ doesFileExist (T.unpack path)
-                        M.suspendAndResume $ dui >> return (LState (fromJust (replaceSelectedDNode dlst (File entry url ex))))
-                        --                                          ^ this fromJust is ok since we can be sure that
+                        M.suspendAndResume $ do
+                            dui
+                            ex <- doesFileExist (T.unpack path)
+                            return $ LState (fromJust $ replaceSelectedDNode dlst (File entry url ex)) 
+                        --                   ^ this fromJust is ok since we can be sure that
                         -- there has something been selected. However this need to perform refactor in the future
                     File entry url True -> do -- already downloaded file
                         let fn = decodedName entry
