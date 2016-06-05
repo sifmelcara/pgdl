@@ -28,19 +28,19 @@ data DList = DList (Seq DNode) [L.List Int]
 newDList :: [DNode] -> DList 
 newDList = pushDList (DList S.empty []) 
 
-
--- | Note that when we perform action on L.List, we should check whether ListSelectedL
--- is in valid range. This causes program crash when doing multiple filtering. 
-
 -- | filter the elements in a DList, this action directly modify
 -- the state of the top element of directory stack. The purpose of this function is
 -- to provide the ability to dynamically filter list
+-- Note: This causes the error:
+--    https://github.com/coreyoconnor/vty/blob/08391a64c40240b3c5ce863a9ab3fa2e6f5bead9/src/Graphics/Vty/PictureToSpans.hs#L312
 filterDList :: DList -> (DNode -> Bool) -> DList
-filterDList (DList _ [_])  _ = error "try to filter a list without reference (forgot to dupDList?)"
+filterDList (DList _ [_])  _ = error "try to filter a list without a reference (forgot to dupDList?)"
 filterDList (DList sDn (x:ref:xs)) f = DList sDn (x':ref:xs)
     where
-    x' = x & listElementsL .~ (V.filter ok $ ref ^. listElementsL)
-    ok idx = f $ S.index sDn idx
+    newElements = (V.filter (f . S.index sDn) $ ref ^. listElementsL)
+    x' = setSelection $ x & listElementsL .~ newElements 
+    oldSelectionVal = snd <$> listSelectedElement x
+    setSelection = listSelectedL .~ (oldSelectionVal >>= (\v -> V.elemIndex v newElements))
 
 -- | pop the directory stack (used when leaving a directory or exiting a filtered list)
 popDList :: DList -> DList 
@@ -51,7 +51,7 @@ popDList (DList sDn (x:xs)) = DList sDn xs
 dupDList :: DList -> DList
 dupDList (DList sDn (x:xs)) = DList sDn (x:x:xs)
 
--- | used when we enter a new directory or start filtering mode
+-- | used when we enter a new directory
 pushDList :: DList -> [DNode] -> DList
 pushDList (DList sDn xs) dns = DList sDn' (x:xs)
     where
