@@ -36,18 +36,15 @@ import Types
 import Networking
 import qualified Utils as U
 
--- |                    father            contents                 
-data MainState = LState (Maybe MainState) (L.List DNode)
-               | SearchState MainState (L.List DNode) E.Editor
+data MainState = LState DList
+               | SearchState DList E.Editor
 
 main :: IO ()
 main = do
     (dNodes, nr) <- initializeResource
     let
         initialState :: MainState
-        initialState = LState Nothing lst
-            where
-            lst = L.list (T.Name "root") (V.fromList dNodes) 3
+        initialState = LState $ newDList dNodes
         theApp =
             M.App { M.appDraw = drawUI
                   , M.appChooseCursor = M.neverShowCursor
@@ -57,15 +54,15 @@ main = do
                   , M.appLiftVtyEvent = id
                   }
         appEvent :: MainState -> V.Event -> T.EventM (T.Next MainState)
-        appEvent ls@(LState father lst) e = case e of
+        appEvent ls@(LState dlst) e = case e of
             V.EvKey V.KEsc [] -> M.halt ls
             V.EvKey (V.KChar 'q') [] -> M.halt ls
-            V.EvKey V.KEnter mdf -> case L.listSelectedElement lst of
+            V.EvKey V.KEnter mdf -> case extractSelectedDNode dlst of
                 Nothing -> M.continue ls
-                Just (rowNum, child) -> case child of
-                    Directory entry dnsOp -> do
-                        dns <- liftIO dnsOp -- grab the subdirectory
-                        M.continue $ LState (Just ls) $ L.list (T.Name "root") (V.fromList dns) 3
+                Just dnode -> case dnode of
+                    Directory entry openOp -> do
+                        dns <- liftIO openOp -- grab the subdirectory
+                        M.continue $ LState (pushDList dlst dns)
                     File entry url False -> do
                         let fn = decodedName entry
                         path <- liftIO $ Conf.getLocaldir >>= \case
@@ -77,11 +74,12 @@ main = do
                                                                      , justOpen = False
                                                                      , continueDownload = False
                                                                      }
-                            newList = L.listMoveTo rowNum . L.listInsert rowNum (File entry url True) . L.listRemove rowNum $ lst
-                        M.suspendAndResume $
-                            dui >> doesFileExist (T.unpack path) >>= \case
-                                True -> return (LState father newList)
-                                False -> return (LState father lst)
+                        M.suspendAndResume $ do
+                            dui
+                            ex <- doesFileExist (T.unpack path)
+                            return $ LState (fromJust $ replaceSelectedDNode dlst (File entry url ex)) 
+                        --                   ^ this fromJust is ok since we can be sure that
+                        -- there has something been selected. However this need to perform refactor in the future
                     File entry url True -> do -- already downloaded file
                         let fn = decodedName entry
                         path <- liftIO $ Conf.getLocaldir >>= \case
@@ -94,14 +92,14 @@ main = do
                                                                      , continueDownload = mdf == [V.MMeta] 
                                                                      }
                         M.suspendAndResume $ dui >> return ls
-            V.EvKey V.KLeft [] -> M.continue $ fromMaybe ls father
-            V.EvKey V.KRight [] -> case L.listSelectedElement lst of
+            V.EvKey V.KLeft [] -> M.continue . LState $ popDList dlst
+            V.EvKey V.KRight [] -> case extractSelectedDNode dlst of
                 Nothing -> M.continue ls
-                Just (_, sel) -> M.suspendAndResume $ entryAttrViewer sel >> return ls
-            V.EvKey (V.KChar '/') [] -> M.continue $ SearchState ls lst (E.editor "searchBar" (str.unlines) (Just 1) "")
-            V.EvKey (V.KChar 'd') [] -> case L.listSelectedElement lst of
+                Just d -> M.suspendAndResume $ entryAttrViewer d >> return ls
+            V.EvKey (V.KChar '/') [] -> M.continue $ SearchState (dupDList dlst) (E.editor "searchBar" (str.unlines) (Just 1) "")
+            V.EvKey (V.KChar 'd') [] -> case extractSelectedDNode dlst of
                 Nothing -> M.continue ls
-                Just (rowNum, child) -> case child of
+                Just dnode -> case dnode of
                     Directory _ _ -> M.continue ls
                     File entry url False -> M.continue ls
                     File entry url True -> do -- already downloaded file
@@ -110,31 +108,29 @@ main = do
                                             Nothing -> return $ T.unpack fn 
                                             Just pre -> return $ T.unpack pre </> T.unpack fn
                         liftIO $ removeFile path
-                        -- | very bad approach. File deletion may fail.
-                        let newList = L.listMoveTo rowNum . L.listInsert rowNum (File entry url False) . L.listRemove rowNum $ lst
-                        M.continue $ LState father newList
-            ev -> M.continue =<< (LState father <$> T.handleEvent ev lst)
-        appEvent ss@(SearchState ms@(LState _ origLst) lst ed) e = case e of
+                        ex <- liftIO $ doesFileExist path
+                        M.continue $ LState $ fromJust (replaceSelectedDNode dlst (File entry url ex))
+                        --                    ^ this fromJust is ok since we can be sure that
+                        -- there has something been selected. However this need to perform refactor in the future
+            ev -> M.continue =<< do
+                dlst' <- adjustCurrentBrickList dlst $ (\l -> T.handleEvent ev l)
+                return $ LState dlst'
+        appEvent ss@(SearchState dlst ed) e = case e of
             V.EvKey V.KEsc [] -> M.halt ss
             V.EvKey V.KEnter [] -> case E.getEditContents ed of
-                [""] -> M.continue ms -- ^ do nothing if the editor is empty
-                _ -> M.continue $ LState (Just ms) lst
+                [""] -> M.continue (LState $ popDList dlst)
+                _ -> M.continue $ LState dlst
             ev -> do
                 newEd <- T.handleEvent ev ed
-                -- | update the list, lst
                 let 
                     linesToALine [l] = l
                     linesToALine _ = error "not one line of words in the search bar, why?"
-                    -- | Why does L.listReplace require an Eq instance of Vector elements...?
-                    applyFilter kw lst = replaceList newElms lst
-                        where
-                        newElms = V.filter (\dn -> kw `isKeyWordOf` getDNText dn) $ L.listElements lst
-                        replaceList es l = l {L.listElements = es, L.listSelected = Just 0}
-                    getDNText (Directory e _) = decodedName e
-                    getDNText (File e _ _) = decodedName e 
-                    isKeyWordOf t1 t2 = T.toCaseFold t1 `T.isInfixOf` T.toCaseFold t2
-                M.continue $ SearchState ms (applyFilter (T.pack . linesToALine $ E.getEditContents newEd) origLst) newEd
-        appEvent SearchState {} _ = error "unexpected prev state in SearchState."
+                    keyword = T.pack . linesToALine $ E.getEditContents newEd
+                    cond :: DNode -> Bool
+                    cond (File entry _ _) = keyword `isKeyWordOf` decodedName entry
+                    cond (Directory entry _) = keyword `isKeyWordOf` decodedName entry
+                    isKeyWordOf a b = T.toCaseFold a `T.isInfixOf` T.toCaseFold b
+                M.continue $ SearchState (filterDList dlst cond) newEd
         theMap = A.attrMap V.defAttr [ (L.listAttr, V.white `on` V.black)
                                      , ("directory", V.black `on` V.magenta)
                                      , ("file", V.black `on` V.cyan)
@@ -148,14 +144,14 @@ main = do
 -- | use cropping to draw UI in the future?
 drawUI :: MainState -> [Widget]
 drawUI mainState = case mainState of
-        (LState _ l) -> [ C.hCenter . hLimit U.terminalWidth $
-                          vBox [entryList l, statusBar l]
-                        ]
-        (SearchState _ l e) -> [ C.hCenter . hLimit U.terminalWidth $
-                                 vBox [entryList l, searchBar e]
-                               ]
+        (LState dlst) -> [ C.hCenter . hLimit U.terminalWidth $
+                           vBox [entryList dlst, statusBar (extractSelectedDNode dlst)]
+                         ]
+        (SearchState dlst e) -> [ C.hCenter . hLimit U.terminalWidth $
+                                  vBox [entryList dlst, searchBar e]
+                                ]
     where
-    entryList lst = L.renderList lst listDrawElement
+    entryList dlist = renderDList dlist listDrawElement
     listDrawElement False (Directory a _) = C.hCenter . txt . mid . stripWidth $ decodedName a 
     listDrawElement False (File a _ _) = C.hCenter . txt . mid . stripWidth $ decodedName a 
     listDrawElement True d@(Directory _ _) = withAttr "directory" $ listDrawElement False d
@@ -167,18 +163,15 @@ drawUI mainState = case mainState of
                     [] -> ""
                     [singleLine] -> singleLine
                     (x:_) -> x `T.append` "..."
-
     searchBar ed = forceAttr "searchBar" $ hBox [txt "search: ", E.renderEditor ed]
-
-    statusBar lst = withAttr "statusBar" . str . expand $ info lst
+    statusBar = withAttr "statusBar" . str . expand . info
+    info Nothing = "  Nothing selected by user"
+    info (Just sel) = "  " ++ show (lastModified e) ++ "    " ++ maybe "Nothing" friendlySize (fileSize e)
+        where
+        e = entry sel
+        entry (Directory e _) = e
+        entry (File e _ _) = e
     expand s = s ++ replicate 88 ' '
-    info lst = case L.listSelectedElement lst of
-        Nothing -> "Nothing selected by user"
-        Just (_, sel) -> "  " ++ show (lastModified entry) ++ "    " ++ maybe "Nothing" friendlySize (fileSize entry)
-            where
-            entry = case sel of
-                        Directory e _ -> e
-                        File e _ _ -> e
 
 initializeResource :: IO ([DNode], NetworkResource)
 initializeResource = 
