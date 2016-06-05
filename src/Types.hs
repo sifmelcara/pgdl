@@ -14,6 +14,7 @@ import Data.Vector ((!), Vector)
 import Data.Sequence (Seq, (><))
 import qualified Data.Sequence as S
 import Lens.Micro
+import Control.Monad
 
 data DNode = Directory Entry (IO [DNode]) | File Entry Text Bool
 --                                                          downloaded?
@@ -66,4 +67,7 @@ mapSelectedDNodeM (DList sDn (x:xs)) f = do
         let e = S.index sDn i
         e' <- f e
         return $ DList (S.update i e' sDn) (x:xs)
-        
+
+replaceSelectedDNode :: DList -> DNode -> Maybe DList
+replaceSelectedDNode dlst d = join $ mapSelectedDNodeM dlst (const $ Just d) 
+
