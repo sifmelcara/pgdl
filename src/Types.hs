@@ -53,7 +53,15 @@ filterDList (DList sDn (x:ref:xs)) f = DList sDn (x':ref:xs)
 -- | pop the directory stack (used when leaving a directory or exiting a filtered list)
 popDList :: DList -> DList 
 popDList dl@(DList _ [_]) = dl
-popDList (DList sDn (x:xs)) = DList sDn xs
+popDList (DList sDn (x:y:xs)) = DList sDn (x':xs)
+    where
+    oldSelectionVal = snd <$> listSelectedElement x
+    newSelectionLoc = do
+        oldVal <- oldSelectionVal
+        V.elemIndex oldVal (y ^. listElementsL)
+    x' = case newSelectionLoc of
+        Nothing -> y
+        Just i -> y & listSelectedL .~ (Just i)
 
 -- | used when we move to the search (filter) state
 dupDList :: DList -> DList
