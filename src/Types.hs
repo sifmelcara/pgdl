@@ -8,6 +8,7 @@ import Text.HTML.DirectoryListing.Type
 import Data.Text (Text)
 import Data.Maybe
 import qualified Brick.Widgets.List as L
+import qualified Brick.Types as T
 import Brick.Widgets.List (listSelectedL, listElementsL, listSelectedElement)
 import qualified Data.Vector as V
 import Data.Vector ((!), Vector)
@@ -75,4 +76,12 @@ adjustCurrentBrickList :: Monad m => DList -> (L.List Int -> m (L.List Int)) -> 
 adjustCurrentBrickList (DList sDn (x:xs)) f = do
     x' <- f x
     return $ DList sDn (x':xs)
+
+renderDList :: DList -> (Bool -> DNode -> T.Widget) -> T.Widget
+renderDList (DList sDn (x:_)) render = L.renderList actualList render
+    where
+    actualList = x & listElementsL %~ V.map (S.index sDn)
+    
+
+
 
