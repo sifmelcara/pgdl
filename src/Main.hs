@@ -127,8 +127,9 @@ main = do
                     linesToALine _ = error "not one line of words in the search bar, why?"
                     keyword = T.pack . linesToALine $ E.getEditContents newEd
                     cond :: DNode -> Bool
-                    cond (File entry _ _) = keyword `T.isInfixOf` decodedName entry
-                    cond (Directory entry _) = keyword `T.isInfixOf` decodedName entry
+                    cond (File entry _ _) = keyword `isKeyWordOf` decodedName entry
+                    cond (Directory entry _) = keyword `isKeyWordOf` decodedName entry
+                    isKeyWordOf a b = T.toCaseFold a `T.isInfixOf` T.toCaseFold b
                 M.continue $ SearchState (filterDList dlst cond) newEd
         theMap = A.attrMap V.defAttr [ (L.listAttr, V.white `on` V.black)
                                      , ("directory", V.black `on` V.magenta)
