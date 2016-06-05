@@ -29,7 +29,7 @@ executable pgdl
                        Networking, Utils, Configure,
                        EntryAttrViewer, Types
   build-depends:       base == 4.*,
-                       vector,
+                       vector, containers,
                        text, bytestring,
                        Cabal, time,
                        unix, process,
@@ -37,7 +37,7 @@ executable pgdl
                        data-default,
                        tagsoup,
                        directory-listing-webpage-parser >= 0.1.1.0,
-                       brick < 0.7, vty,
+                       brick < 0.7, vty, microlens,
                        conduit, conduit-extra,
                        http-conduit, http-types, resourcet,
                        configurator >= 0.3,
