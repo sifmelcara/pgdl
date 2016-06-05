@@ -28,6 +28,10 @@ data DList = DList (Seq DNode) [L.List Int]
 newDList :: [DNode] -> DList 
 newDList = pushDList (DList S.empty []) 
 
+
+-- | Note that when we perform action on L.List, we should check whether ListSelectedL
+-- is in valid range. This causes program crash when doing multiple filtering. 
+
 -- | filter the elements in a DList, this action directly modify
 -- the state of the top element of directory stack. The purpose of this function is
 -- to provide the ability to dynamically filter list
@@ -82,6 +86,3 @@ renderDList (DList sDn (x:_)) render = L.renderList actualList render
     where
     actualList = x & listElementsL %~ V.map (S.index sDn)
     
-
-
-
