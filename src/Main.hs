@@ -96,7 +96,7 @@ main = do
             V.EvKey V.KRight [] -> case extractSelectedDNode dlst of
                 Nothing -> M.continue ls
                 Just d -> M.suspendAndResume $ entryAttrViewer d >> return ls
-            V.EvKey (V.KChar '/') [] -> M.continue $ SearchState dlst (E.editor "searchBar" (str.unlines) (Just 1) "")
+            V.EvKey (V.KChar '/') [] -> M.continue $ SearchState (dupDList dlst) (E.editor "searchBar" (str.unlines) (Just 1) "")
             V.EvKey (V.KChar 'd') [] -> case extractSelectedDNode dlst of
                 Nothing -> M.continue ls
                 Just dnode -> case dnode of

@@ -32,7 +32,7 @@ newDList = pushDList (DList S.empty [])
 -- the state of the top element of directory stack. The purpose of this function is
 -- to provide the ability to dynamically filter list
 filterDList :: DList -> (DNode -> Bool) -> DList
-filterDList (DList _ [_])  _ = error "try to filter a list without reference (forgot to pushDList?)"
+filterDList (DList _ [_])  _ = error "try to filter a list without reference (forgot to dupDList?)"
 filterDList (DList sDn (x:ref:xs)) f = DList sDn (x':ref:xs)
     where
     x' = x & listElementsL .~ (V.filter ok $ ref ^. listElementsL)
