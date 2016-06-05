@@ -71,3 +71,8 @@ mapSelectedDNodeM (DList sDn (x:xs)) f = do
 replaceSelectedDNode :: DList -> DNode -> Maybe DList
 replaceSelectedDNode dlst d = join $ mapSelectedDNodeM dlst (const $ Just d) 
 
+adjustCurrentBrickList :: Monad m => DList -> (L.List Int -> m (L.List Int)) -> m DList
+adjustCurrentBrickList (DList sDn (x:xs)) f = do
+    x' <- f x
+    return $ DList sDn (x':xs)
+
