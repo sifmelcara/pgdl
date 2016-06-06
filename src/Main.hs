@@ -170,7 +170,7 @@ drawUI mainState = case mainState of
                     [] -> ""
                     [singleLine] -> singleLine
                     (x:_) -> x `T.append` "..."
-    searchBar ed = forceAttr "searchBar" $ hBox [txt "search: ", E.renderEditor True ed]
+    searchBar ed = forceAttr "searchBar" $ hBox [txt " search: ", E.renderEditor True ed]
     statusBar = withAttr "statusBar" . str . expand . info
     info Nothing = "  Nothing selected by user"
     info (Just sel) = "  " ++ show (lastModified e) ++ "    " ++ maybe "Directory" friendlySize (fileSize e)
