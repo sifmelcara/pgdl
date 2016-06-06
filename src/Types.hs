@@ -30,9 +30,7 @@ newDList = pushDList (DList S.empty [])
 
 -- | filter the elements in a DList, this action directly modify
 -- the state of the top element of directory stack. The purpose of this function is
--- to provide the ability to dynamically filter list
--- Note: This causes the error:
---    https://github.com/coreyoconnor/vty/blob/08391a64c40240b3c5ce863a9ab3fa2e6f5bead9/src/Graphics/Vty/PictureToSpans.hs#L312
+-- to provide the ability to dynamically filter a list
 filterDList :: DList -> (DNode -> Bool) -> DList
 filterDList (DList _ [_])  _ = error "try to filter a list without a reference (forgot to dupDList?)"
 filterDList (DList sDn (x:ref:xs)) f = DList sDn (x':ref:xs)
@@ -40,7 +38,7 @@ filterDList (DList sDn (x:ref:xs)) f = DList sDn (x':ref:xs)
     newElements = V.filter (f . S.index sDn) $ ref ^. listElementsL
     x' = (listSelectedL .~ newSelLoc) $ x & listElementsL .~ newElements
     oldSelectionVal = snd <$> listSelectedElement x
-    -- determine new selected location carefully, brick/vector will often crash
+    -- determine the new selected location carefully, brick/vector will often crash
     -- if the new location is out of bound.
     newSelLoc = case V.length newElements of
         0 -> Nothing
@@ -61,11 +59,11 @@ popDList (DList sDn (x:y:xs)) = DList sDn (x':xs)
         Nothing -> y
         Just i -> y & listSelectedL .~ Just i
 
--- | used when we move to the search (filter) state
+-- | used when moving to the search (filter) state
 dupDList :: DList -> DList
 dupDList (DList sDn (x:xs)) = DList sDn (x:x:xs)
 
--- | used when we enter a new directory
+-- | used when entering a new directory
 pushDList :: DList -> [DNode] -> DList
 pushDList (DList sDn xs) dns = DList sDn' (x:xs)
     where
