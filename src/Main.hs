@@ -152,18 +152,19 @@ drawUI mainState = case mainState of
                                 ]
     where
     entryList dlist = renderDList dlist listDrawElement
-    listDrawElement False (Directory a _)  = C.hCenter $ hBox [ txt . placeTextIntoRectangle 3 (U.terminalWidth-1) . stripWidth $ decodedName a
-                                                              , withAttr "directory" . vLimit 3 $ fill ' '
-                                                              ]
-    listDrawElement False (File a _ False) = C.hCenter $ hBox [ txt . placeTextIntoRectangle 3 (U.terminalWidth-1) . stripWidth $ decodedName a
-                                                              , withAttr "file" . vLimit 3 $ fill ' '
-                                                              ]
-    listDrawElement False (File a _ True)  = C.hCenter $ hBox [ txt . placeTextIntoRectangle 3 (U.terminalWidth-1) . stripWidth $ decodedName a
-                                                              , withAttr "downloaded file" . vLimit 3 $ fill ' '
-                                                              ]
-    listDrawElement True d@(Directory _ _) = withAttr "directory" $ listDrawElement False d
-    listDrawElement True f@(File _ _ False) = withAttr "file" $ listDrawElement False f
-    listDrawElement True f@(File _ _ True) = withAttr "downloaded file" $ listDrawElement False f
+    listDrawElement sel (Directory a _)  = C.hCenter $ hBox [ color2 sel "directory" . vLimit 3 $ fill ' '
+                                                            , color1 sel "directory" . txt . placeTextIntoRectangle 3 (U.terminalWidth-1) . stripWidth $ decodedName a
+                                                            ]
+    listDrawElement sel (File a _ False) = C.hCenter $ hBox [ color2 sel "file" . vLimit 3 $ fill ' '
+                                                            , color1 sel "file" . txt . placeTextIntoRectangle 3 (U.terminalWidth-1) . stripWidth $ decodedName a
+                                                            ]
+    listDrawElement sel (File a _ True)  = C.hCenter $ hBox [ color2 sel "downloaded file" . vLimit 3 $ fill ' '
+                                                            , color1 sel "downloaded file" . txt . placeTextIntoRectangle 3 (U.terminalWidth-1) . stripWidth $ decodedName a
+                                                            ]
+    color1 True attr = withAttr attr
+    color1 False _ = id
+    color2 False attr = withAttr attr
+    color2 True _ = id
     stripWidth :: Text -> Text
     stripWidth t = case U.cutTextByDisplayLength (U.terminalWidth-7) t of
                     [] -> ""
