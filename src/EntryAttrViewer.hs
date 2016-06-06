@@ -36,7 +36,7 @@ entryAttrViewer (File entry url downloaded) = do
                   , M.appAttrMap = const theMap 
                   , M.appLiftVtyEvent = id
                   }
-        appEvent :: () -> V.Event -> T.EventM (T.Next ())
+        appEvent :: () -> V.Event -> T.EventM String (T.Next ())
         appEvent () e = case e of
             V.EvKey V.KEsc [] -> M.halt ()
             V.EvKey (V.KChar 'q') [] -> M.halt ()
@@ -45,7 +45,7 @@ entryAttrViewer (File entry url downloaded) = do
         theMap = A.attrMap V.defAttr [ (P.progressCompleteAttr, V.black `on` V.cyan)
                                      , (P.progressIncompleteAttr, V.black `on` V.white)
                                      ]
-        drawUI :: () -> [Widget]
+        drawUI :: () -> [Widget String]
         drawUI _ = [ui]
             where
             ui = C.vCenter . C.hCenter .

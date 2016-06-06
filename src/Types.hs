@@ -21,8 +21,8 @@ data DNode = Directory Entry (IO [DNode]) | File Entry Text Bool
 --                                                          downloaded?
 
 -- | Note: The list in a DList should never be empty
-data DList = DList (Seq DNode) [L.List Int]
---                 ^ DNode pool             ^ filter function apply to List
+data DList = DList (Seq DNode) [L.List String Int]
+--                 ^ DNode pool
 
 
 newDList :: [DNode] -> DList 
@@ -92,13 +92,13 @@ mapSelectedDNodeM (DList sDn (x:xs)) f = do
 replaceSelectedDNode :: DList -> DNode -> Maybe DList
 replaceSelectedDNode dlst d = join $ mapSelectedDNodeM dlst (const $ Just d) 
 
-adjustCurrentBrickList :: Monad m => DList -> (L.List Int -> m (L.List Int)) -> m DList
+adjustCurrentBrickList :: Monad m => DList -> (L.List String Int -> m (L.List String Int)) -> m DList
 adjustCurrentBrickList (DList sDn (x:xs)) f = do
     x' <- f x
     return $ DList sDn (x':xs)
 
-renderDList :: DList -> (Bool -> DNode -> T.Widget) -> T.Widget
-renderDList (DList sDn (x:_)) render = L.renderList actualList render
+renderDList :: DList -> (Bool -> DNode -> T.Widget String) -> T.Widget String
+renderDList (DList sDn (x:_)) render = L.renderList render True actualList
     where
     actualList = x & listElementsL %~ V.map (S.index sDn)
     
