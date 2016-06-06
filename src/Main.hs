@@ -152,14 +152,20 @@ drawUI mainState = case mainState of
                                 ]
     where
     entryList dlist = renderDList dlist listDrawElement
-    listDrawElement False (Directory a _) = C.hCenter . txt . mid . stripWidth $ decodedName a 
-    listDrawElement False (File a _ _) = C.hCenter . txt . mid . stripWidth $ decodedName a 
+    listDrawElement False (Directory a _)  = C.hCenter $ hBox [ txt . placeTextIntoRectangle 3 (U.terminalWidth-1) . stripWidth $ decodedName a
+                                                              , withAttr "directory" . vLimit 3 $ fill ' '
+                                                              ]
+    listDrawElement False (File a _ False) = C.hCenter $ hBox [ txt . placeTextIntoRectangle 3 (U.terminalWidth-1) . stripWidth $ decodedName a
+                                                              , withAttr "file" . vLimit 3 $ fill ' '
+                                                              ]
+    listDrawElement False (File a _ True)  = C.hCenter $ hBox [ txt . placeTextIntoRectangle 3 (U.terminalWidth-1) . stripWidth $ decodedName a
+                                                              , withAttr "downloaded file" . vLimit 3 $ fill ' '
+                                                              ]
     listDrawElement True d@(Directory _ _) = withAttr "directory" $ listDrawElement False d
     listDrawElement True f@(File _ _ False) = withAttr "file" $ listDrawElement False f
     listDrawElement True f@(File _ _ True) = withAttr "downloaded file" $ listDrawElement False f
-    mid s = T.unlines ["", s, ""]
     stripWidth :: Text -> Text
-    stripWidth t = case U.cutTextByDisplayLength (U.terminalWidth-5) t of
+    stripWidth t = case U.cutTextByDisplayLength (U.terminalWidth-7) t of
                     [] -> ""
                     [singleLine] -> singleLine
                     (x:_) -> x `T.append` "..."
