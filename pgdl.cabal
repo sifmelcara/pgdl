@@ -1,6 +1,6 @@
 
 name:                pgdl
-version:             9.2
+version:             9.3
 license:             PublicDomain
 license-file:        LICENSE
 author:              mingchuan
@@ -11,7 +11,7 @@ extra-source-files:  README.md
 cabal-version:       >=1.10
 description:         pgdl is a program for viewing and accessing directory listing webpage in terminal.
                      .
-                     Browsing files on directory listings like this and this is often annoying and hard to find the files we want.
+                     Browsing files on directory listings like <https://www.kernel.org/pub/> and <https://nixos.org/channels/> is often annoying and hard to find the sutff we want.
                      .
                      pgdl provids a simple interface for browsing and downloading the files in web-engine-generated directory listings.
 
@@ -27,7 +27,7 @@ executable pgdl
   main-is:             Main.hs
   other-modules:       Cache, DownloadInterface
                        Networking, Utils, Configure,
-                       EntryAttrViewer, Types
+                       EntryAttrViewer, Types, DList
   build-depends:       base == 4.*,
                        vector, containers,
                        text, bytestring,
@@ -37,7 +37,7 @@ executable pgdl
                        data-default,
                        tagsoup,
                        directory-listing-webpage-parser >= 0.1.1.0,
-                       brick < 0.7, vty, microlens,
+                       brick == 0.7.*, vty, microlens,
                        conduit, conduit-extra,
                        http-conduit, http-types, resourcet,
                        configurator >= 0.3,

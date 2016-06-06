@@ -53,7 +53,7 @@ data DownloadSettings =
 
 --                                 bytes already downloaded
 data DownloadState = DownloadState Integer | FinishedState
-                   | UserInput DownloadState E.Editor
+                   | UserInput DownloadState (E.Editor String)
                    --          ^ download progress
 
 data DEvent = VtyEvent V.Event
@@ -82,7 +82,7 @@ downloadInterface dSettings = do
                   , M.appAttrMap = const theMap 
                   , M.appLiftVtyEvent = VtyEvent
                   }
-        appEvent :: DownloadState -> DEvent -> T.EventM (T.Next DownloadState)
+        appEvent :: DownloadState -> DEvent -> T.EventM String (T.Next DownloadState)
         appEvent ds@(DownloadState _) de = case de of
             VtyEvent e -> case e of
                 V.EvKey V.KEsc [] -> M.halt ds
@@ -114,7 +114,7 @@ downloadInterface dSettings = do
                         FinishedState -> M.halt FinishedState
                         _ -> error "unexpected state in UserInput state."
                 ev -> do
-                    newEd <- T.handleEvent ev ed
+                    newEd <- E.handleEditorEvent ev ed
                     M.continue $ UserInput st newEd
             UpdateFinishedSize b -> M.continue (UserInput (DownloadState b) ed)
             DownloadFinish -> M.continue (UserInput FinishedState ed)
@@ -122,7 +122,7 @@ downloadInterface dSettings = do
                                      , (P.progressIncompleteAttr, V.black `on` V.white)
                                      , ("input box", V.black `on` V.blue)
                                      ]
-        drawUI :: DownloadState -> [Widget]
+        drawUI :: DownloadState -> [Widget String]
         drawUI (DownloadState bytes) = [vBox [bar, note]]
             where
             bar = C.vCenter . C.hCenter $ P.progressBar Nothing (fromIntegral bytes / fromIntegral progressBarTotSize)
@@ -143,7 +143,7 @@ downloadInterface dSettings = do
                   B.borderWithLabel (str "please input a program name") .
                   forceAttr "input box" . 
                   hLimit 40 $
-                  E.renderEditor ed
+                  E.renderEditor True ed
     M.customMain (V.mkVty Data.Default.def) eventChan theApp initialState
     return ()
 

@@ -6,7 +6,6 @@ module Main
 where
 
 import qualified Data.Text as T
-import qualified Data.Vector as V
 import Data.Text (Text)
 import Data.Maybe
 import Control.Monad.IO.Class
@@ -34,10 +33,11 @@ import qualified Configure as Conf
 import Cache
 import Types
 import Networking
+import DList
 import qualified Utils as U
 
 data MainState = LState DList
-               | SearchState DList E.Editor
+               | SearchState DList (E.Editor String)
 
 main :: IO ()
 main = do
@@ -53,7 +53,7 @@ main = do
                   , M.appAttrMap = const theMap 
                   , M.appLiftVtyEvent = id
                   }
-        appEvent :: MainState -> V.Event -> T.EventM (T.Next MainState)
+        appEvent :: MainState -> V.Event -> T.EventM String (T.Next MainState)
         appEvent ls@(LState dlst) e = case e of
             V.EvKey V.KEsc [] -> M.halt ls
             V.EvKey (V.KChar 'q') [] -> M.halt ls
@@ -113,7 +113,7 @@ main = do
                         --                    ^ this fromJust is ok since we can be sure that
                         -- there has something been selected. However this need to perform refactor in the future
             ev -> M.continue =<< do
-                dlst' <- adjustCurrentBrickList dlst $ (\l -> T.handleEvent ev l)
+                dlst' <- adjustCurrentBrickList dlst $ L.handleListEvent ev
                 return $ LState dlst'
         appEvent ss@(SearchState dlst ed) e = case e of
             V.EvKey V.KEsc [] -> M.halt ss
@@ -121,7 +121,7 @@ main = do
                 [""] -> M.continue (LState $ popDList dlst)
                 _ -> M.continue $ LState dlst
             ev -> do
-                newEd <- T.handleEvent ev ed
+                newEd <- E.handleEditorEvent ev ed
                 let 
                     linesToALine [l] = l
                     linesToALine _ = error "not one line of words in the search bar, why?"
@@ -142,7 +142,7 @@ main = do
     return ()
 
 -- | use cropping to draw UI in the future?
-drawUI :: MainState -> [Widget]
+drawUI :: MainState -> [Widget String]
 drawUI mainState = case mainState of
         (LState dlst) -> [ C.hCenter . hLimit U.terminalWidth $
                            vBox [entryList dlst, statusBar (extractSelectedDNode dlst)]
@@ -170,7 +170,7 @@ drawUI mainState = case mainState of
                     [] -> ""
                     [singleLine] -> singleLine
                     (x:_) -> x `T.append` "..."
-    searchBar ed = forceAttr "searchBar" $ hBox [txt "search: ", E.renderEditor ed]
+    searchBar ed = forceAttr "searchBar" $ hBox [txt "search: ", E.renderEditor True ed]
     statusBar = withAttr "statusBar" . str . expand . info
     info Nothing = "  Nothing selected by user"
     info (Just sel) = "  " ++ show (lastModified e) ++ "    " ++ maybe "Nothing" friendlySize (fileSize e)
