@@ -72,3 +72,17 @@ askPassword = do
     putChar '\n'
     return $ T.pack pass
 
+placeTextIntoRectangle :: Int -> -- ^ height
+                          Int -> -- ^ width
+                          Text -> Text
+placeTextIntoRectangle h w t 
+    | l > w = error "placeTextIntoRectangle: text too long"
+    | otherwise = T.unlines $
+        replicate (h `div` 2) (T.replicate w " ") ++
+        [T.concat [T.replicate leftspace " ", t, T.replicate rightspace " "]] ++
+        replicate (h `div` 2) (T.replicate w " ")
+    where
+    l = fromIntegral $ displayLength t
+    leftspace = (w-l) `div` 2
+    rightspace = w - leftspace - l
+
