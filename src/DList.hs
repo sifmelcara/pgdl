@@ -4,7 +4,6 @@ module DList
 where
 
 import Control.Applicative ((<$>))
-import Text.HTML.DirectoryListing.Type
 import Data.Text (Text)
 import Data.Maybe
 import qualified Brick.Widgets.List as L

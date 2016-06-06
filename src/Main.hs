@@ -6,7 +6,6 @@ module Main
 where
 
 import qualified Data.Text as T
-import qualified Data.Vector as V
 import Data.Text (Text)
 import Data.Maybe
 import Control.Monad.IO.Class

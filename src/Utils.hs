@@ -4,11 +4,9 @@
 module Utils 
 where
 
-import qualified Data.ByteString as B
 import qualified Data.Text as T
 import Data.Text (Text)
 import Text.Printf
-import Data.Text.Encoding
 import System.IO
 import qualified Graphics.Text.Width as TW
 
