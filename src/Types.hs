@@ -37,8 +37,8 @@ filterDList :: DList -> (DNode -> Bool) -> DList
 filterDList (DList _ [_])  _ = error "try to filter a list without a reference (forgot to dupDList?)"
 filterDList (DList sDn (x:ref:xs)) f = DList sDn (x':ref:xs)
     where
-    newElements = (V.filter (f . S.index sDn) $ ref ^. listElementsL)
-    x' = (listSelectedL .~ newSelLoc) $ (x & listElementsL .~ newElements)
+    newElements = V.filter (f . S.index sDn) $ ref ^. listElementsL
+    x' = (listSelectedL .~ newSelLoc) $ x & listElementsL .~ newElements
     oldSelectionVal = snd <$> listSelectedElement x
     -- determine new selected location carefully, brick/vector will often crash
     -- if the new location is out of bound.
@@ -59,7 +59,7 @@ popDList (DList sDn (x:y:xs)) = DList sDn (x':xs)
         V.elemIndex oldVal (y ^. listElementsL)
     x' = case newSelectionLoc of
         Nothing -> y
-        Just i -> y & listSelectedL .~ (Just i)
+        Just i -> y & listSelectedL .~ Just i
 
 -- | used when we move to the search (filter) state
 dupDList :: DList -> DList

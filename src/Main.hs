@@ -113,7 +113,7 @@ main = do
                         --                    ^ this fromJust is ok since we can be sure that
                         -- there has something been selected. However this need to perform refactor in the future
             ev -> M.continue =<< do
-                dlst' <- adjustCurrentBrickList dlst $ (\l -> L.handleListEvent ev l)
+                dlst' <- adjustCurrentBrickList dlst $ L.handleListEvent ev
                 return $ LState dlst'
         appEvent ss@(SearchState dlst ed) e = case e of
             V.EvKey V.KEsc [] -> M.halt ss
