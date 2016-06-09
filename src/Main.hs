@@ -152,13 +152,13 @@ drawUI mainState = case mainState of
                                 ]
     where
     entryList dlist = renderDList dlist listDrawElement
-    listDrawElement sel (Directory a _)  = C.hCenter $ hBox [ color2 sel "directory" . vLimit 3 $ fill ' '
+    listDrawElement sel (Directory a _)  = C.hCenter $ hBox [ color2 sel "directory" . vLimit 3 . hLimit 1 $ fill ' '
                                                             , color1 sel "directory" . txt . placeTextIntoRectangle 3 (U.terminalWidth-1) . stripWidth $ decodedName a
                                                             ]
-    listDrawElement sel (File a _ False) = C.hCenter $ hBox [ color2 sel "file" . vLimit 3 $ fill ' '
+    listDrawElement sel (File a _ False) = C.hCenter $ hBox [ color2 sel "file" . vLimit 3 . hLimit 1 $ fill ' '
                                                             , color1 sel "file" . txt . placeTextIntoRectangle 3 (U.terminalWidth-1) . stripWidth $ decodedName a
                                                             ]
-    listDrawElement sel (File a _ True)  = C.hCenter $ hBox [ color2 sel "downloaded file" . vLimit 3 $ fill ' '
+    listDrawElement sel (File a _ True)  = C.hCenter $ hBox [ color2 sel "downloaded file" . vLimit 3 . hLimit 1 $ fill ' '
                                                             , color1 sel "downloaded file" . txt . placeTextIntoRectangle 3 (U.terminalWidth-1) . stripWidth $ decodedName a
                                                             ]
     color1 True attr = withAttr attr
