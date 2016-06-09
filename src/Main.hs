@@ -154,8 +154,8 @@ drawUI mainState = case mainState of
     entryList dlist = renderDList dlist $ \b d -> hBox $ listDrawElement b d
     listDrawElement :: Bool -> DNode -> [Widget String]
     listDrawElement sel dn = [ color (not sel) attrName . vLimit 3 . hLimit 1 $ fill ' '
-                                           , color sel attrName $ text
-                                           ]
+                             , color sel attrName text
+                             ]
         where
         attrName = case dn of
             Directory _ _ -> "directory"
@@ -175,9 +175,9 @@ drawUI mainState = case mainState of
     searchBar ed = forceAttr "searchBar" $ hBox [txt " search: ", E.renderEditor True ed]
     statusBar = withAttr "statusBar" . str . expand . info
     info Nothing = "  Nothing selected by user"
-    info (Just sel) = "  " ++ show (lastModified e) ++ "    " ++ maybe "Directory" friendlySize (fileSize e)
+    info (Just sel) = "  " ++ show (lastModified e) ++ "    " ++ maybe "Directory" friendlySize (fileSize etr)
         where
-        e = entry sel
+        etr = entry sel
         entry (Directory e _) = e
         entry (File e _ _) = e
     expand s = s ++ replicate 88 ' '
