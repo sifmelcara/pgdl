@@ -134,7 +134,7 @@ main = do
         theMap = A.attrMap V.defAttr [ (L.listAttr, V.white `on` V.black)
                                      , ("directory", V.black `on` V.magenta)
                                      , ("file", V.black `on` V.cyan)
-                                     , ("downloaded file", V.black `on` V.red)
+                                     , ("downloaded file", V.black `on` V.yellow)
                                      , ("statusBar", V.black `on` V.green)
                                      , ("searchBar", V.black `on` V.blue)
                                      ]
