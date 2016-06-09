@@ -144,32 +144,34 @@ main = do
 -- | use cropping to draw UI in the future?
 drawUI :: MainState -> [Widget String]
 drawUI mainState = case mainState of
-        (LState dlst) -> [ C.hCenter . hLimit U.terminalWidth $
+        (LState dlst) -> [ C.hCenter . hLimit U.terminalWidth $ 
                            vBox [entryList dlst, statusBar (extractSelectedDNode dlst)]
                          ]
         (SearchState dlst e) -> [ C.hCenter . hLimit U.terminalWidth $
                                   vBox [entryList dlst, searchBar e]
                                 ]
     where
-    entryList dlist = renderDList dlist listDrawElement
-    listDrawElement sel (Directory a _)  = C.hCenter $ hBox [ color2 sel "directory" . vLimit 3 . hLimit 1 $ fill ' '
-                                                            , color1 sel "directory" . txt . placeTextIntoRectangle 3 (U.terminalWidth-1) . stripWidth $ decodedName a
-                                                            ]
-    listDrawElement sel (File a _ False) = C.hCenter $ hBox [ color2 sel "file" . vLimit 3 . hLimit 1 $ fill ' '
-                                                            , color1 sel "file" . txt . placeTextIntoRectangle 3 (U.terminalWidth-1) . stripWidth $ decodedName a
-                                                            ]
-    listDrawElement sel (File a _ True)  = C.hCenter $ hBox [ color2 sel "downloaded file" . vLimit 3 . hLimit 1 $ fill ' '
-                                                            , color1 sel "downloaded file" . txt . placeTextIntoRectangle 3 (U.terminalWidth-1) . stripWidth $ decodedName a
-                                                            ]
-    color1 True attr = withAttr attr
-    color1 False _ = id
-    color2 False attr = withAttr attr
-    color2 True _ = id
-    stripWidth :: Text -> Text
-    stripWidth t = case U.cutTextByDisplayLength (U.terminalWidth-7) t of
-                    [] -> ""
-                    [singleLine] -> singleLine
-                    (x:_) -> x `T.append` "..."
+    entryList dlist = renderDList dlist $ \b d -> hBox $ listDrawElement b d
+    listDrawElement :: Bool -> DNode -> [Widget String]
+    listDrawElement sel dn = [ color (not sel) attrName . vLimit 3 . hLimit 1 $ fill ' '
+                                           , color sel attrName $ text
+                                           ]
+        where
+        attrName = case dn of
+            Directory _ _ -> "directory"
+            File _ _ False -> "file"
+            File _ _ True -> "downloaded file"
+        name = case dn of
+            Directory a _ -> a
+            File a _ _ -> a
+        text = txt . placeTextIntoRectangle 3 (U.terminalWidth-1) . stripWidth $ decodedName name
+        color True attr = withAttr attr
+        color False _ = id
+        stripWidth :: Text -> Text
+        stripWidth t = case U.cutTextByDisplayLength (U.terminalWidth-7) t of
+                        [] -> ""
+                        [singleLine] -> singleLine
+                        (x:_) -> x `T.append` "..."
     searchBar ed = forceAttr "searchBar" $ hBox [txt " search: ", E.renderEditor True ed]
     statusBar = withAttr "statusBar" . str . expand . info
     info Nothing = "  Nothing selected by user"
