@@ -175,7 +175,7 @@ drawUI mainState = case mainState of
     searchBar ed = forceAttr "searchBar" $ hBox [txt " search: ", E.renderEditor True ed]
     statusBar = withAttr "statusBar" . str . expand . info
     info Nothing = "  Nothing selected by user"
-    info (Just sel) = "  " ++ show (lastModified e) ++ "    " ++ maybe "Directory" friendlySize (fileSize etr)
+    info (Just sel) = "  " ++ show (lastModified etr) ++ "    " ++ maybe "Directory" friendlySize (fileSize etr)
         where
         etr = entry sel
         entry (Directory e _) = e
