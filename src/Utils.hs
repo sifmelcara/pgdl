@@ -30,7 +30,7 @@ friendlySize b
     s2s = printf "%6s" . (printf "%.1f" :: Double -> String)
 
 terminalWidth :: Num a => a
-terminalWidth = 80
+terminalWidth = 83
 
 -- | charDisplayLen returns the display length of a character
 charDisplayLen :: Char -> Integer
