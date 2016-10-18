@@ -33,7 +33,7 @@ genNetworkResource :: Text -> -- ^ webpage url (root)
                       IO NetworkResource
 genNetworkResource url up = do
     let genReq :: Text -> Request
-        genReq rp = case parseUrl absPath of
+        genReq rp = case parseRequest absPath of
                         Nothing -> error $ "invalid url: " ++ absPath
                         Just r -> auth r
             where
