@@ -17,6 +17,7 @@ description:         pgdl is a program for viewing and accessing directory listi
 
 
 synopsis:            browse directory listing webpages and download files from them.
+tested-with:         GHC == 7.10.3, GHC == 8.0.1
 
 source-repository head
   type:     git
