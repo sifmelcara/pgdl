@@ -37,7 +37,7 @@ import DList
 import qualified Utils as U
 
 data MainState = LState DList
-               | SearchState DList (E.Editor String)
+               | SearchState DList (E.Editor String String)
 
 main :: IO ()
 main = do

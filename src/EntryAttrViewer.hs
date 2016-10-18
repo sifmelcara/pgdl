@@ -4,6 +4,7 @@ module EntryAttrViewer (entryAttrViewer)
 where
 
 import Data.Text (Text)
+import Brick.Types (Widget)
 import qualified Data.Text as T
 import qualified Brick.Main as M
 import qualified Brick.Widgets.Center as C
@@ -16,7 +17,8 @@ import qualified Utils as U
 entryAttrViewer :: DNode -> IO ()
 entryAttrViewer (Directory entry _) = entryAttrViewer (File entry "directory no link." False)
 entryAttrViewer (File entry url downloaded) =
-    M.simpleMain . C.vCenter . C.hCenter . C.hLimit U.terminalWidth . C.txt $ info
+    M.simpleMain . C.vCenter . C.hCenter . C.hLimit U.terminalWidth $
+    (C.txt info :: Widget String)
     where
     info = T.unlines $
            zipWith (\describ s -> T.intercalate "\n" . 

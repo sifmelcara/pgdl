@@ -53,7 +53,7 @@ data DownloadSettings =
 
 --                                 bytes already downloaded
 data DownloadState = DownloadState Integer | FinishedState
-                   | UserInput DownloadState (E.Editor String)
+                   | UserInput DownloadState (E.Editor String String)
                    --          ^ download progress
 
 data DEvent = VtyEvent V.Event
