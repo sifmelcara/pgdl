@@ -5,8 +5,7 @@
 pgdl is a program for viewing and accessing directory listing webpage in terminal.
 
 Browsing files on directory listings like
-[this](https://www.kernel.org/pub/linux/) and
-[this](https://nixos.org/channels/)
+[this](https://www.kernel.org/pub/linux/)
 is often annoying and hard to find the files we want.
 
 pgdl provids a simple interface for browsing and downloading the files in web-engine-generated directory listings.

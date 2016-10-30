@@ -11,7 +11,7 @@ extra-source-files:  README.md
 cabal-version:       >=1.10
 description:         pgdl is a program for viewing and accessing directory listing webpage in terminal.
                      .
-                     Browsing files on directory listings like <https://www.kernel.org/pub/> and <https://nixos.org/channels/> is often annoying and hard to find the sutff we want.
+                     Browsing files on directory listings like <https://www.kernel.org/pub/> is often annoying and hard to find the sutff we want.
                      .
                      pgdl provids a simple interface for browsing and downloading the files in web-engine-generated directory listings.
 
