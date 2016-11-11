@@ -51,10 +51,9 @@ main = do
                   , M.appHandleEvent = appEvent
                   , M.appStartEvent = return
                   , M.appAttrMap = const theMap 
-                  , M.appLiftVtyEvent = id
                   }
-        appEvent :: MainState -> V.Event -> T.EventM String (T.Next MainState)
-        appEvent ls@(LState dlst) e = case e of
+        appEvent :: MainState -> T.BrickEvent String e -> T.EventM String (T.Next MainState)
+        appEvent ls@(LState dlst) (T.VtyEvent e) = case e of
             V.EvKey V.KEsc [] -> M.halt ls
             V.EvKey (V.KChar 'q') [] -> M.halt ls
             V.EvKey V.KEnter mdf -> case extractSelectedDNode dlst of
@@ -115,7 +114,7 @@ main = do
             ev -> M.continue =<< do
                 dlst' <- adjustCurrentBrickList dlst $ L.handleListEvent ev
                 return $ LState dlst'
-        appEvent ss@(SearchState dlst ed) e = case e of
+        appEvent ss@(SearchState dlst ed) (T.VtyEvent e) = case e of
             V.EvKey V.KEsc [] -> M.halt ss
             V.EvKey V.KEnter [] -> case E.getEditContents ed of
                 [""] -> M.continue (LState $ popDList dlst)

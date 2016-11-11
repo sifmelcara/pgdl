@@ -38,7 +38,7 @@ executable pgdl
                        data-default,
                        tagsoup,
                        directory-listing-webpage-parser >= 0.1.1.0,
-                       brick >= 0.10 && < 0.12, vty, microlens,
+                       brick >= 0.13 && < 0.14, vty, microlens,
                        conduit, conduit-extra,
                        http-conduit, http-types, resourcet,
                        configurator >= 0.3,

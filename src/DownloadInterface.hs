@@ -56,9 +56,8 @@ data DownloadState = DownloadState Integer | FinishedState
                    | UserInput DownloadState (E.Editor String String)
                    --          ^ download progress
 
-data DEvent = VtyEvent V.Event
-            | UpdateFinishedSize Integer
-            | DownloadFinish
+data DownloadEvent = UpdateFinishedSize Integer
+                   | DownloadFinish
 
 downloadInterface :: DownloadSettings -> IO () 
 downloadInterface dSettings = do
@@ -80,11 +79,10 @@ downloadInterface dSettings = do
                   , M.appHandleEvent = appEvent
                   , M.appStartEvent = return
                   , M.appAttrMap = const theMap 
-                  , M.appLiftVtyEvent = VtyEvent
                   }
-        appEvent :: DownloadState -> DEvent -> T.EventM String (T.Next DownloadState)
-        appEvent ds@(DownloadState _) de = case de of
-            VtyEvent e -> case e of
+        appEvent :: DownloadState -> T.BrickEvent String DownloadEvent -> T.EventM String (T.Next DownloadState)
+        appEvent ds@(DownloadState _) be = case be of
+            T.VtyEvent e -> case e of
                 V.EvKey V.KEsc [] -> M.halt ds
                 V.EvKey (V.KChar 'q') _ -> M.halt ds
                 V.EvKey (V.KChar 'o') [] -> M.continue $ UserInput ds (E.editor "command" (str.unlines) (Just 1) "")
@@ -92,10 +90,11 @@ downloadInterface dSettings = do
                     liftIO $ localStoragePath dSettings `openBy` ""
                     M.continue ds
                 _ -> M.continue ds
-            UpdateFinishedSize b -> M.continue . DownloadState $ b
-            DownloadFinish -> M.continue FinishedState
-        appEvent FinishedState de = case de of
-            VtyEvent e -> case e of
+            T.AppEvent ae -> case ae of
+                UpdateFinishedSize b -> M.continue . DownloadState $ b
+                DownloadFinish -> M.continue FinishedState
+        appEvent FinishedState be = case be of
+            T.VtyEvent e -> case e of
                 V.EvKey (V.KChar 'q') _ -> M.halt FinishedState
                 V.EvKey (V.KChar 'o') [] -> M.continue $ UserInput FinishedState (E.editor "command" (str.unlines) (Just 1) "")
                 V.EvKey V.KEnter [] -> do
@@ -104,8 +103,8 @@ downloadInterface dSettings = do
                     -- ^ file opened, we can quit download interface now
                 _ -> M.continue FinishedState
             _ -> error "received non vty event after FinishedState was reached."
-        appEvent (UserInput st ed) de = case de of
-            VtyEvent e -> case e of
+        appEvent (UserInput st ed) be = case be of
+            T.VtyEvent e -> case e of
                 V.EvKey V.KEsc [] -> M.continue st
                 V.EvKey V.KEnter [] -> do
                     liftIO $ localStoragePath dSettings `openBy` concat (E.getEditContents ed)
@@ -116,8 +115,9 @@ downloadInterface dSettings = do
                 ev -> do
                     newEd <- E.handleEditorEvent ev ed
                     M.continue $ UserInput st newEd
-            UpdateFinishedSize b -> M.continue (UserInput (DownloadState b) ed)
-            DownloadFinish -> M.continue (UserInput FinishedState ed)
+            T.AppEvent de -> case de of
+                UpdateFinishedSize b -> M.continue (UserInput (DownloadState b) ed)
+                DownloadFinish -> M.continue (UserInput FinishedState ed)
         theMap = A.attrMap V.defAttr [ (P.progressCompleteAttr, V.black `on` V.cyan)
                                      , (P.progressIncompleteAttr, V.black `on` V.white)
                                      , ("input box", V.black `on` V.blue)
@@ -144,7 +144,7 @@ downloadInterface dSettings = do
                   forceAttr "input box" . 
                   hLimit 40 $
                   E.renderEditor True ed
-    M.customMain (V.mkVty Data.Default.def) eventChan theApp initialState
+    M.customMain (V.mkVty Data.Default.def) (Just eventChan) theApp initialState
     return ()
 
 openBy :: Text -> String -> IO ()
@@ -181,7 +181,7 @@ getLocalFileSize path =
         True -> Just . fromIntegral . fileSize <$> getFileStatus path
     
 download :: DownloadSettings -> 
-            (DEvent -> IO ()) ->
+            (DownloadEvent -> IO ()) ->
             IO ()
 download dSettings tell = do
     -- this implementation needs to be change
