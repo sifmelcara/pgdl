@@ -22,6 +22,10 @@ via nix:
 ```shell
 nix-env -iA nixos.haskellPackages.pgdl
 ```
+Or,
+```shell
+nix-env -i -f pgdl.nix
+```
 
 ## example usage
 
