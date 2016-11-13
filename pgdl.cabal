@@ -28,7 +28,8 @@ executable pgdl
   main-is:             Main.hs
   other-modules:       Cache, DownloadInterface
                        Networking, Utils, Configure,
-                       EntryAttrViewer, Types, DList
+                       EntryAttrViewer, Types, DList,
+                       Paths_pgdl
   build-depends:       base == 4.*,
                        vector, containers,
                        text, bytestring,

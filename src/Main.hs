@@ -6,6 +6,9 @@
 module Main
 where
 
+import Paths_pgdl (version)
+import Data.Version (showVersion)
+
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Maybe
@@ -41,7 +44,14 @@ data MainState = LState DList
                | SearchState DList (E.Editor String String)
 
 main :: IO ()
-main = do
+main =
+    getArgs >>= \case
+        ["-v"] -> putStrLn $ "pgdl " ++ showVersion version
+        ["--version"] -> putStrLn $ "pgdl " ++ showVersion version
+        _ -> mainUI
+
+mainUI :: IO ()
+mainUI = do
     (dNodes, nr) <- initializeResource
     let
         initialState :: MainState
