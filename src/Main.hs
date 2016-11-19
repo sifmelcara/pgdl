@@ -141,6 +141,7 @@ mainUI = do
                     cond (Directory entry _) = keyword `isKeyWordOf` decodedName entry
                     isKeyWordOf a b = T.toCaseFold a `T.isInfixOf` T.toCaseFold b
                 M.continue $ SearchState (filterDList dlst cond) newEd
+        appEvent _ _ = error "unknown event received in event loop."
         theMap = A.attrMap V.defAttr [ (L.listAttr, V.white `on` V.black)
                                      , ("directory", V.black `on` V.magenta)
                                      , ("file", V.black `on` V.cyan)

@@ -118,6 +118,7 @@ downloadInterface dSettings = do
             T.AppEvent de -> case de of
                 UpdateFinishedSize b -> M.continue (UserInput (DownloadState b) ed)
                 DownloadFinish -> M.continue (UserInput FinishedState ed)
+        appEvent _ _ = error "unknown event received in event loop. (DL interface)"
         theMap = A.attrMap V.defAttr [ (P.progressCompleteAttr, V.black `on` V.cyan)
                                      , (P.progressIncompleteAttr, V.black `on` V.white)
                                      , ("input box", V.black `on` V.blue)
