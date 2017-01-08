@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE LambdaCase#-}
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
+{-# LANGUAGE CPP #-}
 
 module DownloadInterface (downloadInterface, DownloadSettings(..))
 where
@@ -17,13 +18,16 @@ import Control.Monad.Trans.Resource
 import Control.Monad.IO.Class
 import Control.Concurrent
 import Control.Applicative
-import qualified Control.Concurrent.Chan as C
 import Network.HTTP.Conduit
 import Network.HTTP.Types.Header
 import System.Posix.Files
 import System.Process
 import qualified System.IO as IO
 import Distribution.System
+import qualified Control.Concurrent.Chan as C
+#if MIN_VERSION_brick(0, 16, 0)
+import qualified Brick.BChan as BC
+#endif
 
 import qualified Graphics.Vty as V
 import qualified Brick.Main as M
@@ -61,9 +65,15 @@ data DownloadEvent = UpdateFinishedSize Integer
 
 downloadInterface :: DownloadSettings -> IO () 
 downloadInterface dSettings = do
+#if MIN_VERSION_brick(0, 16, 0)
+    eventChan <- BC.newBChan 100000000 -- select a big enough number
+    unless (justOpen dSettings) . void . forkIO $
+        download dSettings (BC.writeBChan eventChan)
+#else
     eventChan <- C.newChan 
     unless (justOpen dSettings) . void . forkIO $
         download dSettings (C.writeChan eventChan)
+#endif
     progressBarTotSize <- if justOpen dSettings
                           then getLocalFileSize (T.unpack $ localStoragePath dSettings) >>= \case
                                 Nothing -> error "file do not exist."
