@@ -11,8 +11,8 @@ import qualified Data.Text as T
 import qualified Data.ByteString.Char8 as BC
 import Data.Conduit
 import Data.Conduit.Binary
-import Data.Default
 import Data.List
+import Data.Monoid
 import Control.Monad
 import Control.Monad.Trans.Resource 
 import Control.Monad.IO.Class
@@ -155,7 +155,7 @@ downloadInterface dSettings = do
                   forceAttr "input box" . 
                   hLimit 40 $
                   E.renderEditor True ed
-    M.customMain (V.mkVty Data.Default.def) (Just eventChan) theApp initialState
+    M.customMain (V.mkVty mempty) (Just eventChan) theApp initialState
     return ()
 
 openBy :: Text -> String -> IO ()
