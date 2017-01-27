@@ -12,13 +12,13 @@ let
       }:
       mkDerivation {
         pname = "pgdl";
-        version = "10.6";
+        version = "10.7";
         src = ./.;
         isLibrary = false;
         isExecutable = true;
         executableHaskellDepends = [
           base binary brick bytestring Cabal conduit conduit-extra
-          configurator containers data-default directory
+          configurator containers directory
           directory-listing-webpage-parser filepath http-conduit http-types
           microlens process resourcet tagsoup text time transformers unix
           vector vty
