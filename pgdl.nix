@@ -12,7 +12,7 @@ let
       }:
       mkDerivation {
         pname = "pgdl";
-        version = "10.7";
+        version = "10.8";
         src = ./.;
         isLibrary = false;
         isExecutable = true;
