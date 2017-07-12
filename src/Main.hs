@@ -106,7 +106,11 @@ mainUI = do
             V.EvKey V.KRight [] -> case extractSelectedDNode dlst of
                 Nothing -> M.continue ls
                 Just d -> M.suspendAndResume $ entryAttrViewer d >> return ls
-            V.EvKey (V.KChar '/') [] -> M.continue $ SearchState (dupDList dlst) (E.editor "searchBar" (str.unlines) (Just 1) "")
+#if MIN_VERSION_brick(0, 19, 0)
+            V.EvKey (V.KChar '/') [] -> M.continue $ SearchState (dupDList dlst) (E.editor "searchBar" (Just 1) "")
+#else
+            V.EvKey (V.KChar '/') [] -> M.continue $ SearchState (dupDList dlst) (E.editor "searchBar" (str . unlines) (Just 1) "")
+#endif
             V.EvKey (V.KChar 'd') [] -> case extractSelectedDNode dlst of
                 Nothing -> M.continue ls
                 Just dnode -> case dnode of
@@ -184,7 +188,11 @@ drawUI mainState = case mainState of
                         [] -> ""
                         [singleLine] -> singleLine
                         (x:_) -> x `T.append` "..."
+#if MIN_VERSION_brick(0, 19, 0)
+    searchBar ed = forceAttr "searchBar" $ hBox [txt " search: ", E.renderEditor (str . unlines) True ed]
+#else
     searchBar ed = forceAttr "searchBar" $ hBox [txt " search: ", E.renderEditor True ed]
+#endif
     statusBar = withAttr "statusBar" . str . expand . info
     info Nothing = "  Nothing selected by user"
     info (Just sel) = "  " ++ show (lastModified etr) ++ "    " ++ maybe "Directory" friendlySize (fileSize etr)
