@@ -17,7 +17,7 @@ by cabal:
 cabal update
 cabal install pgdl
 ```
-In case of the version of dependencies cannot be resolved, you may need to `rm -rf ~/.ghc`.
+In case of the versions of dependencies cannot be resolved, you may need to `rm -rf ~/.ghc`.
 
 via nix:
 ```shell
@@ -31,7 +31,7 @@ nix-env -i -f pgdl.nix
 ```shell
 pgdl https://www.kernel.org/pub/linux/
 ```
-or simply type pgdl if you have set servpath attribute in the config file.
+or simply type `pgdl` if you have set servpath attribute in the config file (config file will be explained later).
 
 ## Shortcut keys
 
@@ -48,9 +48,8 @@ press Meta+Enter to resume the download progress of the currently selected file 
 
 ## Config file
 
-If you want to access webpage that uses basic authentication, you should at least set
-*username* attribute in config file.
-(if password is not set, you need to enter password manually when program launch)
+If you want to access webpage that uses basic authentication, you should at least set *username* attribute in config file.
+(if password is not set, you will need to enter password manually when you launch the program)
 
 (~/.pgdl)
 ```bash
@@ -60,3 +59,4 @@ password = "mypassw"   # optional
 servpath = "example.org/videodir/" # default server location, optional
 localdir = "/home/jack/Downloads/" # where to store downloaded files, optional
 ```
+
