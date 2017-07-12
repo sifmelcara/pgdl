@@ -166,9 +166,7 @@ drawUI mainState = case mainState of
     listDrawElement :: Bool -> DNode -> [Widget String]
     listDrawElement sel dn = [ color (not sel) attrName . vLimit 3 . hLimit 1 $ fill ' '
                              , color sel attrName text
-#if MIN_VERSION_brick(0, 14, 0)
                              , color (not sel) attrName . vLimit 3 . hLimit 1 $ fill ' '
-#endif
                              ]
         where
         attrName = case dn of
@@ -178,11 +176,7 @@ drawUI mainState = case mainState of
         name = case dn of
             Directory a _ -> a
             File a _ _ -> a
-#if MIN_VERSION_brick(0, 14, 0)
         text = txt . placeTextIntoRectangle 3 (U.terminalWidth-2) . stripWidth $ decodedName name
-#else
-        text = txt . placeTextIntoRectangle 3 (U.terminalWidth-1) . stripWidth $ decodedName name
-#endif
         color True attr = withAttr attr
         color False _ = id
         stripWidth :: Text -> Text
