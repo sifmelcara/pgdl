@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE LambdaCase #-}
 
-module Utils 
+module Utils
 where
 
 import qualified Data.Text as T
@@ -10,7 +10,7 @@ import Text.Printf
 import System.IO
 import qualified Graphics.Text.Width as TW
 
--- | give a file size in bytes, return pretty file size 
+-- | give a file size in bytes, return pretty file size
 -- represent in KB, MB, GB or TB
 friendlySize :: Integer -> String
 friendlySize b
@@ -56,7 +56,7 @@ cutTextByDisplayLength len = map T.pack . gp . T.unpack
         go _ acc []
             | null acc = []
             | otherwise = [reverse acc]
-        go lsum acc str@(x:xs) 
+        go lsum acc str@(x:xs)
             | lsum + snd x <= len = go (lsum + snd x) (fst x : acc) xs
             | otherwise = reverse acc : go 0 "" str
 
@@ -73,7 +73,7 @@ askPassword = do
 placeTextIntoRectangle :: Int -> -- ^ height
                           Int -> -- ^ width
                           Text -> Text
-placeTextIntoRectangle h w t 
+placeTextIntoRectangle h w t
     | l > w = error "placeTextIntoRectangle: text too long"
     | otherwise = T.unlines $
         replicate (h `div` 2) (T.replicate w " ") ++

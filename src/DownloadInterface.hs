@@ -14,7 +14,7 @@ import Data.Conduit.Binary
 import Data.List
 import Data.Monoid
 import Control.Monad
-import Control.Monad.Trans.Resource 
+import Control.Monad.Trans.Resource
 import Control.Monad.IO.Class
 import Control.Concurrent
 import Control.Applicative
@@ -63,14 +63,14 @@ data DownloadState = DownloadState Integer | FinishedState
 data DownloadEvent = UpdateFinishedSize Integer
                    | DownloadFinish
 
-downloadInterface :: DownloadSettings -> IO () 
+downloadInterface :: DownloadSettings -> IO ()
 downloadInterface dSettings = do
 #if MIN_VERSION_brick(0, 16, 0)
     eventChan <- BC.newBChan 100000000 -- select a big enough number
     unless (justOpen dSettings) . void . forkIO $
         download dSettings (BC.writeBChan eventChan)
 #else
-    eventChan <- C.newChan 
+    eventChan <- C.newChan
     unless (justOpen dSettings) . void . forkIO $
         download dSettings (C.writeChan eventChan)
 #endif
@@ -88,7 +88,7 @@ downloadInterface dSettings = do
                   , M.appChooseCursor = M.neverShowCursor
                   , M.appHandleEvent = appEvent
                   , M.appStartEvent = return
-                  , M.appAttrMap = const theMap 
+                  , M.appAttrMap = const theMap
                   }
         appEvent :: DownloadState -> T.BrickEvent String DownloadEvent -> T.EventM String (T.Next DownloadState)
         appEvent ds@(DownloadState _) be = case be of
@@ -149,10 +149,10 @@ downloadInterface dSettings = do
         drawUI (UserInput (UserInput _ _) _) = error "unexpected state in UserInput state."
         drawUI (UserInput s ed) = (padTop (T.Pad 1) . vLimit 5 $ ask) : drawUI s
             where
-            ask = C.vCenter . C.hCenter . 
-                  hLimit 50 . vLimit 5 . 
+            ask = C.vCenter . C.hCenter .
+                  hLimit 50 . vLimit 5 .
                   B.borderWithLabel (str "please input a program name") .
-                  forceAttr "input box" . 
+                  forceAttr "input box" .
                   hLimit 40 $
                   E.renderEditor True ed
     M.customMain (V.mkVty mempty) (Just eventChan) theApp initialState
@@ -172,7 +172,7 @@ openBy file cmd = void $
     filepath = T.unpack file
     addq :: String -> String
     addq s = "\"" ++ s ++ "\""
-    
+
 getContentLength :: DownloadSettings -> IO Integer
 getContentLength dSettings = do
     let (req, manager) = networkResource dSettings $ relativeUrl dSettings
@@ -190,8 +190,8 @@ getLocalFileSize path =
     fileExist path >>= \case
         False -> return Nothing
         True -> Just . fromIntegral . fileSize <$> getFileStatus path
-    
-download :: DownloadSettings -> 
+
+download :: DownloadSettings ->
             (DownloadEvent -> IO ()) ->
             IO ()
 download dSettings tell = do

@@ -21,14 +21,14 @@ entryAttrViewer (File entry url downloaded) =
     (C.txt info :: Widget String)
     where
     info = T.unlines $
-           zipWith (\describ s -> T.intercalate "\n" . 
+           zipWith (\describ s -> T.intercalate "\n" .
                                   U.cutTextByDisplayLength U.terminalWidth $
                                   describ `T.append` ": " `T.append` s
                    )
-           [ "visible name" 
-           , "decoded name" 
-           , "url" 
-           , "file size" 
+           [ "visible name"
+           , "decoded name"
+           , "url"
+           , "file size"
            , "downloaded"
            ]
            [ visibleName entry

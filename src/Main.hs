@@ -61,7 +61,7 @@ mainUI = do
                   , M.appChooseCursor = M.neverShowCursor
                   , M.appHandleEvent = appEvent
                   , M.appStartEvent = return
-                  , M.appAttrMap = const theMap 
+                  , M.appAttrMap = const theMap
                   }
         appEvent :: MainState -> T.BrickEvent String e -> T.EventM String (T.Next MainState)
         appEvent ls@(LState dlst) (T.VtyEvent e) = case e of
@@ -76,7 +76,7 @@ mainUI = do
                     File entry url False -> do
                         let fn = decodedName entry
                         path <- liftIO $ Conf.getLocaldir >>= \case
-                            Nothing -> return fn 
+                            Nothing -> return fn
                             Just pre -> return $ T.pack (T.unpack pre </> T.unpack fn)
                         let dui = downloadInterface DownloadSettings { networkResource = nr
                                                                      , relativeUrl = url
@@ -87,19 +87,19 @@ mainUI = do
                         M.suspendAndResume $ do
                             dui
                             ex <- doesFileExist (T.unpack path)
-                            return $ LState (fromJust $ replaceSelectedDNode dlst (File entry url ex)) 
+                            return $ LState (fromJust $ replaceSelectedDNode dlst (File entry url ex))
                         --                   ^ this fromJust is ok since we can be sure that
                         -- there has something been selected. However this need to perform refactor in the future
                     File entry url True -> do -- already downloaded file
                         let fn = decodedName entry
                         path <- liftIO $ Conf.getLocaldir >>= \case
-                            Nothing -> return fn 
+                            Nothing -> return fn
                             Just pre -> return $ T.pack (T.unpack pre </> T.unpack fn)
                         let dui = downloadInterface DownloadSettings { networkResource = nr
                                                                      , relativeUrl = url
                                                                      , localStoragePath = path
                                                                      , justOpen = mdf /= [V.MMeta]
-                                                                     , continueDownload = mdf == [V.MMeta] 
+                                                                     , continueDownload = mdf == [V.MMeta]
                                                                      }
                         M.suspendAndResume $ dui >> return ls
             V.EvKey V.KLeft [] -> M.continue . LState $ popDList dlst
@@ -115,7 +115,7 @@ mainUI = do
                     File entry url True -> do -- already downloaded file
                         let fn = decodedName entry
                         path <- liftIO $ Conf.getLocaldir >>= \case
-                                            Nothing -> return $ T.unpack fn 
+                                            Nothing -> return $ T.unpack fn
                                             Just pre -> return $ T.unpack pre </> T.unpack fn
                         liftIO $ removeFile path
                         ex <- liftIO $ doesFileExist path
@@ -132,7 +132,7 @@ mainUI = do
                 _ -> M.continue $ LState dlst
             ev -> do
                 newEd <- E.handleEditorEvent ev ed
-                let 
+                let
                     linesToALine [l] = l
                     linesToALine _ = error "not one line of words in the search bar, why?"
                     keyword = T.pack . linesToALine $ E.getEditContents newEd
@@ -155,7 +155,7 @@ mainUI = do
 -- | use cropping to draw UI in the future?
 drawUI :: MainState -> [Widget String]
 drawUI mainState = case mainState of
-        (LState dlst) -> [ C.hCenter . hLimit U.terminalWidth $ 
+        (LState dlst) -> [ C.hCenter . hLimit U.terminalWidth $
                            vBox [entryList dlst, statusBar (extractSelectedDNode dlst)]
                          ]
         (SearchState dlst e) -> [ C.hCenter . hLimit U.terminalWidth $
@@ -201,7 +201,7 @@ drawUI mainState = case mainState of
     expand s = s ++ replicate 88 ' '
 
 initializeResource :: IO ([DNode], NetworkResource)
-initializeResource = 
+initializeResource =
     getArgs >>= \case
         ["--offline"] -> readCache >>= \case
             Nothing -> error "no offline data or data corrupted."
@@ -213,7 +213,7 @@ initializeResource =
                     Just ru -> Conf.getUsername >>= \case
                                  Nothing -> return (ru, Nothing)
                                  Just user -> Conf.getPassword >>= \case
-                                    Nothing -> do   
+                                    Nothing -> do
                                         pass <- U.askPassword
                                         return (ru, Just (user, pass))
                                     Just pass -> return (ru, Just (user, pass))
@@ -222,6 +222,6 @@ initializeResource =
             putStrLn "loading webpage..."
             putStrLn "(you can use 'pgdl --offline' to browse the webpage you load last time)"
             nr <- genNetworkResource rootUrl up
-            dNodes <- fetch nr 
+            dNodes <- fetch nr
             return (dNodes, nr)
 

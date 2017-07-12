@@ -23,8 +23,8 @@ data DList = DList (Seq DNode) [L.List String Int]
 --                 ^ DNode pool
 
 
-newDList :: [DNode] -> DList 
-newDList = pushDList (DList S.empty []) 
+newDList :: [DNode] -> DList
+newDList = pushDList (DList S.empty [])
 
 -- | filter the elements in a DList, this action directly modify
 -- the state of the top element of directory stack. The purpose of this function is
@@ -42,10 +42,10 @@ filterDList (DList sDn (x:ref:xs)) f = DList sDn (x':ref:xs)
         0 -> Nothing
         _ -> Just . fromMaybe 0 $ do
             oldSelVal <- oldSelectionVal
-            V.elemIndex oldSelVal newElements 
+            V.elemIndex oldSelVal newElements
 
 -- | pop the directory stack (used when leaving a directory or exiting a filtered list)
-popDList :: DList -> DList 
+popDList :: DList -> DList
 popDList dl@(DList _ [_]) = dl
 popDList (DList sDn (x:y:xs)) = DList sDn (x':xs)
     where
@@ -84,7 +84,7 @@ mapSelectedDNodeM (DList sDn (x:xs)) f = do
         return $ DList (S.update i e' sDn) (x:xs)
 
 replaceSelectedDNode :: DList -> DNode -> Maybe DList
-replaceSelectedDNode dlst d = join $ mapSelectedDNodeM dlst (const $ Just d) 
+replaceSelectedDNode dlst d = join $ mapSelectedDNodeM dlst (const $ Just d)
 
 adjustCurrentBrickList :: Monad m => DList -> (L.List String Int -> m (L.List String Int)) -> m DList
 adjustCurrentBrickList (DList sDn (x:xs)) f = do
@@ -95,4 +95,4 @@ renderDList :: DList -> (Bool -> DNode -> T.Widget String) -> T.Widget String
 renderDList (DList sDn (x:_)) render = L.renderList render True actualList
     where
     actualList = x & listElementsL %~ V.map (S.index sDn)
-    
+

@@ -15,7 +15,7 @@ import System.FilePath.Posix
 import Text.HTML.DirectoryListing.Type
 
 import Configure
-import Types 
+import Types
 
 -- | this conversion may lose accuracy?
 instance Binary LocalTime where
@@ -38,7 +38,7 @@ instance Binary Entry where
                      , lastModified = l
                      , fileSize = f
                      }
-        
+
 writeCache :: [Entry] -> IO ()
 writeCache es = do
     p <- getCacheFileLocation
@@ -63,4 +63,4 @@ readCache = do
             downloaded <- doesFileExist $ lcd </> T.unpack (decodedName e)
             return $ File e "offline mode" downloaded
     noData = error "offline mode"
-    
+

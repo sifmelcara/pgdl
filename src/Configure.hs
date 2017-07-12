@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE LambdaCase #-}
 
-module Configure 
+module Configure
 where
 
 import qualified Data.Text as T
@@ -21,25 +21,25 @@ getConfig = do
     doesFileExist cfgFile >>= \case
         False -> return Nothing
         True -> Just <$> C.load [C.Required cfgFile]
-    
+
 getUsername :: IO (Maybe Text)
 getUsername =
     getConfig >>= \case
         Nothing -> return Nothing
-        Just cfg -> C.lookup cfg "username" 
+        Just cfg -> C.lookup cfg "username"
 
 
 getPassword :: IO (Maybe Text)
-getPassword = 
+getPassword =
     getConfig >>= \case
         Nothing -> return Nothing
-        Just cfg -> C.lookup cfg "password" 
+        Just cfg -> C.lookup cfg "password"
 
 getLocaldir :: IO (Maybe Text)
 getLocaldir =
     getConfig >>= \case
         Nothing -> return Nothing
-        Just cfg -> C.lookup cfg "localdir" 
+        Just cfg -> C.lookup cfg "localdir"
 
 -- | return Nothing if there are no servpath or config file do not exist
 getServpath :: IO (Maybe Text)

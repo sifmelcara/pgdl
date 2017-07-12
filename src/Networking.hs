@@ -25,7 +25,7 @@ import Cache
 import qualified Configure as Conf
 import Types
 
-type NetworkResource = Text -> (Request, Manager) 
+type NetworkResource = Text -> (Request, Manager)
 --                    ^ relative path
 
 genNetworkResource :: Text -> -- ^ webpage url (root)
@@ -43,9 +43,9 @@ genNetworkResource url up = do
                     Just (u, p) -> applyBasicAuth (encodeUtf8 u) (encodeUtf8 p)
     manager <- newManager tlsManagerSettings
     return $ \t -> (genReq t, manager)
-    
 
-getWebpage :: NetworkResource -> 
+
+getWebpage :: NetworkResource ->
               Text -> -- relative path
               IO Text
 getWebpage nr rp = do
