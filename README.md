@@ -14,16 +14,15 @@ pgdl provids a simple interface for browsing and downloading the files in web-en
 
 by cabal:
 ```shell
-cabal update  
+cabal update
 cabal install pgdl
 ```
+In case of the version of dependencies cannot be resolved, you may need to `rm -rf ~/.ghc`.
 
 via nix:
 ```shell
-nix-env -iA nixos.haskellPackages.pgdl
-```
-Or,
-```shell
+git clone https://github.com/sifmelcara/pgdl.git
+cd pgdl
 nix-env -i -f pgdl.nix
 ```
 
@@ -55,7 +54,7 @@ If you want to access webpage that uses basic authentication, you should at leas
 
 (~/.pgdl)
 ```bash
-# example: 
+# example:
 username = "jack"      # should be set if the webpage have basic authentication
 password = "mypassw"   # optional
 servpath = "example.org/videodir/" # default server location, optional
