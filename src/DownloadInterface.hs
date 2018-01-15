@@ -1,7 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE LambdaCase#-}
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
-{-# LANGUAGE CPP #-}
 
 module DownloadInterface (downloadInterface, DownloadSettings(..))
 where
@@ -87,11 +86,7 @@ downloadInterface dSettings = do
             T.VtyEvent e -> case e of
                 V.EvKey V.KEsc [] -> M.halt ds
                 V.EvKey (V.KChar 'q') _ -> M.halt ds
-#if MIN_VERSION_brick(0, 19, 0)
                 V.EvKey (V.KChar 'o') [] -> M.continue $ UserInput ds (E.editor "command" (Just 1) "")
-#else
-                V.EvKey (V.KChar 'o') [] -> M.continue $ UserInput ds (E.editor "command" (str . unlines) (Just 1) "")
-#endif
                 V.EvKey V.KEnter [] -> do
                     liftIO $ localStoragePath dSettings `openBy` ""
                     M.continue ds
@@ -102,11 +97,7 @@ downloadInterface dSettings = do
         appEvent FinishedState be = case be of
             T.VtyEvent e -> case e of
                 V.EvKey (V.KChar 'q') _ -> M.halt FinishedState
-#if MIN_VERSION_brick(0, 19, 0)
                 V.EvKey (V.KChar 'o') [] -> M.continue $ UserInput FinishedState (E.editor "command" (Just 1) "")
-#else
-                V.EvKey (V.KChar 'o') [] -> M.continue $ UserInput FinishedState (E.editor "command" (str . unlines) (Just 1) "")
-#endif
                 V.EvKey V.KEnter [] -> do
                     liftIO $ localStoragePath dSettings `openBy` ""
                     M.halt FinishedState
@@ -154,11 +145,7 @@ downloadInterface dSettings = do
                   B.borderWithLabel (str "please input a program name") .
                   forceAttr "input box" .
                   hLimit 40 $
-#if MIN_VERSION_brick(0, 19, 0)
                   E.renderEditor (str . unlines) True ed
-#else
-                  E.renderEditor True ed
-#endif
     M.customMain (V.mkVty mempty) (Just eventChan) theApp initialState
     return ()
 
